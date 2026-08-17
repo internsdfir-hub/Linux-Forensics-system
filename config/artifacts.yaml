@@ -1,0 +1,283 @@
+# Artifact catalogue - the single source of truth (decision D1).
+#
+# Consumed by:
+#   - tools/gen_artifact_table.py  -> embedded table in collector/collect.sh
+#   - the analyzer (category mapping, expected-artifact checks)
+#   - the report (traceability matrix)
+#
+# Fields:
+#   id            stable identifier
+#   category      one of the eight evidence categories + environment + audit
+#   paths         absolute paths on the target (relative to $ROOT); shell
+#                 globs allowed; trailing * on a filename means rotated
+#                 variants are wanted too
+#   required      true  -> absence is recorded as expected-but-missing
+#                 false -> absence is normal on some distros (note why)
+#   glob_rotated  glob rotated/compressed variants (auth.log.1, .2.gz ...)
+#   deep          collect every regular file under the directory (find -type f)
+#   tier          core | extended
+#   notes         why this artifact matters / distro caveats
+
+- id: os_release
+  category: environment
+  paths: ["/etc/os-release", "/etc/redhat-release", "/etc/debian_version"]
+  required: true
+  tier: core
+  notes: "Distro identification drives every path decision downstream"
+
+- id: localtime
+  category: environment
+  paths: ["/etc/localtime", "/etc/timezone"]
+  required: true
+  tier: core
+  notes: "Timezone chain; without it every syslog timestamp is silently wrong (trap #4)"
+
+- id: machine_id
+  category: environment
+  paths: ["/etc/machine-id"]
+  required: false
+  tier: core
+  notes: "host_id for multi-host cases; absent on some minimal images"
+
+- id: passwd
+  category: user_accounts
+  paths: ["/etc/passwd", "/etc/passwd-", "/etc/group", "/etc/group-"]
+  required: true
+  tier: core
+  notes: "Backup variants give a free recent-change diff"
+
+- id: shadow
+  category: user_accounts
+  paths: ["/etc/shadow", "/etc/shadow-", "/etc/gshadow", "/etc/gshadow-"]
+  required: false
+  tier: core
+  notes: "Root only; redacted under -R; last-changed field is DAYS since epoch (trap #10)"
+
+- id: auth_log
+  category: login_activity
+  paths: ["/var/log/auth.log", "/var/log/secure"]
+  required: false
+  glob_rotated: true
+  tier: core
+  notes: "Absent on Debian 12 and minimal cloud images - journald is primary there (trap #7)"
+
+- id: wtmp
+  category: login_activity
+  paths: ["/var/log/wtmp"]
+  required: false
+  glob_rotated: true
+  tier: core
+  notes: "Binary 384-byte records; stub/empty on musl and containers (trap #5)"
+
+- id: btmp
+  category: login_activity
+  paths: ["/var/log/btmp"]
+  required: false
+  glob_rotated: true
+  tier: core
+  notes: "Failed logins; root-only read on most distros"
+
+- id: lastlog
+  category: login_activity
+  paths: ["/var/log/lastlog"]
+  required: false
+  tier: core
+  notes: "Sparse UID-indexed 292-byte records; cp --sparse=always (trap #6); retired on newest distros"
+
+- id: faillog
+  category: login_activity
+  paths: ["/var/log/faillog", "/var/run/faillock/*"]
+  required: false
+  tier: extended
+  notes: "Extended-tier failure aggregates"
+
+- id: sudoers
+  category: privilege_escalation
+  paths: ["/etc/sudoers", "/etc/sudoers.d/*"]
+  required: true
+  tier: core
+  notes: "Who is ALLOWED to escalate; sudo usage itself lives in auth log / journal"
+
+- id: pam
+  category: privilege_escalation
+  paths: ["/etc/pam.d/*"]
+  required: false
+  tier: extended
+  notes: "PAM stack config"
+
+- id: cron
+  category: persistence
+  paths:
+    [
+      "/etc/crontab",
+      "/etc/cron.d/*",
+      "/var/spool/cron/crontabs/*",
+      "/var/spool/cron/*",
+      "/etc/cron.hourly/*",
+      "/etc/cron.daily/*",
+      "/etc/cron.weekly/*",
+      "/etc/cron.monthly/*",
+    ]
+  required: true
+  tier: core
+  notes: "Primary persistence mechanism; spool layout differs Debian vs RHEL"
+
+- id: cron_log
+  category: persistence
+  paths: ["/var/log/cron"]
+  required: false
+  glob_rotated: true
+  tier: core
+  notes: "RHEL-family cron log; Debian logs CRON lines into syslog"
+
+- id: systemd_units
+  category: persistence
+  paths: ["/etc/systemd/system"]
+  required: false
+  deep: true
+  tier: core
+  notes: "Admin-created units and timers incl. .wants symlink dirs; vendor units in /usr/lib are out of scope"
+
+- id: systemd_user_units
+  category: persistence
+  paths: ["/home/*/.config/systemd/user", "/root/.config/systemd/user"]
+  required: false
+  deep: true
+  tier: core
+  notes: "Per-user persistence"
+
+- id: authorized_keys
+  category: persistence
+  paths: ["/home/*/.ssh/authorized_keys", "/home/*/.ssh/authorized_keys2", "/root/.ssh/authorized_keys", "/root/.ssh/authorized_keys2"]
+  required: false
+  tier: core
+  notes: "Password-less way back in; file mtime feeds the incident-window rule"
+
+- id: sshd_config
+  category: persistence
+  paths: ["/etc/ssh/sshd_config", "/etc/ssh/sshd_config.d/*"]
+  required: false
+  tier: core
+  notes: "PermitRootLogin / PasswordAuthentication state findings"
+
+- id: shell_startup
+  category: persistence
+  paths:
+    [
+      "/etc/profile",
+      "/etc/profile.d/*",
+      "/etc/rc.local",
+      "/etc/ld.so.preload",
+      "/home/*/.bashrc",
+      "/home/*/.profile",
+      "/home/*/.bash_profile",
+      "/root/.bashrc",
+      "/root/.profile",
+    ]
+  required: false
+  tier: core
+  notes: "ld.so.preload non-empty is a userland rootkit indicator"
+
+- id: dpkg_log
+  category: software_changes
+  paths: ["/var/log/dpkg.log"]
+  required: false
+  glob_rotated: true
+  tier: core
+  notes: "Debian-family package operations"
+
+- id: apt_history
+  category: software_changes
+  paths: ["/var/log/apt/history.log", "/var/log/apt/term.log"]
+  required: false
+  glob_rotated: true
+  tier: core
+  notes: "history.log records the exact command line and requesting user - dpkg.log does not"
+
+- id: dnf_log
+  category: software_changes
+  paths: ["/var/log/dnf.log", "/var/log/dnf.rpm.log", "/var/log/yum.log"]
+  required: false
+  glob_rotated: true
+  tier: core
+  notes: "RHEL-family package operations"
+
+- id: kern_syslog
+  category: hardware_usb
+  paths: ["/var/log/kern.log", "/var/log/syslog", "/var/log/messages"]
+  required: false
+  glob_rotated: true
+  tier: core
+  notes: "USB kernel lines (multi-line, trap #9) + iptables log lines; shared source for two parsers"
+
+- id: sys_usb
+  category: hardware_usb
+  paths: ["/sys/bus/usb/devices"]
+  required: false
+  deep: true
+  tier: core
+  notes: "Live-collection only; uevent files carry vendor/product/serial of currently attached devices"
+
+- id: hosts
+  category: network_config
+  paths: ["/etc/hosts", "/etc/resolv.conf"]
+  required: true
+  tier: core
+  notes: "DNS redirection is a classic control mechanism"
+
+- id: net_ifaces
+  category: network_config
+  paths: ["/etc/network/interfaces", "/etc/netplan/*.yaml"]
+  required: false
+  tier: core
+  notes: "Debian legacy + netplan"
+
+- id: ufw_log
+  category: network_config
+  paths: ["/var/log/ufw.log"]
+  required: false
+  glob_rotated: true
+  tier: core
+  notes: "Firewall blocks/allows"
+
+- id: shell_history
+  category: user_activity
+  paths:
+    [
+      "/home/*/.bash_history",
+      "/home/*/.zsh_history",
+      "/root/.bash_history",
+      "/root/.zsh_history",
+    ]
+  required: false
+  tier: core
+  notes: "Absence for an active user is itself a finding (rule, not parser)"
+
+- id: known_hosts
+  category: user_activity
+  paths: ["/home/*/.ssh/known_hosts", "/root/.ssh/known_hosts"]
+  required: false
+  tier: core
+  notes: "Where users ssh'd to"
+
+- id: browser_firefox
+  category: user_activity
+  paths: ["/home/*/.mozilla/firefox/*/places.sqlite"]
+  required: false
+  tier: extended
+  notes: "Copy then open the copy; browser may hold an exclusive lock (trap #8)"
+
+- id: browser_chrome
+  category: user_activity
+  paths: ["/home/*/.config/google-chrome/*/History", "/home/*/.config/chromium/*/History"]
+  required: false
+  tier: extended
+  notes: "WebKit epoch: microseconds since 1601-01-01 (trap #8)"
+
+- id: audit_log
+  category: audit
+  paths: ["/var/log/audit/audit.log"]
+  required: false
+  glob_rotated: true
+  tier: core
+  notes: "Collected but NOT parsed - stated in report limitations (spec 2.3)"
