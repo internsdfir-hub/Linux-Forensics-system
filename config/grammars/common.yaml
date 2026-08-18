@@ -47,21 +47,21 @@ sshd_disconnect:
   process: sshd
 
 sudo_command:
-  pattern: 'sudo:\s+(?P<user>\S+) : TTY=(?P<tty>\S+) ; PWD=(?P<pwd>\S+) ; USER=(?P<target_user>\S+) ; COMMAND=(?P<command>.*)$'
+  pattern: 'sudo(?:\[(?P<pid>\d+)\])?:\s+(?P<user>\S+) : TTY=(?P<tty>\S+) ; PWD=(?P<pwd>\S+) ; USER=(?P<target_user>\S+) ; COMMAND=(?P<command>.*)$'
   category: privilege_escalation
   subcategory: sudo_command
   severity: info
   process: sudo
 
 sudo_auth_failure:
-  pattern: 'sudo:\s+(?P<user>\S+) : (?P<failures>\d+) incorrect password attempts? ; TTY=(?P<tty>\S+) ; PWD=(?P<pwd>\S+) ; USER=(?P<target_user>\S+) ; COMMAND=(?P<command>.*)$'
+  pattern: 'sudo(?:\[(?P<pid>\d+)\])?:\s+(?P<user>\S+) : (?P<failures>\d+) incorrect password attempts? ; TTY=(?P<tty>\S+) ; PWD=(?P<pwd>\S+) ; USER=(?P<target_user>\S+) ; COMMAND=(?P<command>.*)$'
   category: privilege_escalation
   subcategory: sudo_failure
   severity: medium
   process: sudo
 
 sudo_not_in_sudoers:
-  pattern: 'sudo:\s+(?P<user>\S+) : user NOT in sudoers ; TTY=(?P<tty>\S+) ; PWD=(?P<pwd>\S+) ; USER=(?P<target_user>\S+) ; COMMAND=(?P<command>.*)$'
+  pattern: 'sudo(?:\[(?P<pid>\d+)\])?:\s+(?P<user>\S+) : user NOT in sudoers ; TTY=(?P<tty>\S+) ; PWD=(?P<pwd>\S+) ; USER=(?P<target_user>\S+) ; COMMAND=(?P<command>.*)$'
   category: privilege_escalation
   subcategory: sudo_denied
   severity: high

