@@ -13,7 +13,7 @@ import importlib
 import pkgutil
 import traceback
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Iterator
 
@@ -33,11 +33,37 @@ class ParseContext:
     distro_profile: dict
     artifact_rel: str = ""
     artifact_sha256: str = ""
+    artifact_mtime: float | None = None
     tool_generated_flag: bool = False
     parser_name: str = ""
     parser_version: str = ""
     had_decode_errors: bool = False
     contamination: dict = field(default_factory=dict)
+
+    def is_tool_generated(self, source_ip: str | None,
+                          ts_utc_iso: str | None) -> bool:
+        """Auto-tag our own collection session (P1b contamination record):
+        events from the operator's source IP inside the collection window
+        must never show up as findings (spec: 'without this the tool reports
+        its own operator as a suspicious 3am login')."""
+        if not self.contamination:
+            return False
+        op_ip = self.contamination.get("source_ip")
+        if not op_ip or not source_ip or source_ip != op_ip:
+            return False
+        start = self.contamination.get("start_utc")
+        end = self.contamination.get("end_utc")
+        if not (start and end and ts_utc_iso):
+            # same IP but no window to check: still safer to tag
+            return True
+        norm = lambda s: s.replace("Z", "+00:00")
+        try:
+            ts = datetime.fromisoformat(norm(ts_utc_iso))
+            lo = datetime.fromisoformat(norm(start)) - timedelta(minutes=5)
+            hi = datetime.fromisoformat(norm(end)) + timedelta(minutes=5)
+        except ValueError:
+            return True
+        return lo <= ts <= hi
 
     def build_event(self, **kwargs) -> NormalizedEvent:
         kwargs.setdefault("case_id", self.case_id)
@@ -73,11 +99,16 @@ class BaseParser:
         raise NotImplementedError
 
     # helper shared by text parsers: stream lines with byte offsets and the
-    # mandatory surrogateescape handling (spec: naive open() loses data)
+    # mandatory surrogateescape handling (spec: naive open() loses data).
+    # Rotated logs were collected still-compressed; decompress transparently
+    # (offsets are then within the DECOMPRESSED stream, noted per artifact).
     @staticmethod
     def iter_lines(path: Path, context: ParseContext):
+        import gzip
+
+        opener = gzip.open if str(path).endswith(".gz") else open
         offset = 0
-        with open(path, "rb") as fh:
+        with opener(path, "rb") as fh:
             for raw in fh:
                 try:
                     line = raw.decode("utf-8")
