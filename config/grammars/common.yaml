@@ -1,0 +1,145 @@
+# Distro-independent syslog grammar (spec 2.6.3).
+# Patterns are Python regexes matched against the message part AFTER the
+# syslog prefix "Mon DD HH:MM:SS host ". Named groups feed NormalizedEvent:
+#   user -> actor_user, ip -> source_ip, pid -> (process id), command, uid,
+#   method (password|publickey), port, tty, pwd, target_user, group
+
+sshd_failed_password:
+  pattern: 'sshd\[(?P<pid>\d+)\]: Failed password for (?:invalid user )?(?P<user>\S+) from (?P<ip>\S+) port (?P<port>\d+)'
+  category: login_activity
+  subcategory: failed_login
+  severity: low
+  process: sshd
+
+sshd_invalid_user:
+  pattern: 'sshd\[(?P<pid>\d+)\]: Invalid user (?P<user>\S+) from (?P<ip>\S+)(?: port (?P<port>\d+))?'
+  category: login_activity
+  subcategory: invalid_user
+  severity: low
+  process: sshd
+
+sshd_accepted:
+  pattern: 'sshd\[(?P<pid>\d+)\]: Accepted (?P<method>password|publickey|keyboard-interactive/pam) for (?P<user>\S+) from (?P<ip>\S+) port (?P<port>\d+)'
+  category: login_activity
+  subcategory: successful_login
+  severity: info
+  process: sshd
+
+sshd_session_opened:
+  pattern: 'sshd(?:\[(?P<pid>\d+)\])?: pam_unix\(sshd:session\): session opened for user (?P<user>[^\s(]+)'
+  category: login_activity
+  subcategory: session_opened
+  severity: info
+  process: sshd
+
+sshd_session_closed:
+  pattern: 'sshd(?:\[(?P<pid>\d+)\])?: pam_unix\(sshd:session\): session closed for user (?P<user>\S+)'
+  category: login_activity
+  subcategory: session_closed
+  severity: info
+  process: sshd
+
+sshd_disconnect:
+  pattern: 'sshd\[(?P<pid>\d+)\]: Disconnected from(?: authenticating| invalid)? user (?P<user>\S+) (?P<ip>\S+) port (?P<port>\d+)'
+  category: login_activity
+  subcategory: disconnect
+  severity: info
+  process: sshd
+
+sudo_command:
+  pattern: 'sudo:\s+(?P<user>\S+) : TTY=(?P<tty>\S+) ; PWD=(?P<pwd>\S+) ; USER=(?P<target_user>\S+) ; COMMAND=(?P<command>.*)$'
+  category: privilege_escalation
+  subcategory: sudo_command
+  severity: info
+  process: sudo
+
+sudo_auth_failure:
+  pattern: 'sudo:\s+(?P<user>\S+) : (?P<failures>\d+) incorrect password attempts? ; TTY=(?P<tty>\S+) ; PWD=(?P<pwd>\S+) ; USER=(?P<target_user>\S+) ; COMMAND=(?P<command>.*)$'
+  category: privilege_escalation
+  subcategory: sudo_failure
+  severity: medium
+  process: sudo
+
+sudo_not_in_sudoers:
+  pattern: 'sudo:\s+(?P<user>\S+) : user NOT in sudoers ; TTY=(?P<tty>\S+) ; PWD=(?P<pwd>\S+) ; USER=(?P<target_user>\S+) ; COMMAND=(?P<command>.*)$'
+  category: privilege_escalation
+  subcategory: sudo_denied
+  severity: high
+  process: sudo
+
+su_session:
+  pattern: 'su(?:\[(?P<pid>\d+)\])?: (?:\(to (?P<target_user>\S+)\) )?(?P<user>\S+)(?: on| to)'
+  category: privilege_escalation
+  subcategory: su_attempt
+  severity: low
+  process: su
+
+pam_auth_failure:
+  pattern: 'pam_unix\((?:sshd|login|su|sudo):auth\): authentication failure;.*(?:ruser=|logname=)\S*.*rhost=(?P<ip>\S*)\s*(?:user=(?P<user>\S+))?'
+  category: login_activity
+  subcategory: auth_failure
+  severity: low
+  process: pam
+
+useradd_new_user:
+  pattern: 'useradd\[(?P<pid>\d+)\]: new user: name=(?P<user>[^,]+), UID=(?P<uid>\d+), GID=(?P<gid>\d+), home=(?P<home>[^,]+), shell=(?P<shell>\S+)'
+  category: user_accounts
+  subcategory: account_created
+  severity: medium
+  process: useradd
+
+useradd_new_group:
+  pattern: '(?:groupadd|useradd)\[(?P<pid>\d+)\]: (?:new group|group added to \S+): name=(?P<group>[^,\s]+)'
+  category: user_accounts
+  subcategory: group_created
+  severity: info
+  process: groupadd
+
+usermod_group_add:
+  pattern: 'usermod\[(?P<pid>\d+)\]: add .(?P<user>[^'']+). to group .(?P<group>[^'']+).'
+  category: privilege_escalation
+  subcategory: group_membership_added
+  severity: medium
+  process: usermod
+
+userdel_delete:
+  pattern: 'userdel\[(?P<pid>\d+)\]: delete user .(?P<user>[^'']+).'
+  category: user_accounts
+  subcategory: account_deleted
+  severity: medium
+  process: userdel
+
+passwd_changed:
+  pattern: 'passwd\[(?P<pid>\d+)\]: pam_unix\(passwd:chauthtok\): password changed for (?P<user>\S+)'
+  category: user_accounts
+  subcategory: password_changed
+  severity: low
+  process: passwd
+
+chage_changed:
+  pattern: 'chage\[(?P<pid>\d+)\]: changed password expiry for (?P<user>\S+)'
+  category: user_accounts
+  subcategory: password_policy_changed
+  severity: low
+  process: chage
+
+cron_session:
+  pattern: 'CRON\[(?P<pid>\d+)\]: pam_unix\(cron:session\): session opened for user (?P<user>[^\s(]+)'
+  category: persistence
+  subcategory: cron_run
+  severity: info
+  process: cron
+
+login_failure_tty:
+  pattern: 'login\[(?P<pid>\d+)\]: FAILED LOGIN.*FOR .?(?P<user>\S+?).?[,;] (?P<reason>.*)$'
+  category: login_activity
+  subcategory: failed_login
+  severity: low
+  process: login
+
+systemd_logind_new_session:
+  pattern: 'systemd-logind\[(?P<pid>\d+)\]: New session (?P<session>\S+) of user (?P<user>\S+)'
+  category: login_activity
+  subcategory: session_opened
+  severity: info
+  process: systemd-logind
