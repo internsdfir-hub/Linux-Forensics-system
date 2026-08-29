@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LFA Forensic Report - Case {{ summary.case_id }}</title>
+  <style>
+    {{ inline_css }}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div>
+        <h1>Linux Forensic Analysis Report</h1>
+        <p style="color: var(--text-secondary);">Case ID: <strong>{{ summary.case_id }}</strong> | Examiner: <strong>{{ summary.examiner }}</strong></p>
+      </div>
+      <div>
+        <span class="badge badge-{{ 'high' if summary.severity_counts.high > 0 else ('medium' if summary.severity_counts.medium > 0 else 'info') }}">
+          {{ summary.severity_counts.high }} High / {{ summary.severity_counts.medium }} Med Findings
+        </span>
+      </div>
+    </header>
+
+    <!-- 1. Authorisation, scope & privacy -->
+    <section id="sec-auth">
+      <h2>1. Authorisation, Scope &amp; Privacy</h2>
+      <div class="stat-card">
+        <p><strong>Case Reference:</strong> {{ summary.case_id }}</p>
+        <p><strong>Examiner:</strong> {{ summary.examiner }}</p>
+        <p><strong>Ingest Time:</strong> {{ summary.ingest_time }}</p>
+        <p><strong>Target Host(s):</strong> {{ summary.hosts | join(', ') if summary.hosts else 'Host Image' }}</p>
+        <p><strong>Privacy / Redaction Notice:</strong> System artifacts collected with strict hash verification. Password hashes and sensitive keys redacted where specified.</p>
+      </div>
+    </section>
+
+    <!-- 2. Executive Summary -->
+    <section id="sec-exec">
+      <h2>2. Executive Summary</h2>
+      <div class="stat-card" style="white-space: pre-line; line-height: 1.8;">
+        {{ narrative }}
+      </div>
+    </section>
+
+    <!-- Key Metrics Grid -->
+    <div class="grid-stats">
+      <div class="stat-card">
+        <div class="stat-value">{{ summary.event_count }}</div>
+        <div class="stat-label">Total Events Parsed</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" style="color: var(--accent-red);">{{ summary.severity_counts.high }}</div>
+        <div class="stat-label">Critical / High Threats</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" style="color: var(--accent-yellow);">{{ summary.severity_counts.medium }}</div>
+        <div class="stat-label">Medium Indicators</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value">{{ artifacts | length }}</div>
+        <div class="stat-label">Artifacts Ingested</div>
+      </div>
+    </div>
+
+    <!-- 3. Incident Timeline & Activity Density -->
+    <section id="sec-timeline">
+      <h2>3. Incident Timeline &amp; Activity Density</h2>
+      <div style="margin: 20px 0;">
+        {{ svg_chart | safe }}
+      </div>
+      <p style="font-size: 13px; color: var(--text-secondary);">
+        Active Window: {{ summary.first_event_utc or 'N/A' }} &mdash; {{ summary.last_event_utc or 'N/A' }}
+      </p>
+    </section>
+
+    <!-- 4. Findings & Threat Detections -->
+    <section id="sec-findings">
+      <h2>4. Findings &amp; Threat Detections ({{ findings | length }})</h2>
+      {% if not findings %}
+        <p style="color: var(--accent-green);">No security findings or correlation threats detected.</p>
+      {% endif %}
+      {% for f in findings %}
+        <div class="finding-card {{ f.severity }}">
+          <div class="finding-header">
+            <div class="finding-title">{{ f.title }}</div>
+            <span class="badge badge-{{ f.severity }}">{{ f.severity }}</span>
+          </div>
+
+          <!-- Plain language layer (for management and general readers) -->
+          <div class="plain-layer">
+            <div class="plain-field"><span class="field-label">What Happened:</span> {{ f.what_happened }}</div>
+            <div class="plain-field"><span class="field-label">Why It Matters:</span> {{ f.why_it_matters }}</div>
+            <div class="plain-field"><span class="field-label">Confidence:</span> <strong>{{ f.confidence }}</strong></div>
+            <div class="plain-field"><span class="field-label">Recommended Action:</span> {{ f.check_next }}</div>
+          </div>
+
+          <!-- Technical detail layer (for forensic examiners) -->
+          <details>
+            <summary>Technical Details &amp; Evidence Provenance (Rule: {{ f.rule_name }} v{{ f.rule_version }})</summary>
+            <pre><code>{{ f.technical_detail }}
+Associated Event IDs: {{ f.event_ids | join(', ') if f.event_ids else 'State Configuration Finding' }}
+Host ID: {{ f.host_id or 'Default' }} | Finding ID: {{ f.finding_id }}</code></pre>
+          </details>
+        </div>
+      {% endfor %}
+    </section>
+
+    <!-- 5. Host Inventory & System Configuration -->
+    <section id="sec-inventory">
+      <h2>5. Host Inventory &amp; System Configuration</h2>
+      {% for host_id, meta in summary.hosts_meta.items() %}
+        <div class="stat-card" style="margin-bottom: 15px;">
+          <h3>Host: {{ host_id }}</h3>
+          {% set host_info = meta.collector_manifest.host if meta.collector_manifest else {} %}
+          <p><strong>Distro:</strong> {{ host_info.distro_id or 'Linux' }} {{ host_info.version_id or '' }}</p>
+          <p><strong>Timezone:</strong> {{ host_info.timezone or 'UTC' }} (Source: {{ host_info.timezone_source or 'default' }})</p>
+          <p><strong>Init System:</strong> {{ host_info.init_system or 'systemd' }}</p>
+        </div>
+      {% endfor %}
+    </section>
+
+    <!-- 6. Detailed Event Timeline -->
+    <section id="sec-events">
+      <h2>6. Normalized Event Timeline (Sample)</h2>
+      <div class="filter-bar">
+        <input type="text" id="event-filter" class="search-input" placeholder="Search events by user, IP, process, category or description...">
+      </div>
+      <table id="events-table">
+        <thead>
+          <tr>
+            <th>Timestamp (UTC)</th>
+            <th>Category</th>
+            <th>Severity</th>
+            <th>Actor</th>
+            <th>Source IP</th>
+            <th>Description</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for ev in events %}
+            <tr>
+              <td style="white-space: nowrap; font-family: monospace;">{{ ev.timestamp_utc or 'State Finding' }}</td>
+              <td><span class="badge badge-info">{{ ev.category }}</span></td>
+              <td><span class="badge badge-{{ ev.severity }}">{{ ev.severity }}</span></td>
+              <td>{{ ev.actor_user or '-' }}</td>
+              <td>{{ ev.source_ip or '-' }}</td>
+              <td>{{ ev.description }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </section>
+
+    <!-- 7. Evidence Integrity & Chain of Custody -->
+    <section id="sec-integrity">
+      <h2>7. Evidence Integrity &amp; Chain of Custody</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Artifact Path</th>
+            <th>SHA-256 (Collection)</th>
+            <th>SHA-256 (Ingest)</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for a in artifacts %}
+            <tr>
+              <td><code>{{ a.original_path }}</code></td>
+              <td style="font-family: monospace; font-size: 11px;">{{ a.sha256_at_collect[:16] }}...</td>
+              <td style="font-family: monospace; font-size: 11px;">{{ a.sha256_at_ingest[:16] if a.sha256_at_ingest else 'N/A' }}...</td>
+              <td>
+                {% if a.quarantined %}
+                  <span class="badge badge-high">QUARANTINED</span>
+                {% elif a.status == 'ok' %}
+                  <span class="badge badge-low">VERIFIED</span>
+                {% else %}
+                  <span class="badge badge-info">{{ a.status }}</span>
+                {% endif %}
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </section>
+
+    <!-- 8. Methodology, Limitations & Tool Audit -->
+    <section id="sec-methodology">
+      <h2>8. Methodology, Limitations &amp; Tool Audit</h2>
+      <div class="stat-card">
+        <p><strong>Forensic Compliance:</strong> Ingestion and correlation executed strictly against the frozen RFC 3227 Order of Volatility model and unified event schema.</p>
+        <p><strong>Deterministic Guarantee:</strong> Generated using zero-dependency deterministic engines with byte-stable hashing.</p>
+        <p><strong>Offline Execution:</strong> Verified zero external network references or third-party web font calls.</p>
+      </div>
+    </section>
+
+    <!-- 9. Glossary -->
+    <section id="sec-glossary">
+      <h2>9. Glossary of Forensic Terms</h2>
+      <div class="stat-card">
+        <p><strong>NormalizedEvent:</strong> Unified event schema consolidating heterogeneous Linux logs into standardized time, actor, source, and severity fields.</p>
+        <p><strong>wtmp / btmp:</strong> Binary login and failure accounting records maintained by Linux libc / utmp subsystems.</p>
+        <p><strong>Order of Volatility:</strong> Standard evidence preservation hierarchy defined in RFC 3227 (registers/cache &rarr; RAM &rarr; state/sockets &rarr; disk &rarr; backups).</p>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    {{ inline_js }}
+  </script>
+</body>
+</html>

@@ -49,6 +49,7 @@ class JournaldParser(BaseParser):
     def parse(self, path: Path, context: ParseContext):
         distro = (context.distro_profile or {}).get("distro_id", "")
         engine = GrammarEngine.load(GRAMMAR_DIR, distro)
+        last_seq_num: int | None = None
 
         for offset, line in self.iter_lines(path, context):
             if not line.strip():
@@ -79,6 +80,35 @@ class JournaldParser(BaseParser):
                     confidence = res.confidence
                 except (TypeError, ValueError):
                     pass
+
+            # Track sequence number gaps (__SEQNUM) for anti-forensic detection
+            seq_val = entry.get("__SEQNUM")
+            seq_num = None
+            if seq_val is not None:
+                try:
+                    seq_num = int(seq_val)
+                except (ValueError, TypeError):
+                    seq_num = None
+
+            if last_seq_num is not None and seq_num is not None and seq_num > last_seq_num + 1:
+                gap = seq_num - last_seq_num - 1
+                yield context.build_event(
+                    event_kind="event",
+                    timestamp_utc=ts_utc,
+                    timestamp_local=ts_local,
+                    timestamp_confidence=confidence,
+                    category="environment",
+                    subcategory="journal_sequence_gap",
+                    actor_process="systemd-journald",
+                    description=f"Journal sequence gap detected: expected seq {last_seq_num + 1}, got {seq_num} ({gap} missing records)",
+                    severity="high",
+                    raw_line=line,
+                    raw_line_offset=offset,
+                    notes=f"SEQUENCE_GAP expected={last_seq_num + 1} actual={seq_num} gap={gap}",
+                )
+
+            if seq_num is not None:
+                last_seq_num = seq_num
 
             notes = f"journald _COMM={comm} _PID={pid}"
 

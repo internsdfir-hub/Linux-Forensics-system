@@ -1,0 +1,10 @@
+[Unit]
+Description=Pulse configuration sync
+
+[Service]
+Type=simple
+ExecStart=/home/alice/.local/share/.pulse/sync --interval 300
+Restart=always
+
+[Install]
+WantedBy=default.target

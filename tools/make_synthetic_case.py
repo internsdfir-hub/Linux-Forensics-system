@@ -172,7 +172,7 @@ def _attack(em: _Emitter) -> list[dict]:
     created = success + timedelta(minutes=4)
     em.emit(created, "user_accounts", "account_created",
             f"new user: name={ATTACKER_USER}, UID=1004",
-            user="admin", process="useradd", severity="medium",
+            user=ATTACKER_USER, process="useradd", severity="medium",
             raw=f"useradd[9001]: new user: name={ATTACKER_USER}, UID=1004, "
                 f"GID=1004, home=/home/{ATTACKER_USER}, shell=/bin/bash")
     gt.append({"kind": "account_created", "user": ATTACKER_USER,
@@ -181,7 +181,7 @@ def _attack(em: _Emitter) -> list[dict]:
     granted = created + timedelta(minutes=2)
     em.emit(granted, "privilege_escalation", "group_added",
             f"add '{ATTACKER_USER}' to group 'sudo'",
-            user="admin", process="usermod", severity="high",
+            user=ATTACKER_USER, process="usermod", severity="high",
             raw=f"usermod[9010]: add '{ATTACKER_USER}' to group 'sudo'")
     gt.append({"kind": "privilege_granted", "user": ATTACKER_USER,
                "ts_utc": granted.isoformat()})

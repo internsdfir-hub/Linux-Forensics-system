@@ -1,0 +1,44 @@
+{
+  "scenario_name": "wsl_kali_credential_access_and_persistence",
+  "executed_at": "2026-08-26T20:50:25Z",
+  "attacker_ip": "203.0.113.9",
+  "target_user": "backdooruser",
+  "injected_threats": [
+    {
+      "threat_id": "T1110_brute_force",
+      "name": "SSH Brute Force Attack",
+      "expected_rule": "brute_force",
+      "details": "Burst of >= 5 authentication failures from 203.0.113.9"
+    },
+    {
+      "threat_id": "T1110_success_after_burst",
+      "name": "Successful Login After Brute Force",
+      "expected_rule": "brute_force_success",
+      "details": "Accepted login for kali from 203.0.113.9 immediately following failures"
+    },
+    {
+      "threat_id": "T1136_account_creation",
+      "name": "Account Creation & Privilege Grant",
+      "expected_rule": "new_account_privilege_grant",
+      "details": "User backdooruser created and added to sudo group"
+    },
+    {
+      "threat_id": "T1098_ssh_authorized_keys",
+      "name": "SSH Persistence Key",
+      "expected_rule": "persistence_after_login",
+      "details": "authorized_keys file created/modified for backdooruser"
+    },
+    {
+      "threat_id": "T1053_scheduled_task_cron",
+      "name": "Cron Persistence",
+      "expected_rule": "persistence_after_login",
+      "details": "Crontab created for backdooruser containing curl beacon"
+    },
+    {
+      "threat_id": "T1070_indicator_removal_history",
+      "name": "History Deletion Evasion",
+      "expected_rule": "wiped_history",
+      "details": "Zero-byte .bash_history for active user"
+    }
+  ]
+}

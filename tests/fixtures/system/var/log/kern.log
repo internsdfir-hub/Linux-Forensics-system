@@ -1,0 +1,16 @@
+Mar 14 02:40:59 web1 kernel: [12341.000] usb usb1: SerialNumber: 0000:00:14.0
+Mar 14 02:41:03 web1 kernel: [12345.678] usb 1-2: new high-speed USB device number 5 using xhci_hcd
+Mar 14 02:41:03 web1 kernel: [12345.679] usb 1-2: New USB device found, idVendor=0781, idProduct=5567, bcdDevice= 1.00
+Mar 14 02:41:03 web1 kernel: [12345.680] usb 1-2: New USB device strings: Mfr=1, Product=2, SerialNumber=3
+Mar 14 02:41:03 web1 kernel: [12345.681] usb 1-2: Product: Cruzer Blade
+Mar 14 02:41:03 web1 kernel: [12345.682] usb 1-2: Manufacturer: SanDisk
+Mar 14 02:41:03 web1 kernel: [12345.683] usb 1-2: SerialNumber: 4C530001120523104381
+Mar 14 02:41:04 web1 kernel: [12346.000] usb-storage 1-2:1.0: USB Mass Storage device detected
+Mar 14 02:41:05 web1 kernel: [12347.000] sd 0:0:0:0: [sdb] Attached SCSI removable disk
+Mar 14 02:55:00 web1 kernel: [13000.000] EXT4-fs (sdb1): mounted filesystem with ordered data mode
+Mar 14 03:15:44 web1 kernel: [14000.000] usb 1-2: USB disconnect, device number 5
+Mar 14 03:20:00 web1 kernel: [14300.000] usb 1-4: new full-speed USB device number 6 using xhci_hcd
+Mar 14 03:20:00 web1 kernel: [14300.100] usb 1-4: New USB device found, idVendor=046d, idProduct=c52b, bcdDevice=12.03
+Mar 14 03:20:00 web1 kernel: [14300.200] usb 1-4: New USB device strings: Mfr=1, Product=2, SerialNumber=0
+Mar 14 03:20:00 web1 kernel: [14300.300] usb 1-4: Product: USB Receiver
+Mar 14 03:20:00 web1 kernel: [14300.400] usb 1-4: Manufacturer: Logitech

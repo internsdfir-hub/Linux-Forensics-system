@@ -105,9 +105,10 @@ def test_suspicious_commands_flagged_high(ctx):
 
 def test_special_schedule_syntax(ctx):
     events = parse(ctx, "etc/crontab")
-    reboot = next(e for e in events if "@reboot" in e.raw_line)
+    reboot = next(e for e in events if "@reboot" in e.description or "@reboot" in e.raw_line)
     assert reboot.actor_user == "root"
     assert "at every boot" in reboot.description
+
 
 
 def test_spool_crontab_has_no_user_field_and_takes_user_from_filename(ctx):

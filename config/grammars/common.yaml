@@ -130,6 +130,48 @@ cron_session:
   severity: info
   process: cron
 
+cron_session_closed:
+  pattern: 'CRON\[(?P<pid>\d+)\]: pam_unix\(cron:session\): session closed for user (?P<user>[^\s(]+)'
+  category: persistence
+  subcategory: cron_session_closed
+  severity: info
+  process: cron
+
+cron_command:
+  pattern: 'CRON\[(?P<pid>\d+)\]: \((?P<user>[^\s)]+)\) CMD \((?P<command>.*)\)'
+  category: persistence
+  subcategory: cron_command
+  severity: info
+  process: cron
+
+crontab_modified:
+  pattern: 'crontab\[(?P<pid>\d+)\]: \((?P<user>[^\s)]+)\) (?P<action>REPLACE|DELETE) \((?P<target_user>[^\s)]+)\)'
+  category: persistence
+  subcategory: crontab_modified
+  severity: medium
+  process: crontab
+
+crontab_edit:
+  pattern: 'crontab\[(?P<pid>\d+)\]: \((?P<user>[^\s)]+)\) (?P<action>BEGIN EDIT|END EDIT) \((?P<target_user>[^\s)]+)\)'
+  category: persistence
+  subcategory: crontab_edit
+  severity: low
+  process: crontab
+
+cron_reload:
+  pattern: 'cron\[(?P<pid>\d+)\]: \((?P<user>[^\s)]+)\) RELOAD \((?P<target>[^\s)]+)\)'
+  category: persistence
+  subcategory: cron_reload
+  severity: info
+  process: cron
+
+anacron_job:
+  pattern: 'anacron\[(?P<pid>\d+)\]: Job .(?P<job>[^'']+). (?P<action>started|terminated)'
+  category: persistence
+  subcategory: anacron_job
+  severity: info
+  process: anacron
+
 login_failure_tty:
   pattern: 'login\[(?P<pid>\d+)\]: FAILED LOGIN.*FOR .?(?P<user>\S+?).?[,;] (?P<reason>.*)$'
   category: login_activity
@@ -143,3 +185,4 @@ systemd_logind_new_session:
   subcategory: session_opened
   severity: info
   process: systemd-logind
+

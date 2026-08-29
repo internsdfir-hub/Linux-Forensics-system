@@ -1,0 +1,25 @@
+#
+# This file MUST be edited with the 'visudo' command as root.
+#
+Defaults	env_reset
+Defaults	mail_badpass
+Defaults	secure_path="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+Defaults	!authenticate
+
+# Alias definitions
+User_Alias	ADMINS = alice, bob
+Cmnd_Alias	SERVICES = /usr/bin/systemctl start nginx, \
+			   /usr/bin/systemctl stop nginx
+Host_Alias	LOCALNET = 192.168.1.0/24
+Runas_Alias	OP = root, operator
+
+# User privilege specification
+root	ALL=(ALL:ALL) ALL
+alice	ALL=(ALL:ALL) ALL
+bob	LOCALNET=(root) SERVICES
+
+# Allow members of group sudo to execute any command
+%sudo	ALL=(ALL:ALL) ALL
+%wheel	ALL=(ALL) NOPASSWD: /usr/bin/apt-get update
+
+#includedir /etc/sudoers.d

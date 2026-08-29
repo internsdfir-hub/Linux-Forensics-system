@@ -167,3 +167,17 @@ def test_missing_timestamp_marked_unknown(tmp_path, ctx):
     events = parse(tmp_path, ctx, content)
     assert events[0].timestamp_utc is None
     assert events[0].timestamp_confidence == "unknown"
+
+
+def test_journald_sequence_gap_detected(tmp_path, ctx):
+    content = "\n".join([
+        json.dumps({"__SEQNUM": 100, "__REALTIME_TIMESTAMP": "1710382747000000", "_COMM": "systemd", "MESSAGE": "boot msg 1"}),
+        json.dumps({"__SEQNUM": 101, "__REALTIME_TIMESTAMP": "1710382748000000", "_COMM": "systemd", "MESSAGE": "boot msg 2"}),
+        json.dumps({"__SEQNUM": 150, "__REALTIME_TIMESTAMP": "1710382749000000", "_COMM": "systemd", "MESSAGE": "boot msg 3"}),
+    ]) + "\n"
+    events = parse(tmp_path, ctx, content)
+    gaps = [e for e in events if e.subcategory == "journal_sequence_gap"]
+    assert len(gaps) == 1
+    assert "expected seq 102, got 150" in gaps[0].description
+    assert gaps[0].severity == "high"
+
