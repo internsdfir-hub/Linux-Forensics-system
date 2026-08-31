@@ -16,6 +16,7 @@ import csv
 import json
 from dataclasses import dataclass, field
 from pathlib import Path
+from typing import Any
 
 from . import db
 from .parsers.base import ParseContext, ParserRun, discover_parsers
@@ -186,3 +187,76 @@ def _record_artifact(conn, *, host_id: str, row: dict, artifact_rel: str,
             events,
         ),
     )
+
+
+def run_analysis_pipeline(
+    case_dir: str | Path,
+    bundles: list[str | Path],
+    case_id: str | None = None,
+    examiner: str = "Forensic Examiner",
+    business_hours: str = "08-18",
+) -> dict[str, Any]:
+    """Execute the complete ingestion -> parse -> correlate -> report pipeline."""
+    from . import canonical, ingest
+    from .report.render import render_report
+    from .rules.base import RuleRun, discover_rules
+
+    case_dir = Path(case_dir)
+    case_dir.mkdir(parents=True, exist_ok=True)
+    c_id = case_id or case_dir.name
+
+    conn = db.open_case(case_dir / "case.db")
+    db.set_case_meta(conn, "case_id", c_id)
+    db.set_case_meta(conn, "examiner", examiner)
+    db.set_case_meta(conn, "business_hours", business_hours)
+
+    verified_total = 0
+    hosts_ingested: list[str] = []
+    for b in bundles:
+        p = Path(b)
+        if not p.exists():
+            continue
+        res = ingest.ingest_bundle(p, case_dir, examiner)
+        verified_total += res.verified
+        hosts_ingested.append(res.host_id)
+
+    stats = parse_case(conn, case_dir, c_id)
+
+    from .rules.base import RuleRun, discover_rules, save_findings
+
+    # Correlation rules
+    rules = discover_rules()
+    rule_runner = RuleRun(rules=rules, errors_log=case_dir / "rule_errors.log")
+    b_start, b_end = 8, 18
+    if business_hours:
+        try:
+            parts = business_hours.split("-")
+            b_start, b_end = int(parts[0]), int(parts[1])
+        except Exception:
+            pass
+
+    findings = rule_runner.run_all(conn, ctx={"business_hours": (b_start, b_end)})
+    save_findings(conn, findings, c_id)
+
+    # Self-contained offline report
+    report_path = case_dir / "report.html"
+    render_report(conn, case_dir, report_path)
+
+    # Canonical exports
+    export_dir = case_dir / "exports"
+    export_dir.mkdir(parents=True, exist_ok=True)
+    json_hash = canonical.export_json(conn, export_dir / "events.json")
+    csv_hashes = canonical.export_csv_per_category(conn, export_dir / "csv")
+
+    conn.close()
+    return {
+        "case_id": c_id,
+        "case_dir": str(case_dir),
+        "hosts": hosts_ingested,
+        "verified_files": verified_total,
+        "events_inserted": stats.events_inserted,
+        "findings_count": len(findings),
+        "report_path": str(report_path),
+        "json_hash": json_hash,
+        "csv_hashes": csv_hashes,
+    }

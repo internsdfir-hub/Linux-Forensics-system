@@ -105,9 +105,20 @@ python -m lfa report cases/case_01 --out cases/case_01/report.html
 python -m lfa synth --out cases/synth/case.db --seed 42
 ```
 
-### Score Case Against Attack Ground Truth:
+### Start Central Forensic Streaming Ingestion & Investigation Server:
 ```powershell
-python tools/score_detection.py --case-dir cases/case_01 --ground-truth testlab/ground_truth.json
+python -m lfa serve --host 0.0.0.0 --port 8443 --cases-dir cases --token "secret-key"
+```
+
+### Acquire Evidence Remotely over SSH Stream (Agentless Pull):
+```powershell
+python -m lfa remote --host 192.168.1.50 --user kali --case-dir cases/kali_01 --examiner "Investigator"
+```
+
+### Stream Live Target Evidence Directly to Central Server in RAM (Zero Disk Writes):
+```bash
+# On target machine:
+sudo sh collect.sh -s http://<server-ip>:8443/api/v1/ingest -T "secret-key" -c CASE_REMOTE_01 -V -z
 ```
 
 ---

@@ -14,13 +14,18 @@
 #
 # Usage:
 #   collect.sh [-r ROOT] [-o OUTDIR] [-c CASE_ID] [-p OPERATOR] [-V] [-z] [-R]
-#     -r ROOT      target tree (default /). Mounted images: mount ro,noatime.
-#     -o OUTDIR    output directory on the EXAMINER side (never inside ROOT)
-#     -c CASE_ID   case identifier recorded in the manifest
-#     -p OPERATOR  operator name recorded in the manifest
-#     -V           include volatile snapshot (live mode only; runs FIRST)
-#     -z           also gzip the bundle (both layers hashed)
-#     -R           redact secrets (shadow/gshadow contents not collected)
+#              [-s STREAM_URL] [-T TOKEN] [-M] [-S]
+#     -r ROOT        target tree (default /). Mounted images: mount ro,noatime.
+#     -o OUTDIR      output directory on the EXAMINER side (never inside ROOT)
+#     -c CASE_ID     case identifier recorded in the manifest
+#     -p OPERATOR    operator name recorded in the manifest
+#     -V             include volatile snapshot (live mode only; runs FIRST)
+#     -z             also gzip the bundle (both layers hashed)
+#     -R             redact secrets (shadow/gshadow contents not collected)
+#     -s STREAM_URL  stream bundle directly to central LFA server ingestion API
+#     -T TOKEN       authentication token for streaming server
+#     -M             in-memory / RAM mode: stages in /dev/shm (zero disk writes)
+#     -S             stdout stream mode: outputs raw tarball to stdout for pipes
 
 VERSION="1.0.0"
 
@@ -184,8 +189,13 @@ OPERATOR="unknown"
 VOLATILE=0
 GZIP=0
 REDACT=0
+STREAM_URL=""
+STREAM_TOKEN=""
+IN_RAM=0
+STDOUT_MODE=0
+CLEANUP_OUTDIR=0
 
-while getopts "r:o:c:p:VzR" opt; do
+while getopts "r:o:c:p:VzRs:T:MS" opt; do
     case "$opt" in
         r) ROOT="$OPTARG" ;;
         o) OUTDIR="$OPTARG" ;;
@@ -194,6 +204,10 @@ while getopts "r:o:c:p:VzR" opt; do
         V) VOLATILE=1 ;;
         z) GZIP=1 ;;
         R) REDACT=1 ;;
+        s) STREAM_URL="$OPTARG" ;;
+        T) STREAM_TOKEN="$OPTARG" ;;
+        M) IN_RAM=1 ;;
+        S) STDOUT_MODE=1 ;;
         *) printf 'usage: see header of %s\n' "$0" >&2; exit 2 ;;
     esac
 done
@@ -207,9 +221,34 @@ esac
 START_UTC=$(now_utc)
 START_EPOCH=$(date -u +%s 2>/dev/null || printf '0')
 
+# In-memory / RAM staging setup (zero physical disk footprint)
+if [ "$IN_RAM" = 1 ] || [ -n "$STREAM_URL" ] || [ "$STDOUT_MODE" = 1 ]; then
+    if [ -z "$OUTDIR" ]; then
+        if [ -d "/dev/shm" ] && [ -w "/dev/shm" ]; then
+            RAM_BASE="/dev/shm"
+        elif [ -d "/run/user/$(id -u 2>/dev/null || printf '0')" ] && [ -w "/run/user/$(id -u 2>/dev/null || printf '0')" ]; then
+            RAM_BASE="/run/user/$(id -u 2>/dev/null || printf '0')"
+        elif [ -d "/run/lock" ] && [ -w "/run/lock" ]; then
+            RAM_BASE="/run/lock"
+        else
+            RAM_BASE="/tmp"
+        fi
+        OUTDIR="$RAM_BASE/lfa-col-$$"
+        CLEANUP_OUTDIR=1
+    fi
+fi
+
 if [ -z "$OUTDIR" ]; then
     OUTDIR="./lfa-collection-$(date -u +%Y%m%d%H%M%S)"
 fi
+
+cleanup_on_exit() {
+    if [ "$CLEANUP_OUTDIR" = 1 ] && [ -n "$OUTDIR" ] && [ -d "$OUTDIR" ]; then
+        rm -rf "$OUTDIR" 2>/dev/null || :
+    fi
+}
+trap cleanup_on_exit EXIT INT TERM HUP
+
 mkdir -p "$OUTDIR/collected/files" "$OUTDIR/collected/volatile" \
          "$OUTDIR/collected/journal" || {
     printf 'FATAL: cannot create output directory %s\n' "$OUTDIR" >&2
@@ -636,6 +675,75 @@ if [ "$GZIP" = 1 ]; then
 fi
 
 log "done: bundle=$TARBALL sha256=$TARHASH files=$COLLECTED_COUNT"
+
+# 1. Stdout streaming mode (raw tarball emitted to stdout for pipes)
+if [ "$STDOUT_MODE" = 1 ]; then
+    if [ "$GZIP" = 1 ] && [ -f "$TARBALL.gz" ]; then
+        cat "$TARBALL.gz"
+    else
+        cat "$TARBALL"
+    fi
+    exit 0
+fi
+
+# 2. HTTP/TLS streaming mode (direct upload to central server)
+if [ -n "$STREAM_URL" ]; then
+    PAYLOAD="$TARBALL"
+    PAYLOAD_HASH="$TARHASH"
+    if [ "$GZIP" = 1 ] && [ -f "$TARBALL.gz" ]; then
+        PAYLOAD="$TARBALL.gz"
+        PAYLOAD_HASH="$GZHASH"
+    fi
+
+    printf '[*] Streaming evidence bundle directly to %s...\n' "$STREAM_URL"
+
+    AUTH_HDR=""
+    [ -n "$STREAM_TOKEN" ] && AUTH_HDR="Authorization: Bearer $STREAM_TOKEN"
+
+    UPLOAD_OK=0
+    if command -v curl >/dev/null 2>&1; then
+        if [ -n "$AUTH_HDR" ]; then
+            curl -s -S -f -X POST -H "$AUTH_HDR" \
+                 -H "X-Case-ID: $CASE_ID" \
+                 -H "X-Examiner: $OPERATOR" \
+                 -H "X-Bundle-SHA256: $PAYLOAD_HASH" \
+                 --data-binary "@$PAYLOAD" "$STREAM_URL" >/dev/null 2>&1 && UPLOAD_OK=1
+        else
+            curl -s -S -f -X POST \
+                 -H "X-Case-ID: $CASE_ID" \
+                 -H "X-Examiner: $OPERATOR" \
+                 -H "X-Bundle-SHA256: $PAYLOAD_HASH" \
+                 --data-binary "@$PAYLOAD" "$STREAM_URL" >/dev/null 2>&1 && UPLOAD_OK=1
+        fi
+    elif command -v wget >/dev/null 2>&1; then
+        if [ -n "$AUTH_HDR" ]; then
+            wget -q -O - --post-file="$PAYLOAD" \
+                 --header="$AUTH_HDR" \
+                 --header="X-Case-ID: $CASE_ID" \
+                 --header="X-Examiner: $OPERATOR" \
+                 --header="X-Bundle-SHA256: $PAYLOAD_HASH" \
+                 "$STREAM_URL" >/dev/null 2>&1 && UPLOAD_OK=1
+        else
+            wget -q -O - --post-file="$PAYLOAD" \
+                 --header="X-Case-ID: $CASE_ID" \
+                 --header="X-Examiner: $OPERATOR" \
+                 --header="X-Bundle-SHA256: $PAYLOAD_HASH" \
+                 "$STREAM_URL" >/dev/null 2>&1 && UPLOAD_OK=1
+        fi
+    fi
+
+    if [ "$UPLOAD_OK" = 1 ]; then
+        printf '[+] Streaming transmission successful -> %s\n' "$STREAM_URL"
+        printf '  files collected: %s\n' "$COLLECTED_COUNT"
+        printf '  bundle sha256:   %s\n' "$PAYLOAD_HASH"
+        exit 0
+    else
+        printf 'FATAL: Streaming upload to %s failed (check network, server status, or auth token)\n' "$STREAM_URL" >&2
+        exit 1
+    fi
+fi
+
+# 3. Standard local bundle creation output
 printf 'collection complete: %s\n' "$TARBALL"
 printf '  files collected: %s\n' "$COLLECTED_COUNT"
 printf '  bundle sha256:   %s\n' "$TARHASH"

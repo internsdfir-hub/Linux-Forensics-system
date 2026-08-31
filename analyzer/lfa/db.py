@@ -169,3 +169,7 @@ def set_meta(conn: sqlite3.Connection, key: str, value: str) -> None:
 def get_meta(conn: sqlite3.Connection, key: str) -> str | None:
     row = conn.execute("SELECT value FROM case_meta WHERE key=?", (key,)).fetchone()
     return row[0] if row else None
+
+
+set_case_meta = set_meta
+get_case_meta = get_meta

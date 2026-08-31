@@ -21,71 +21,22 @@ from .rules.base import RuleRun, discover_rules
 
 def cmd_analyse(args) -> int:
     case_dir = Path(args.case_dir)
-    case_dir.mkdir(parents=True, exist_ok=True)
     case_id = args.case_id or case_dir.name
     examiner = args.examiner or "Forensic Examiner"
 
     print(f"[*] Initializing case '{case_id}' in '{case_dir}'")
-    conn = db.open_case(case_dir / "case.db")
-    db.set_case_meta(conn, "case_id", case_id)
-    db.set_case_meta(conn, "examiner", examiner)
-    db.set_case_meta(conn, "business_hours", args.business_hours or "08-18")
-
-    # Ingest bundle(s)
-    for bundle_path in args.bundles:
-        p = Path(bundle_path)
-        if not p.exists():
-            print(f"[!] Bundle not found: {p}", file=sys.stderr)
-            continue
-        print(f"[*] Ingesting evidence bundle: {p.name}")
-        ingest_res = ingest.ingest_bundle(
-            bundle_path=p,
-            case_dir=case_dir,
-            examiner=examiner,
-        )
-        print(f"[+] Ingested host '{ingest_res.host_id}' successfully (verified: {ingest_res.verified} files)")
-
-    # Sync artifact metadata into DB
-    db.sync_artifacts_from_disk(conn, case_dir)
-
-    # Parse artifacts
-    print("[*] Running parser suite across collected artifacts...")
-    stats = pipeline.parse_case(conn, case_dir, case_id)
-    print(
-        f"[+] Parsed {stats.artifacts_seen} artifacts: {stats.events_inserted} events inserted, "
-        f"{stats.events_deduped} deduped, {stats.events_invalid} invalid"
+    res = pipeline.run_analysis_pipeline(
+        case_dir=case_dir,
+        bundles=args.bundles,
+        case_id=case_id,
+        examiner=examiner,
+        business_hours=args.business_hours or "08-18",
     )
-
-    # Run correlation rules
-    print("[*] Executing threat correlation & integrity rules...")
-    rules = discover_rules()
-    rule_runner = RuleRun(rules=rules, errors_log=case_dir / "rule_errors.log")
-    b_start, b_end = 8, 18
-    if args.business_hours:
-        try:
-            parts = args.business_hours.split("-")
-            b_start, b_end = int(parts[0]), int(parts[1])
-        except Exception:
-            pass
-
-    findings = rule_runner.run_all(conn, ctx={"business_hours": (b_start, b_end)})
-    db.insert_findings(conn, findings, case_id)
-    print(f"[+] Correlation engine completed: {len(findings)} threat/state findings recorded")
-
-    # Render HTML report
-    report_path = case_dir / "report.html"
-    print(f"[*] Rendering self-contained HTML forensic report -> {report_path.name}")
-    render_report(conn, case_dir, report_path)
-    print(f"[+] Report generated: {report_path.resolve()}")
-
-    # Canonical exports
-    export_dir = case_dir / "exports"
-    export_dir.mkdir(parents=True, exist_ok=True)
-    json_hash = canonical.export_json(conn, export_dir / "events.json")
-    csv_hashes = canonical.export_csv_per_category(conn, export_dir / "csv")
-    print(f"[+] Canonical exports saved (JSON SHA-256: {json_hash[:16]}...)")
-
-    conn.close()
+    print(f"[+] Ingested hosts: {', '.join(res['hosts']) or 'None'} (verified: {res['verified_files']} files)")
+    print(f"[+] Parsed and inserted {res['events_inserted']} events")
+    print(f"[+] Correlation engine completed: {res['findings_count']} threat/state findings recorded")
+    print(f"[+] Report generated: {res['report_path']}")
+    print(f"[+] Canonical exports saved (JSON SHA-256: {res['json_hash'][:16]}...)")
     print("[+] Analysis pipeline completed successfully.")
     return 0
 
@@ -137,6 +88,75 @@ def cmd_synth(args) -> int:
     return 0
 
 
+def cmd_serve(args) -> int:
+    from .server import run_server
+    run_server(
+        host=args.host,
+        port=args.port,
+        cases_dir=args.cases_dir,
+        token=args.token,
+        auto_analyse=not args.no_auto_analyse,
+        cert_file=args.cert,
+        key_file=args.key,
+        business_hours=args.business_hours,
+        examiner=args.examiner or "Remote Investigator",
+    )
+    return 0
+
+
+def cmd_remote(args) -> int:
+    """Acquire evidence from a remote target over SSH stream and analyse."""
+    import subprocess
+    collector_sh = Path(__file__).resolve().parents[2] / "collector" / "collect.sh"
+    if not collector_sh.exists():
+        print(f"[!] Collector script not found at {collector_sh}", file=sys.stderr)
+        return 1
+
+    case_dir = Path(args.case_dir)
+    case_dir.mkdir(parents=True, exist_ok=True)
+    case_id = args.case_id or case_dir.name
+    bundle_path = case_dir / "bundle.tar.gz"
+
+    ssh_target = f"{args.user}@{args.host}" if args.user else args.host
+    port_args = ["-p", str(args.port)] if args.port else []
+    key_args = ["-i", args.key] if args.key else []
+
+    print(f"[*] Connecting to remote target '{ssh_target}' to acquire live evidence...")
+    print("[*] Executing in-memory collection and streaming directly over SSH pipe...")
+
+    collect_script = collector_sh.read_bytes()
+    remote_cmd = ["ssh", *port_args, *key_args, ssh_target, "sudo sh -s -- -M -S -z"]
+
+    try:
+        proc = subprocess.Popen(
+            remote_cmd,
+            stdin=subprocess.PIPE,
+            stdout=subprocess.PIPE,
+            stderr=sys.stderr,
+        )
+        stdout_data, _ = proc.communicate(input=collect_script)
+
+        if proc.returncode != 0:
+            print(f"[!] Remote acquisition failed with return code {proc.returncode}", file=sys.stderr)
+            return proc.returncode
+
+        bundle_path.write_bytes(stdout_data)
+        print(f"[+] Remote acquisition stream saved: {len(stdout_data)} bytes -> {bundle_path}")
+
+        pipeline.run_analysis_pipeline(
+            case_dir=case_dir,
+            bundles=[bundle_path],
+            case_id=case_id,
+            examiner=args.examiner or "Remote Investigator",
+            business_hours=args.business_hours,
+        )
+        print(f"[+] Remote analysis complete! Report: {case_dir / 'report.html'}")
+        return 0
+    except Exception as ex:
+        print(f"[!] Remote SSH error: {ex}", file=sys.stderr)
+        return 1
+
+
 def main(argv=None) -> int:
     parser = argparse.ArgumentParser(
         prog="lfa",
@@ -151,6 +171,29 @@ def main(argv=None) -> int:
     p_analyse.add_argument("--case-id", help="Optional case reference ID")
     p_analyse.add_argument("--examiner", help="Forensic examiner name/badge")
     p_analyse.add_argument("--business-hours", default="08-18", help="Expected business hours (default: 08-18)")
+
+    # serve (Central Ingestion & Dashboard Server)
+    p_serve = subparsers.add_parser("serve", help="Start Central Forensic Streaming Ingestion & Investigation Server")
+    p_serve.add_argument("--host", default="0.0.0.0", help="Listen host address (default: 0.0.0.0)")
+    p_serve.add_argument("--port", type=int, default=8443, help="Listen port (default: 8443)")
+    p_serve.add_argument("--cases-dir", default="cases", help="Directory where ingested cases are stored")
+    p_serve.add_argument("--token", help="Bearer authentication token for secure ingestion")
+    p_serve.add_argument("--no-auto-analyse", action="store_true", help="Disable automatic analysis pipeline trigger")
+    p_serve.add_argument("--cert", help="Path to TLS certificate file")
+    p_serve.add_argument("--key", help="Path to TLS private key file")
+    p_serve.add_argument("--examiner", default="Remote Investigator", help="Examiner name for ingested cases")
+    p_serve.add_argument("--business-hours", default="08-18", help="Expected business hours")
+
+    # remote (Agentless SSH Pull Streaming)
+    p_remote = subparsers.add_parser("remote", help="Acquire evidence remotely over SSH stream and analyze in memory")
+    p_remote.add_argument("--host", required=True, help="Remote host IP or hostname")
+    p_remote.add_argument("--user", help="SSH username (e.g. root or sudo user)")
+    p_remote.add_argument("--port", type=int, help="SSH port (default 22)")
+    p_remote.add_argument("--key", help="Path to SSH private key")
+    p_remote.add_argument("--case-dir", required=True, help="Destination case working directory")
+    p_remote.add_argument("--case-id", help="Optional case ID")
+    p_remote.add_argument("--examiner", help="Examiner name")
+    p_remote.add_argument("--business-hours", default="08-18", help="Expected business hours")
 
     # verify
     p_verify = subparsers.add_parser("verify", help="Verify integrity of raw evidence in case directory")
@@ -175,6 +218,10 @@ def main(argv=None) -> int:
 
     if args.command == "analyse":
         return cmd_analyse(args)
+    elif args.command == "serve":
+        return cmd_serve(args)
+    elif args.command == "remote":
+        return cmd_remote(args)
     elif args.command == "verify":
         return cmd_verify(args)
     elif args.command == "export":
