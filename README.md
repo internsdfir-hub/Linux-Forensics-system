@@ -70,7 +70,7 @@ sudo sh collector/collect.sh -M -o /tmp -c CASE-001 -z
 ### Direct Streaming Ingestion over HTTPS
 Stream evidence directly to a running LFA Central Server without saving the tarball to disk:
 ```bash
-sudo sh collector/collect.sh -M -s "http://soc-server.corp.local:8443" -T "SECRET_SOC_TOKEN" -c CASE-001
+sudo sh collector/collect.sh -M -s "http://soc-server.corp.local:8443/api/v1/ingest" -T "SECRET_SOC_TOKEN" -c CASE-001
 ```
 
 ### Full Volatile Snapshot Mode
@@ -163,7 +163,7 @@ python -m lfa export cases/CASE-001 --out-dir exports/CASE-001
    ```
 2. **Trigger Remote Push on Target:**
    ```bash
-   sudo sh collect.sh -M -s "http://192.168.1.100:8443" -T "supersecret123" -c INCIDENT-99
+   sudo sh collect.sh -M -s "http://192.168.1.100:8443/api/v1/ingest" -T "supersecret123" -c INCIDENT-99
    ```
 3. **View Results:**
    - Navigate to `http://192.168.1.100:8443` to explore timeline events, threat detections, and forensic artifacts in real time.

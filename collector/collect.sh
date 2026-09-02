@@ -688,6 +688,13 @@ fi
 
 # 2. HTTP/TLS streaming mode (direct upload to central server)
 if [ -n "$STREAM_URL" ]; then
+    # Auto-append the ingest API endpoint if the user only provided the base URL
+    case "$STREAM_URL" in
+        */api/v1/ingest) ;;
+        */) STREAM_URL="${STREAM_URL}api/v1/ingest" ;;
+        *)  STREAM_URL="${STREAM_URL}/api/v1/ingest" ;;
+    esac
+
     PAYLOAD="$TARBALL"
     PAYLOAD_HASH="$TARHASH"
     if [ "$GZIP" = 1 ] && [ -f "$TARBALL.gz" ]; then
