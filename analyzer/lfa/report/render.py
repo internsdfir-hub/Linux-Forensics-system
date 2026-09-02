@@ -15,6 +15,7 @@ from .chart import generate_density_svg
 from .data import (
     get_artifacts_data,
     get_case_summary,
+    get_categorized_intel,
     get_events_sample,
     get_findings_data,
 )
@@ -32,6 +33,7 @@ def render_report(conn: sqlite3.Connection, case_dir: Path | str, out_html_path:
     findings = get_findings_data(conn)
     artifacts = get_artifacts_data(conn)
     events = get_events_sample(conn, limit=1500)
+    intel = get_categorized_intel(conn)
 
     svg_chart = generate_density_svg(conn)
     narrative = generate_executive_summary(summary, findings)
@@ -51,6 +53,7 @@ def render_report(conn: sqlite3.Connection, case_dir: Path | str, out_html_path:
         findings=findings,
         artifacts=artifacts,
         events=events,
+        intel=intel,
         svg_chart=svg_chart,
         narrative=narrative,
         inline_css=inline_css,

@@ -8,7 +8,7 @@ from __future__ import annotations
 import json
 import sqlite3
 from collections import Counter
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 
 
@@ -40,7 +40,7 @@ def get_case_summary(conn: sqlite3.Connection, case_meta: dict) -> dict:
     return {
         "case_id": meta_rows.get("case_id", "UNKNOWN"),
         "examiner": meta_rows.get("examiner", "Forensic Examiner"),
-        "ingest_time": meta_rows.get("ingest_time", datetime.utcnow().isoformat()),
+        "ingest_time": meta_rows.get("ingest_time", datetime.now(timezone.utc).isoformat()),
         "event_count": event_count,
         "finding_count": finding_count,
         "first_event_utc": min_max_ts[0] if min_max_ts else None,
@@ -113,3 +113,63 @@ def get_events_sample(conn: sqlite3.Connection, limit: int = 1000) -> list[dict]
         (limit,)
     )
     return [dict(r) for r in rows]
+
+
+def get_categorized_intel(conn: sqlite3.Connection) -> dict:
+    """Extracts categorized data to populate the 'Categorized Intel' tabs."""
+    intel = {}
+
+    # 1. User Information (Local Users)
+    intel["users"] = [
+        dict(r) for r in _rows(
+            conn,
+            "SELECT DISTINCT actor_user, description, min(timestamp_utc) as first_seen "
+            "FROM events WHERE category = 'user_accounts' "
+            "GROUP BY actor_user "
+            "ORDER BY actor_user"
+        )
+    ]
+
+    # 2. Login Activities (Success & Failed)
+    intel["logins"] = [
+        dict(r) for r in _rows(
+            conn,
+            "SELECT actor_user, source_ip, subcategory, COUNT(*) as attempt_count, "
+            "MIN(timestamp_utc) as first_attempt, MAX(timestamp_utc) as last_attempt "
+            "FROM events WHERE category = 'login_activity' "
+            "GROUP BY actor_user, source_ip, subcategory "
+            "ORDER BY attempt_count DESC"
+        )
+    ]
+
+    # 3. USB Device Activities
+    intel["usb"] = [
+        dict(r) for r in _rows(
+            conn,
+            "SELECT timestamp_utc, description, raw_line "
+            "FROM events WHERE category = 'hardware_usb' "
+            "ORDER BY timestamp_utc"
+        )
+    ]
+
+    # 4. System / Environment Info (Disk, OS, etc.)
+    intel["system"] = [
+        dict(r) for r in _rows(
+            conn,
+            "SELECT subcategory, description, raw_line "
+            "FROM events WHERE category = 'environment' "
+            "ORDER BY subcategory, timestamp_utc"
+        )
+    ]
+
+    # 5. Network & Persistence
+    intel["network_persistence"] = [
+        dict(r) for r in _rows(
+            conn,
+            "SELECT category, subcategory, timestamp_utc, description "
+            "FROM events WHERE category IN ('network_config', 'persistence', 'software_changes') "
+            "ORDER BY category, timestamp_utc"
+        )
+    ]
+
+    return intel

@@ -39,16 +39,15 @@ def _create_sample_bundle(tmp_path: Path) -> tuple[Path, str, bytes]:
     bundle_dir.mkdir(parents=True, exist_ok=True)
     (bundle_dir / "collected" / "files" / "etc").mkdir(parents=True, exist_ok=True)
 
-    # os-release
-    (bundle_dir / "collected" / "files" / "etc" / "os-release").write_text(
-        'ID=debian\nVERSION_ID="12"\nPRETTY_NAME="Debian GNU/Linux 12"\n',
-        encoding="utf-8",
-    )
-    # passwd
-    (bundle_dir / "collected" / "files" / "etc" / "passwd").write_text(
-        "root:x:0:0:root:/root:/bin/bash\nuser1:x:1000:1000::/home/user1:/bin/bash\n",
-        encoding="utf-8",
-    )
+    os_release_bytes = b'ID=debian\nVERSION_ID="12"\nPRETTY_NAME="Debian GNU/Linux 12"\n'
+    os_release_path = bundle_dir / "collected" / "files" / "etc" / "os-release"
+    os_release_path.write_bytes(os_release_bytes)
+    os_release_hash = hashlib.sha256(os_release_bytes).hexdigest()
+
+    passwd_bytes = b"root:x:0:0:root:/root:/bin/bash\nuser1:x:1000:1000::/home/user1:/bin/bash\n"
+    passwd_path = bundle_dir / "collected" / "files" / "etc" / "passwd"
+    passwd_path.write_bytes(passwd_bytes)
+    passwd_hash = hashlib.sha256(passwd_bytes).hexdigest()
 
     # manifest.json
     manifest = {
@@ -68,16 +67,16 @@ def _create_sample_bundle(tmp_path: Path) -> tuple[Path, str, bytes]:
         },
         "collected_files": 2,
     }
-    (bundle_dir / "manifest.json").write_text(json.dumps(manifest), encoding="utf-8")
+    (bundle_dir / "manifest.json").write_bytes(json.dumps(manifest).encode("utf-8"))
 
     # hash_manifest.csv
     hash_csv = (
         "original_path,sha256,size,mode,owner,atime,mtime,ctime,source_was_active,status\n"
-        "/etc/os-release,e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855,60,644,0:0,1700000000,1700000000,1700000000,0,collected\n"
-        "/etc/passwd,e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855,75,644,0:0,1700000000,1700000000,1700000000,0,collected\n"
+        f"/etc/os-release,{os_release_hash},{len(os_release_bytes)},644,0:0,1700000000,1700000000,1700000000,0,collected\n"
+        f"/etc/passwd,{passwd_hash},{len(passwd_bytes)},644,0:0,1700000000,1700000000,1700000000,0,collected\n"
     )
-    (bundle_dir / "hash_manifest.csv").write_text(hash_csv, encoding="utf-8")
-    (bundle_dir / "collector.log").write_text("collector finished successfully\n", encoding="utf-8")
+    (bundle_dir / "hash_manifest.csv").write_bytes(hash_csv.encode("utf-8"))
+    (bundle_dir / "collector.log").write_bytes(b"collector finished successfully\n")
 
     tar_path = tmp_path / "sample_bundle.tar.gz"
     with tarfile.open(tar_path, "w:gz") as tar:
@@ -265,3 +264,72 @@ def test_dashboard_and_report_serving(server_instance, tmp_path):
     with pytest.raises(urllib.error.HTTPError) as exc_info:
         urllib.request.urlopen(req_bad_path)
     assert exc_info.value.code in (400, 404)
+
+
+def test_interactive_explorer_and_query_apis(server_instance, tmp_path):
+    base_url = server_instance["url"]
+    token = server_instance["token"]
+
+    _, sha256_hex, bundle_bytes = _create_sample_bundle(tmp_path)
+    req_ingest = urllib.request.Request(
+        f"{base_url}/api/v1/ingest",
+        data=bundle_bytes,
+        headers={"Authorization": f"Bearer {token}", "X-Case-ID": "EXPLORER_CASE_01"},
+        method="POST",
+    )
+    urllib.request.urlopen(req_ingest)
+
+    # 1. GET Explorer Page HTML
+    req_exp = urllib.request.Request(f"{base_url}/cases/EXPLORER_CASE_01/explorer")
+    with urllib.request.urlopen(req_exp) as resp:
+        assert resp.status == 200
+        html = resp.read().decode("utf-8")
+        assert "LFA Explorer — Case EXPLORER_CASE_01" in html
+        assert "tab-events" in html
+        assert "tab-artifacts" in html
+        assert "tab-findings" in html
+
+    # 2. GET Events API (search, filter, pagination)
+    req_events = urllib.request.Request(f"{base_url}/api/v1/cases/EXPLORER_CASE_01/events?limit=10&offset=0")
+    with urllib.request.urlopen(req_events) as resp:
+        assert resp.status == 200
+        data = json.loads(resp.read().decode("utf-8"))
+        assert data["case_id"] == "EXPLORER_CASE_01"
+        assert data["total"] >= 1
+        assert len(data["events"]) >= 1
+        assert "description" in data["events"][0]
+        assert "event_id" in data["events"][0]
+
+    # Search keyword query
+    req_search = urllib.request.Request(f"{base_url}/api/v1/cases/EXPLORER_CASE_01/events?q=user1")
+    with urllib.request.urlopen(req_search) as resp:
+        assert resp.status == 200
+        data_s = json.loads(resp.read().decode("utf-8"))
+        assert any("user1" in e["description"] or "user1" in e["raw_line"] for e in data_s["events"])
+
+    # 3. GET Artifacts API
+    req_arts = urllib.request.Request(f"{base_url}/api/v1/cases/EXPLORER_CASE_01/artifacts")
+    with urllib.request.urlopen(req_arts) as resp:
+        assert resp.status == 200
+        arts = json.loads(resp.read().decode("utf-8"))
+        assert arts["case_id"] == "EXPLORER_CASE_01"
+        assert len(arts["artifacts"]) >= 2
+        assert any("passwd" in a["original_path"] for a in arts["artifacts"])
+
+    # 4. GET Artifact Content API
+    req_content = urllib.request.Request(f"{base_url}/api/v1/cases/EXPLORER_CASE_01/artifact-content?path=/etc/passwd")
+    with urllib.request.urlopen(req_content) as resp:
+        assert resp.status == 200
+        content_data = json.loads(resp.read().decode("utf-8"))
+        assert content_data["path"] == "/etc/passwd"
+        assert "root:x:0:0" in content_data["content"]
+        assert len(content_data["sha256"]) == 64
+
+    # 5. GET Findings API
+    req_findings = urllib.request.Request(f"{base_url}/api/v1/cases/EXPLORER_CASE_01/findings")
+    with urllib.request.urlopen(req_findings) as resp:
+        assert resp.status == 200
+        findings_data = json.loads(resp.read().decode("utf-8"))
+        assert findings_data["case_id"] == "EXPLORER_CASE_01"
+        assert isinstance(findings_data["findings"], list)
+

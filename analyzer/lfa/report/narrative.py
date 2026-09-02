@@ -44,13 +44,19 @@ def generate_executive_summary(summary: dict, findings: list[dict]) -> str:
         paragraphs.append("**Key Critical Observations:**\n" + "\n".join(bullets))
 
     # Recommended next steps summary
-    next_steps = set()
+    next_steps: list[str] = []
+    seen_steps: set[str] = set()
     for f in findings:
         if f["severity"] in ("high", "medium") and f.get("check_next"):
-            next_steps.add(f["check_next"])
+            clean_step = f["check_next"].strip()
+            # Normalize internal single-quoted usernames for consistent deduplication
+            normalized_step = clean_step.replace("'", "")
+            if normalized_step not in seen_steps:
+                seen_steps.add(normalized_step)
+                next_steps.append(clean_step)
 
     if next_steps:
-        steps_list = [f"1. {step}" for step in sorted(next_steps)[:4]]
+        steps_list = [f"{idx}. {step}" for idx, step in enumerate(next_steps[:5], 1)]
         paragraphs.append("**Immediate Recommended Actions:**\n" + "\n".join(steps_list))
 
     return "\n\n".join(paragraphs)

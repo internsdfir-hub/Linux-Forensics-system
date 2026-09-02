@@ -152,13 +152,14 @@ def events_within(conn: sqlite3.Connection, anchor_ts: str, minutes: float,
 
 
 def discover_rules() -> list[BaseRule]:
-    import lfa.rules as pkg
+    pkg_name = __package__ or "lfa.rules"
+    pkg = importlib.import_module(pkg_name)
 
     rules: list[BaseRule] = []
     for modinfo in pkgutil.iter_modules(pkg.__path__):
         if modinfo.name == "base":
             continue
-        module = importlib.import_module(f"lfa.rules.{modinfo.name}")
+        module = importlib.import_module(f"{pkg_name}.{modinfo.name}")
         for obj in vars(module).values():
             if (
                 isinstance(obj, type)
@@ -211,6 +212,7 @@ class RuleRun:
 
 def save_findings(conn: sqlite3.Connection, findings: list[Finding],
                   case_id: str) -> None:
+    conn.execute("DELETE FROM findings WHERE case_id = ?", (case_id,))
     conn.executemany(
         """
         INSERT OR IGNORE INTO findings

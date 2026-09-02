@@ -17,11 +17,13 @@ import secrets
 import socketserver
 import ssl
 import sys
+import urllib.parse
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
 from . import __version__, db
+from .explorer import render_explorer_html
 from .pipeline import run_analysis_pipeline
 
 
@@ -91,10 +93,12 @@ class LFAServerHandler(http.server.BaseHTTPRequestHandler):
         self.end_headers()
 
     def do_GET(self) -> None:
-        """Serve Dashboard, Reports, and JSON APIs."""
-        path = self.path.split("?")[0].rstrip("/")
+        """Serve Dashboard, Interactive Explorer, Reports, and JSON APIs."""
+        parsed_url = urllib.parse.urlparse(self.path)
+        path = parsed_url.path.rstrip("/")
         if path == "":
             path = "/"
+        params = urllib.parse.parse_qs(parsed_url.query)
 
         # 1. Health / Status API
         if path in ("/api/v1/health", "/api/v1/status"):
@@ -114,14 +118,44 @@ class LFAServerHandler(http.server.BaseHTTPRequestHandler):
             self._send_json(200, {"cases": cases})
             return
 
-        # 3. Main SOC Web Dashboard
+        # 3. Case Events Search & Filter API: /api/v1/cases/<case_id>/events
+        if path.startswith("/api/v1/cases/") and path.endswith("/events"):
+            case_id = path[len("/api/v1/cases/"):-len("/events")].strip("/")
+            self._handle_events_api(case_id, params)
+            return
+
+        # 4. Case Artifacts API: /api/v1/cases/<case_id>/artifacts
+        if path.startswith("/api/v1/cases/") and path.endswith("/artifacts"):
+            case_id = path[len("/api/v1/cases/"):-len("/artifacts")].strip("/")
+            self._handle_artifacts_api(case_id)
+            return
+
+        # 5. Case Artifact Content Inspection API: /api/v1/cases/<case_id>/artifact-content
+        if path.startswith("/api/v1/cases/") and path.endswith("/artifact-content"):
+            case_id = path[len("/api/v1/cases/"):-len("/artifact-content")].strip("/")
+            self._handle_artifact_content_api(case_id, params)
+            return
+
+        # 6. Case Threat Findings API: /api/v1/cases/<case_id>/findings
+        if path.startswith("/api/v1/cases/") and path.endswith("/findings"):
+            case_id = path[len("/api/v1/cases/"):-len("/findings")].strip("/")
+            self._handle_findings_api(case_id)
+            return
+
+        # 7. Interactive Forensic Investigation Explorer: /cases/<case_id>/explorer
+        if path.startswith("/cases/") and path.endswith("/explorer"):
+            case_id = path[len("/cases/"):-len("/explorer")].strip("/")
+            self._handle_explorer_page(case_id)
+            return
+
+        # 8. Main SOC Web Dashboard
         if path == "/" or path == "/dashboard":
             cases = self._list_cases()
             html = self._render_dashboard_html(cases)
             self._send_html(200, html)
             return
 
-        # 4. Report / Static file serving: /cases/<case_id>/report.html or exports
+        # 9. Static Report / Evidence Export file serving: /cases/<case_id>/report.html
         if path.startswith("/cases/"):
             rel_path = path[len("/cases/"):]
             parts = Path(rel_path).parts
@@ -152,6 +186,267 @@ class LFAServerHandler(http.server.BaseHTTPRequestHandler):
                     return
 
         self._send_json(404, {"error": "Endpoint or resource not found", "path": self.path})
+
+    def _handle_events_api(self, case_id: str, params: dict[str, list[str]]) -> None:
+        case_dir = self.cases_dir / case_id
+        db_path = case_dir / "case.db"
+        if not db_path.exists():
+            self._send_json(404, {"error": f"Case database not found for case '{case_id}'"})
+            return
+
+        import sqlite3
+        conn = sqlite3.connect(f"file:{db_path.as_posix()}?mode=ro", uri=True)
+        conn.row_factory = sqlite3.Row
+
+        try:
+            total_count = conn.execute("SELECT COUNT(*) FROM events").fetchone()[0]
+
+            where = ["1=1"]
+            sql_params: list[Any] = []
+
+            # 1. Keyword search
+            q = params.get("q", [""])[0].strip()
+            if q:
+                where.append(
+                    "(description LIKE ? OR raw_line LIKE ? OR actor_user LIKE ? OR "
+                    "source_ip LIKE ? OR actor_process LIKE ? OR source_artifact_path LIKE ? OR "
+                    "subcategory LIKE ?)"
+                )
+                like_pattern = f"%{q}%"
+                sql_params.extend([like_pattern] * 7)
+
+            # 2. Category filter
+            category = params.get("category", [""])[0].strip()
+            if category and category != "all":
+                where.append("category = ?")
+                sql_params.append(category)
+
+            # 3. Severity filter
+            severity = params.get("severity", [""])[0].strip()
+            if severity and severity != "all":
+                where.append("severity = ?")
+                sql_params.append(severity)
+
+            # 4. User filter
+            user = params.get("user", [""])[0].strip()
+            if user and user != "all":
+                where.append("(actor_user = ? OR actor_user = ?)")
+                sql_params.extend([user, f"'{user}'"])
+
+            # 5. Host filter
+            host = params.get("host", [""])[0].strip()
+            if host and host != "all":
+                where.append("host_id = ?")
+                sql_params.append(host)
+
+            # 6. Time Range
+            from_ts = params.get("from_ts", [""])[0].strip()
+            if from_ts:
+                where.append("timestamp_utc >= ?")
+                sql_params.append(from_ts)
+            to_ts = params.get("to_ts", [""])[0].strip()
+            if to_ts:
+                where.append("timestamp_utc <= ?")
+                sql_params.append(to_ts)
+
+            # 7. Specific event IDs (for pivot from findings)
+            ids_str = params.get("ids", [""])[0].strip()
+            if ids_str:
+                id_list = [i.strip() for i in ids_str.split(",") if i.strip()]
+                if id_list:
+                    placeholders = ",".join("?" for _ in id_list)
+                    where.append(f"event_id IN ({placeholders})")
+                    sql_params.extend(id_list)
+
+            where_clause = " AND ".join(where)
+
+            filtered_count = conn.execute(
+                f"SELECT COUNT(*) FROM events WHERE {where_clause}", sql_params
+            ).fetchone()[0]
+
+            # Sorting
+            sort_col = params.get("sort", ["timestamp_utc"])[0].strip()
+            valid_sort_cols = {
+                "timestamp_utc", "category", "subcategory", "severity",
+                "actor_user", "actor_process", "source_artifact_path", "event_id"
+            }
+            if sort_col not in valid_sort_cols:
+                sort_col = "timestamp_utc"
+
+            order = params.get("order", ["asc"])[0].strip().lower()
+            order_dir = "DESC" if order == "desc" else "ASC"
+
+            # Pagination
+            try:
+                limit = min(max(int(params.get("limit", [50])[0]), 1), 500)
+            except (ValueError, TypeError):
+                limit = 50
+
+            try:
+                offset = max(int(params.get("offset", [0])[0]), 0)
+            except (ValueError, TypeError):
+                offset = 0
+
+            # Query events
+            query_sql = f"""
+                SELECT event_id, case_id, host_id, event_hash, event_kind,
+                       timestamp_utc, timestamp_local, timestamp_tz, tz_source,
+                       timestamp_confidence, category, subcategory, actor_user,
+                       actor_uid, actor_process, source_ip, source_host,
+                       description, severity, source_artifact_path,
+                       source_artifact_sha256, raw_line, raw_line_offset,
+                       parser_name, parser_version, tool_generated_flag, notes
+                FROM events
+                WHERE {where_clause}
+                ORDER BY {sort_col} {order_dir}, event_hash ASC
+                LIMIT ? OFFSET ?
+            """
+            rows = conn.execute(query_sql, sql_params + [limit, offset]).fetchall()
+
+            events = [dict(r) for r in rows]
+
+            users = [r[0] for r in conn.execute(
+                "SELECT DISTINCT actor_user FROM events WHERE actor_user IS NOT NULL AND actor_user != '' ORDER BY actor_user ASC"
+            ).fetchall()]
+
+            self._send_json(200, {
+                "case_id": case_id,
+                "total": total_count,
+                "filtered_total": filtered_count,
+                "limit": limit,
+                "offset": offset,
+                "users": users,
+                "events": events,
+            })
+        finally:
+            conn.close()
+
+    def _handle_artifacts_api(self, case_id: str) -> None:
+        case_dir = self.cases_dir / case_id
+        db_path = case_dir / "case.db"
+        if not db_path.exists():
+            self._send_json(404, {"error": f"Case database not found for case '{case_id}'"})
+            return
+
+        import sqlite3
+        conn = sqlite3.connect(f"file:{db_path.as_posix()}?mode=ro", uri=True)
+        conn.row_factory = sqlite3.Row
+        try:
+            rows = conn.execute(
+                "SELECT host_id, original_path, stored_path, sha256, size, mode, owner, status, integrity, had_decode_errors, parse_status, parse_events FROM artifacts ORDER BY original_path ASC"
+            ).fetchall()
+            artifacts = [dict(r) for r in rows]
+            self._send_json(200, {"case_id": case_id, "count": len(artifacts), "artifacts": artifacts})
+        finally:
+            conn.close()
+
+    def _handle_artifact_content_api(self, case_id: str, params: dict[str, list[str]]) -> None:
+        case_dir = self.cases_dir / case_id
+        raw_root = case_dir / "raw"
+        if not raw_root.exists():
+            self._send_json(404, {"error": f"Raw evidence directory not found for case '{case_id}'"})
+            return
+
+        req_path = params.get("path", [""])[0].strip()
+        if not req_path or ".." in req_path:
+            self._send_json(400, {"error": "Invalid or missing artifact path"})
+            return
+
+        norm_path = req_path.lstrip("/").replace("\\", "/")
+        target_file = None
+        for host_dir in sorted(raw_root.iterdir()):
+            if not host_dir.is_dir():
+                continue
+            cand1 = host_dir / "collected" / "files" / norm_path
+            cand2 = host_dir / "collected" / norm_path
+            cand3 = host_dir / norm_path
+            if cand1.is_file():
+                target_file = cand1
+                break
+            elif cand2.is_file():
+                target_file = cand2
+                break
+            elif cand3.is_file():
+                target_file = cand3
+                break
+
+        if not target_file or not target_file.exists():
+            self._send_json(404, {"error": f"Artifact '{req_path}' not found in raw evidence"})
+            return
+
+        max_bytes = 150 * 1024
+        file_size = target_file.stat().st_size
+        try:
+            with open(target_file, "rb") as fh:
+                raw_bytes = fh.read(max_bytes)
+                is_truncated = file_size > max_bytes
+
+            content = raw_bytes.decode("utf-8", errors="replace")
+            h = hashlib.sha256()
+            with open(target_file, "rb") as fh:
+                for chunk in iter(lambda: fh.read(65536), b""):
+                    h.update(chunk)
+            sha256 = h.hexdigest()
+
+            self._send_json(200, {
+                "case_id": case_id,
+                "path": req_path,
+                "file_name": target_file.name,
+                "size_bytes": file_size,
+                "sha256": sha256,
+                "truncated": is_truncated,
+                "content": content,
+            })
+        except Exception as ex:
+            self._send_json(500, {"error": f"Failed reading artifact: {ex}"})
+
+    def _handle_findings_api(self, case_id: str) -> None:
+        case_dir = self.cases_dir / case_id
+        db_path = case_dir / "case.db"
+        if not db_path.exists():
+            self._send_json(404, {"error": f"Case database not found for case '{case_id}'"})
+            return
+
+        import sqlite3
+        conn = sqlite3.connect(f"file:{db_path.as_posix()}?mode=ro", uri=True)
+        conn.row_factory = sqlite3.Row
+        try:
+            rows = conn.execute(
+                "SELECT finding_id, rule_name, rule_version, severity, title, what_happened, why_it_matters, confidence, check_next, technical_detail, first_ts_utc, last_ts_utc, host_id, event_ids FROM findings ORDER BY CASE severity WHEN 'high' THEN 1 WHEN 'medium' THEN 2 WHEN 'low' THEN 3 ELSE 4 END, finding_id ASC"
+            ).fetchall()
+            findings = []
+            for r in rows:
+                f_dict = dict(r)
+                try:
+                    f_dict["event_ids"] = json.loads(f_dict["event_ids"])
+                except Exception:
+                    f_dict["event_ids"] = []
+                findings.append(f_dict)
+            self._send_json(200, {"case_id": case_id, "count": len(findings), "findings": findings})
+        finally:
+            conn.close()
+
+    def _handle_explorer_page(self, case_id: str) -> None:
+        case_dir = self.cases_dir / case_id
+        if not case_dir.exists() or not case_dir.is_dir():
+            self._send_json(404, {"error": f"Case '{case_id}' not found"})
+            return
+
+        cases = self._list_cases()
+        case_info = next((c for c in cases if c["case_id"] == case_id), None)
+        if not case_info:
+            case_info = {
+                "case_id": case_id,
+                "hosts": [],
+                "examiner": self.examiner,
+                "events_count": 0,
+                "findings_count": 0,
+                "high_findings": 0,
+                "has_report": (case_dir / "report.html").exists(),
+                "report_url": f"/cases/{case_id}/report.html",
+            }
+        html = render_explorer_html(case_id, case_info)
+        self._send_html(200, html)
 
     def do_POST(self) -> None:
         """Handle Streaming Evidence Ingestion."""
@@ -347,7 +642,8 @@ class LFAServerHandler(http.server.BaseHTTPRequestHandler):
                 badge_high = f'<span class="badge badge-high">{c["high_findings"]} High</span>' if c["high_findings"] > 0 else ""
                 badge_total = f'<span class="badge badge-neutral">{c["findings_count"]} Total</span>'
 
-                report_btn = f'<a href="{c["report_url"]}" target="_blank" class="btn btn-primary">🔍 View Report</a>' if c["has_report"] else '<span class="btn btn-disabled">Pending</span>'
+                explore_btn = f'<a href="/cases/{c["case_id"]}/explorer" class="btn btn-primary">🔬 Explore</a>' if c["has_db"] else '<span class="btn btn-disabled">No DB</span>'
+                report_btn = f'<a href="{c["report_url"]}" target="_blank" class="btn btn-secondary">🔍 Report</a>' if c["has_report"] else '<span class="btn btn-disabled">Pending</span>'
 
                 ingest_str = c["ingest_time"][:19].replace("T", " ") if c["ingest_time"] else "—"
 
@@ -359,7 +655,12 @@ class LFAServerHandler(http.server.BaseHTTPRequestHandler):
                   <td class="num">{c["events_count"]:,}</td>
                   <td>{badge_high} {badge_total}</td>
                   <td class="subtext">{ingest_str}</td>
-                  <td>{report_btn}</td>
+                  <td>
+                    <div style="display:flex; gap:0.4rem;">
+                      {explore_btn}
+                      {report_btn}
+                    </div>
+                  </td>
                 </tr>
                 """
 
@@ -546,6 +847,15 @@ class LFAServerHandler(http.server.BaseHTTPRequestHandler):
       background: var(--primary-hover);
       color: #fff;
     }}
+    .btn-secondary {{
+      background: rgba(255, 255, 255, 0.08);
+      color: var(--text);
+      border: 1px solid var(--card-border);
+    }}
+    .btn-secondary:hover {{
+      background: rgba(255, 255, 255, 0.15);
+      color: #fff;
+    }}
     .btn-disabled {{
       background: rgba(255, 255, 255, 0.05);
       color: var(--text-dim);
@@ -617,7 +927,7 @@ class LFAServerHandler(http.server.BaseHTTPRequestHandler):
           <th>Events</th>
           <th>Findings</th>
           <th>Ingest Time (UTC)</th>
-          <th>Report Action</th>
+          <th>Investigation Actions</th>
         </tr>
       </thead>
       <tbody>

@@ -120,14 +120,15 @@ class BaseParser:
 
 
 def discover_parsers() -> list[BaseParser]:
-    """Instantiate every BaseParser subclass found in lfa.parsers.*"""
-    import lfa.parsers as pkg
+    """Instantiate every BaseParser subclass found in this package."""
+    pkg_name = __package__ or "lfa.parsers"
+    pkg = importlib.import_module(pkg_name)
 
     parsers: list[BaseParser] = []
     for modinfo in pkgutil.iter_modules(pkg.__path__):
         if modinfo.name in {"base"}:
             continue
-        module = importlib.import_module(f"lfa.parsers.{modinfo.name}")
+        module = importlib.import_module(f"{pkg_name}.{modinfo.name}")
         for obj in vars(module).values():
             if (
                 isinstance(obj, type)

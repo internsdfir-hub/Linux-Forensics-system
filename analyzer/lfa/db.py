@@ -6,7 +6,7 @@ from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Iterable
 
-from .schema import FIELD_NAMES, NormalizedEvent, validate
+from .schema import FIELD_NAMES, NormalizedEvent, clean_surrogates, validate
 
 BATCH_SIZE = 5000
 
@@ -150,7 +150,8 @@ def insert_events(conn: sqlite3.Connection, events: Iterable[NormalizedEvent]) -
             continue
         row = asdict(ev)
         row["tool_generated_flag"] = int(row["tool_generated_flag"])
-        batch.append(tuple(row[name] for name in FIELD_NAMES))
+        clean_row = tuple(clean_surrogates(row[name]) for name in FIELD_NAMES)
+        batch.append(clean_row)
         if len(batch) >= BATCH_SIZE:
             flush()
     flush()
@@ -161,7 +162,7 @@ def set_meta(conn: sqlite3.Connection, key: str, value: str) -> None:
     conn.execute(
         "INSERT INTO case_meta(key, value) VALUES(?, ?) "
         "ON CONFLICT(key) DO UPDATE SET value=excluded.value",
-        (key, value),
+        (clean_surrogates(key), clean_surrogates(value)),
     )
     conn.commit()
 

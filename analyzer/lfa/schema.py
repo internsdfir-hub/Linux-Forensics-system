@@ -115,6 +115,17 @@ def _truncate_raw_line(raw_line: str) -> str:
     return data[:RAW_LINE_MAX_BYTES].decode("utf-8", errors="ignore")
 
 
+def clean_surrogates(val: Any) -> Any:
+    """Sanitize surrogate characters from strings for safe DB/JSON/HTML operations."""
+    if not isinstance(val, str):
+        return val
+    try:
+        val.encode("utf-8")
+        return val
+    except UnicodeEncodeError:
+        return val.encode("utf-8", errors="surrogateescape").decode("utf-8", errors="replace")
+
+
 def make_event(**kwargs) -> NormalizedEvent:
     """Factory: computes event_hash/event_id and truncates raw_line at 2 KB.
 
@@ -128,10 +139,17 @@ def make_event(**kwargs) -> NormalizedEvent:
         kwargs.get("raw_line_offset", 0),
         raw_line,
     )
-    kwargs["raw_line"] = _truncate_raw_line(raw_line)
+    raw_truncated = _truncate_raw_line(raw_line)
+    kwargs["raw_line"] = clean_surrogates(raw_truncated)
     kwargs.setdefault("raw_line_offset", 0)
     kwargs["event_hash"] = event_hash
     kwargs["event_id"] = event_id_for(event_hash)
+
+    # Sanitize all string fields so surrogates never crash SQLite or JSON encoders
+    for k, v in kwargs.items():
+        if isinstance(v, str):
+            kwargs[k] = clean_surrogates(v)
+
     return NormalizedEvent(**kwargs)
 
 

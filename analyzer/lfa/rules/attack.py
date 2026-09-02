@@ -395,7 +395,8 @@ class OffHoursPrivilegedRule(BaseRule):
                 continue
             if start_h <= local.hour < end_h:
                 continue
-            offenders[row["actor_user"] or "unknown"].append(row)
+            clean_u = (row["actor_user"] or "unknown").strip("'\"")
+            offenders[clean_u].append(row)
 
         for user, hits in sorted(offenders.items()):
             first, last = hits[0]["timestamp_local"], hits[-1]["timestamp_local"]

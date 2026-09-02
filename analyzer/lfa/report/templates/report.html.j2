@@ -119,9 +119,150 @@ Host ID: {{ f.host_id or 'Default' }} | Finding ID: {{ f.finding_id }}</code></p
       {% endfor %}
     </section>
 
-    <!-- 6. Detailed Event Timeline -->
+    <!-- 6. Categorized Forensic Intel -->
+    <section id="sec-intel">
+      <h2>6. Categorized Forensic Intel</h2>
+      <div class="tabs">
+        <div class="tab-buttons">
+          <button class="tab-btn active" data-target="tab-users">User Information</button>
+          <button class="tab-btn" data-target="tab-logins">Login Activities</button>
+          <button class="tab-btn" data-target="tab-usb">USB Activities</button>
+          <button class="tab-btn" data-target="tab-system">System Info</button>
+          <button class="tab-btn" data-target="tab-network">Network &amp; Persistence</button>
+        </div>
+
+        <div id="tab-users" class="tab-content active">
+          <table>
+            <thead>
+              <tr>
+                <th>Username</th>
+                <th>First Seen (UTC)</th>
+                <th>Description</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for u in intel.users %}
+              <tr>
+                <td><strong>{{ u.actor_user }}</strong></td>
+                <td><span style="font-family: monospace;">{{ u.first_seen or '-' }}</span></td>
+                <td>{{ u.description }}</td>
+              </tr>
+              {% else %}
+              <tr><td colspan="3" style="text-align: center;">No user information extracted.</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+
+        <div id="tab-logins" class="tab-content">
+          <table>
+            <thead>
+              <tr>
+                <th>Username</th>
+                <th>Source IP</th>
+                <th>Type</th>
+                <th>Attempts</th>
+                <th>First Attempt (UTC)</th>
+                <th>Last Attempt (UTC)</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for l in intel.logins %}
+              <tr>
+                <td><strong>{{ l.actor_user or 'UNKNOWN' }}</strong></td>
+                <td>{{ l.source_ip or '-' }}</td>
+                <td>
+                  <span class="badge badge-{{ 'high' if l.subcategory == 'failed' else 'info' }}">
+                    {{ l.subcategory }}
+                  </span>
+                </td>
+                <td>{{ l.attempt_count }}</td>
+                <td><span style="font-family: monospace;">{{ l.first_attempt }}</span></td>
+                <td><span style="font-family: monospace;">{{ l.last_attempt }}</span></td>
+              </tr>
+              {% else %}
+              <tr><td colspan="6" style="text-align: center;">No login activities extracted.</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+
+        <div id="tab-usb" class="tab-content">
+          <table>
+            <thead>
+              <tr>
+                <th>Timestamp (UTC)</th>
+                <th>Description</th>
+                <th>Raw Source Line</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for u in intel.usb %}
+              <tr>
+                <td style="white-space: nowrap;"><span style="font-family: monospace;">{{ u.timestamp_utc }}</span></td>
+                <td>{{ u.description }}</td>
+                <td style="font-family: monospace; font-size: 11px;">{{ u.raw_line[:80] }}...</td>
+              </tr>
+              {% else %}
+              <tr><td colspan="3" style="text-align: center;">No USB activities detected.</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+
+        <div id="tab-system" class="tab-content">
+          <table>
+            <thead>
+              <tr>
+                <th>Timestamp (UTC)</th>
+                <th>Type</th>
+                <th>Description</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for s in intel.system %}
+              <tr>
+                <td style="white-space: nowrap;"><span style="font-family: monospace;">{{ s.timestamp_utc or '-' }}</span></td>
+                <td><span class="badge badge-info">{{ s.subcategory }}</span></td>
+                <td>{{ s.description }}</td>
+              </tr>
+              {% else %}
+              <tr><td colspan="3" style="text-align: center;">No system info extracted.</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+
+        <div id="tab-network" class="tab-content">
+          <table>
+            <thead>
+              <tr>
+                <th>Timestamp (UTC)</th>
+                <th>Category</th>
+                <th>Subcategory</th>
+                <th>Description</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for n in intel.network_persistence %}
+              <tr>
+                <td style="white-space: nowrap;"><span style="font-family: monospace;">{{ n.timestamp_utc or '-' }}</span></td>
+                <td><span class="badge badge-medium">{{ n.category }}</span></td>
+                <td><span class="badge badge-info">{{ n.subcategory }}</span></td>
+                <td>{{ n.description }}</td>
+              </tr>
+              {% else %}
+              <tr><td colspan="4" style="text-align: center;">No network/persistence info extracted.</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- 7. Detailed Event Timeline -->
     <section id="sec-events">
-      <h2>6. Normalized Event Timeline (Sample)</h2>
+      <h2>7. Normalized Event Timeline (Sample)</h2>
       <div class="filter-bar">
         <input type="text" id="event-filter" class="search-input" placeholder="Search events by user, IP, process, category or description...">
       </div>
@@ -151,9 +292,9 @@ Host ID: {{ f.host_id or 'Default' }} | Finding ID: {{ f.finding_id }}</code></p
       </table>
     </section>
 
-    <!-- 7. Evidence Integrity & Chain of Custody -->
+    <!-- 8. Evidence Integrity & Chain of Custody -->
     <section id="sec-integrity">
-      <h2>7. Evidence Integrity &amp; Chain of Custody</h2>
+      <h2>8. Evidence Integrity &amp; Chain of Custody</h2>
       <table>
         <thead>
           <tr>
@@ -184,9 +325,9 @@ Host ID: {{ f.host_id or 'Default' }} | Finding ID: {{ f.finding_id }}</code></p
       </table>
     </section>
 
-    <!-- 8. Methodology, Limitations & Tool Audit -->
+    <!-- 9. Methodology, Limitations & Tool Audit -->
     <section id="sec-methodology">
-      <h2>8. Methodology, Limitations &amp; Tool Audit</h2>
+      <h2>9. Methodology, Limitations &amp; Tool Audit</h2>
       <div class="stat-card">
         <p><strong>Forensic Compliance:</strong> Ingestion and correlation executed strictly against the frozen RFC 3227 Order of Volatility model and unified event schema.</p>
         <p><strong>Deterministic Guarantee:</strong> Generated using zero-dependency deterministic engines with byte-stable hashing.</p>
@@ -194,9 +335,9 @@ Host ID: {{ f.host_id or 'Default' }} | Finding ID: {{ f.finding_id }}</code></p
       </div>
     </section>
 
-    <!-- 9. Glossary -->
+    <!-- 10. Glossary -->
     <section id="sec-glossary">
-      <h2>9. Glossary of Forensic Terms</h2>
+      <h2>10. Glossary of Forensic Terms</h2>
       <div class="stat-card">
         <p><strong>NormalizedEvent:</strong> Unified event schema consolidating heterogeneous Linux logs into standardized time, actor, source, and severity fields.</p>
         <p><strong>wtmp / btmp:</strong> Binary login and failure accounting records maintained by Linux libc / utmp subsystems.</p>

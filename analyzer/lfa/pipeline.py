@@ -20,6 +20,7 @@ from typing import Any
 
 from . import db
 from .parsers.base import ParseContext, ParserRun, discover_parsers
+from .schema import clean_surrogates
 from .timeeng import TimeContext
 
 
@@ -168,22 +169,22 @@ def _record_artifact(conn, *, host_id: str, row: dict, artifact_rel: str,
             had_decode_errors=excluded.had_decode_errors
         """,
         (
-            host_id,
-            original,
-            artifact_rel,
-            row.get("sha256"),
+            clean_surrogates(host_id),
+            clean_surrogates(original),
+            clean_surrogates(artifact_rel),
+            clean_surrogates(row.get("sha256")),
             row.get("size"),
-            row.get("mode"),
-            row.get("owner"),
-            row.get("atime"),
-            row.get("mtime"),
-            row.get("ctime"),
+            clean_surrogates(row.get("mode")),
+            clean_surrogates(row.get("owner")),
+            clean_surrogates(row.get("atime")),
+            clean_surrogates(row.get("mtime")),
+            clean_surrogates(row.get("ctime")),
             1 if row.get("source_was_active") == "1" else 0,
-            row.get("status"),
-            row.get("sha256"),
+            clean_surrogates(row.get("status")),
+            clean_surrogates(row.get("sha256")),
             "verified" if row.get("sha256") else "unknown",
             1 if had_decode_errors else 0,
-            status,
+            clean_surrogates(status),
             events,
         ),
     )

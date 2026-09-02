@@ -162,3 +162,48 @@ def test_hostname_when_not_an_ip(tmp_path, ctx):
     login = next(e for e in events if e.subcategory == "login")
     assert login.source_host == "workstation.local"
     assert login.source_ip is None
+
+
+def test_wtmpdb_sqlite_parsing(tmp_path, ctx):
+    """Modern systemd / Debian / Kali wtmpdb SQLite databases."""
+    import sqlite3
+    db_path = tmp_path / "wtmp.db"
+    conn = sqlite3.connect(db_path)
+    conn.execute(
+        "CREATE TABLE wtmp (ID INTEGER PRIMARY KEY, Type INTEGER, User TEXT, Login INTEGER, Logout INTEGER, TTY TEXT, RemoteHost TEXT, Service TEXT)"
+    )
+    conn.execute(
+        "INSERT INTO wtmp VALUES (1, 3, 'kali', 1710382000000000, 1710385600000000, 'pts/0', '192.168.1.50', 'sshd')"
+    )
+    conn.commit()
+    conn.close()
+
+    parser = UtmpParser()
+    ctx.artifact_rel = "var/log/wtmp.db"
+    ctx.parser_name = parser.name
+    ctx.parser_version = parser.version
+    events = list(parser.parse(db_path, ctx))
+
+    assert len(events) == 2
+    login_ev = next(e for e in events if e.subcategory == "login")
+    logout_ev = next(e for e in events if e.subcategory == "logout")
+    assert login_ev.actor_user == "kali"
+    assert login_ev.source_ip == "192.168.1.50"
+    assert "sshd" in login_ev.description
+    assert logout_ev.actor_user == "kali"
+    assert validate(login_ev) == []
+    assert validate(logout_ev) == []
+
+
+def test_utmp_with_surrogate_and_non_utf8_bytes(tmp_path, ctx):
+    """Raw dirty bytes in utmp headers should not crash database or JSON encoding."""
+    rec = make_record(USER_PROCESS, 42, "tty1", "testuser", "host\xb9\x9e", 1710382000)
+    events = parse(tmp_path, ctx, rec)
+    assert len(events) == 1
+    ev = events[0]
+    assert validate(ev) == []
+    # Ensure no surrogates in any string field
+    for k, v in ev.__dict__.items():
+        if isinstance(v, str):
+            v.encode("utf-8")  # should not raise UnicodeEncodeError
+

@@ -12,16 +12,35 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 import shutil
+import stat
+import sys
 import tarfile
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
 
 from . import __version__
+from .schema import clean_surrogates
 
 # statuses in hash_manifest.csv that carry no verifiable file
 _NO_FILE_STATUSES = {"unreadable", "redacted", "copy_failed", "stat_failed"}
+
+
+def _rmtree(path: Path) -> None:
+    """Recursively remove a directory tree, clearing read-only flags on Windows."""
+    def _remove_readonly(func, p, exc):
+        try:
+            os.chmod(p, stat.S_IWRITE)
+            func(p)
+        except Exception:
+            pass
+
+    if sys.version_info >= (3, 12):
+        shutil.rmtree(path, onexc=_remove_readonly)
+    else:
+        shutil.rmtree(path, onerror=_remove_readonly)
 
 
 @dataclass
@@ -77,7 +96,7 @@ def ingest_bundle(bundle_path: str | Path, case_dir: str | Path,
     # --- extract to a temp area first so we can name the host dir afterwards
     tmp_extract = case_dir / "_extracting"
     if tmp_extract.exists():
-        shutil.rmtree(tmp_extract)
+        _rmtree(tmp_extract)
     tmp_extract.mkdir(parents=True)
 
     mode = "r:gz" if bundle_path.name.endswith(".gz") else "r"
@@ -97,7 +116,7 @@ def ingest_bundle(bundle_path: str | Path, case_dir: str | Path,
 
     raw_host = case_dir / "raw" / host_id
     if raw_host.exists():
-        shutil.rmtree(raw_host)
+        _rmtree(raw_host)
     raw_host.parent.mkdir(parents=True, exist_ok=True)
     tmp_extract.rename(raw_host)
 
@@ -141,6 +160,7 @@ def ingest_bundle(bundle_path: str | Path, case_dir: str | Path,
     (raw_host / "_verified_hashes.json").write_text(
         json.dumps(verified_hashes, indent=0, sort_keys=True) + "\n",
         encoding="utf-8",
+        errors="surrogateescape",
     )
 
     # best-effort read-only marking (no-op on Windows)
@@ -154,7 +174,7 @@ def ingest_bundle(bundle_path: str | Path, case_dir: str | Path,
     # --- case_metadata.json (merge across multiple ingested hosts)
     meta_path = case_dir / "case_metadata.json"
     if meta_path.exists():
-        meta = json.loads(meta_path.read_text(encoding="utf-8"))
+        meta = json.loads(meta_path.read_text(encoding="utf-8", errors="surrogateescape"))
     else:
         meta = {"examiner": examiner, "analyzer_version": __version__, "hosts": {}}
     meta["examiner"] = examiner
@@ -167,8 +187,11 @@ def ingest_bundle(bundle_path: str | Path, case_dir: str | Path,
         "skipped_no_content": result.skipped,
         "collector_manifest": collector_manifest,
     }
-    meta_path.write_text(json.dumps(meta, indent=2, sort_keys=True) + "\n",
-                         encoding="utf-8")
+    meta_path.write_text(
+        json.dumps(meta, indent=2, sort_keys=True, ensure_ascii=False) + "\n",
+        encoding="utf-8",
+        errors="surrogateescape",
+    )
     return result
 
 

@@ -59,7 +59,7 @@ _PLAUSIBLE_MAX = 2 ** 31 - 1
 
 
 def _cstr(raw: bytes) -> str:
-    return raw.split(b"\0", 1)[0].decode("utf-8", errors="surrogateescape")
+    return raw.split(b"\0", 1)[0].decode("utf-8", errors="replace").strip()
 
 
 class UtmpParser(BaseParser):
@@ -86,6 +86,10 @@ class UtmpParser(BaseParser):
                 f"was cleared.",
                 "medium",
             )
+            return
+
+        if data.startswith(b"SQLite format 3\x00"):
+            yield from self._parse_sqlite_wtmp(path, context, rel)
             return
 
         remainder = len(data) % UTMP_RECORD_SIZE
@@ -209,6 +213,102 @@ class UtmpParser(BaseParser):
                 f"containers).",
                 "medium",
             )
+
+    def _parse_sqlite_wtmp(self, path: Path, context: ParseContext, rel: str):
+        """Parse modern wtmpdb SQLite databases (common on systemd / Debian / Kali / Ubuntu)."""
+        import sqlite3
+        try:
+            conn = sqlite3.connect(f"file:{path.as_posix()}?mode=ro", uri=True)
+        except Exception:
+            try:
+                conn = sqlite3.connect(str(path))
+            except Exception as e:
+                yield self._finding(context, "utmp_sqlite_error", f"Could not open {rel} as SQLite database: {e}", "low")
+                return
+
+        try:
+            cursor = conn.cursor()
+            table_check = cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='wtmp'").fetchone()
+            if not table_check:
+                yield self._finding(context, "utmp_sqlite_no_wtmp", f"{rel} is an SQLite database without a wtmp table", "low")
+                return
+
+            rows = cursor.execute("SELECT ID, Type, User, Login, Logout, TTY, RemoteHost, Service FROM wtmp ORDER BY ID ASC").fetchall()
+            if not rows:
+                yield self._finding(context, "utmp_empty", f"{rel} SQLite database contains no session records", "medium")
+                return
+
+            for row in rows:
+                id_val, type_val, user, login_us, logout_us, tty, remote_host, service = row
+                user = (user or "").strip()
+                tty = (tty or "").strip()
+                remote_host = (remote_host or "").strip()
+                service = (service or "").strip()
+
+                source_ip = self._host_as_ip(remote_host)
+                source_host = None if source_ip else (remote_host or None)
+
+                # Process Login
+                if login_us:
+                    login_sec = float(login_us) / 1_000_000.0
+                    if _PLAUSIBLE_MIN <= login_sec <= _PLAUSIBLE_MAX:
+                        ts = context.time_ctx.resolve_epoch(login_sec)
+                        desc = f"User login: {user or 'unknown user'} on {tty or 'unknown terminal'}"
+                        if service:
+                            desc += f" via {service}"
+                        if source_ip or source_host:
+                            desc += f" from {source_ip or source_host}"
+                        else:
+                            desc += " (local)"
+
+                        yield context.build_event(
+                            event_kind="event",
+                            timestamp_utc=ts.utc_iso,
+                            timestamp_local=ts.local_iso,
+                            timestamp_confidence=ts.confidence,
+                            category="login_activity",
+                            subcategory="login",
+                            actor_user=user or None,
+                            actor_process=service or None,
+                            source_ip=source_ip,
+                            source_host=source_host,
+                            description=desc,
+                            severity="info",
+                            raw_line=f"id={id_val} type={type_val} user={user} tty={tty} host={remote_host} service={service} login={login_us}",
+                            raw_line_offset=int(id_val or 0),
+                            tool_generated_flag=context.is_tool_generated(source_ip, ts.utc_iso),
+                            notes=f"wtmpdb record id {id_val}",
+                        )
+
+                # Process Logout
+                if logout_us:
+                    logout_sec = float(logout_us) / 1_000_000.0
+                    if _PLAUSIBLE_MIN <= logout_sec <= _PLAUSIBLE_MAX:
+                        ts_out = context.time_ctx.resolve_epoch(logout_sec)
+                        desc_out = f"Session closed for {user or 'unknown user'} on {tty or 'unknown terminal'}"
+                        if service:
+                            desc_out += f" via {service}"
+
+                        yield context.build_event(
+                            event_kind="event",
+                            timestamp_utc=ts_out.utc_iso,
+                            timestamp_local=ts_out.local_iso,
+                            timestamp_confidence=ts_out.confidence,
+                            category="login_activity",
+                            subcategory="logout",
+                            actor_user=user or None,
+                            actor_process=service or None,
+                            source_ip=source_ip,
+                            source_host=source_host,
+                            description=desc_out,
+                            severity="info",
+                            raw_line=f"id={id_val} type={type_val} user={user} tty={tty} host={remote_host} service={service} logout={logout_us}",
+                            raw_line_offset=int(id_val or 0),
+                            tool_generated_flag=context.is_tool_generated(source_ip, ts_out.utc_iso),
+                            notes=f"wtmpdb logout id {id_val}",
+                        )
+        finally:
+            conn.close()
 
     @staticmethod
     def _addr_to_ip(words) -> str | None:

@@ -25,6 +25,16 @@ def _rows(conn, sql, params=()):
     return conn.execute(sql, params).fetchall()
 
 
+_COMMON_SERVICE_ACCOUNTS = frozenset({
+    "lightdm", "nobody", "daemon", "messagebus", "_apt", "postgres", "mysql",
+    "systemd-resolve", "systemd-network", "systemd-timesync", "systemd-coredump",
+    "avahi", "colord", "geoclue", "rtkit", "syslog", "sshd", "dnsmasq", "sync",
+    "games", "man", "lp", "mail", "news", "uucp", "proxy", "www-data", "backup",
+    "list", "irc", "gnats", "bin", "sys", "reboot", "shutdown", "halt", "statd",
+    "_rpc", "tss", "uuidd", "tcpdump", "nm-openvpn", "Debian-snmp", "speech-dispatcher",
+})
+
+
 class WipedHistoryRule(BaseRule):
     """A shell history that is missing or empty for a user who demonstrably
     had sessions."""
@@ -36,12 +46,18 @@ class WipedHistoryRule(BaseRule):
     def run(self, conn, ctx):
         min_sessions = ctx.get("wiped_history_min_sessions",
                                self.parameters["min_sessions"])
-        candidates = _rows(
+        candidates_raw = _rows(
             conn,
             "SELECT * FROM events WHERE subcategory IN "
             "('history_missing','history_empty','history_symlinked_devnull') "
             "AND actor_user IS NOT NULL",
         )
+        candidates: dict[str, dict] = {}
+        for c in candidates_raw:
+            clean_u = (c["actor_user"] or "").strip("'\"")
+            if clean_u and clean_u not in _COMMON_SERVICE_ACCOUNTS and clean_u not in candidates:
+                candidates[clean_u] = dict(c)
+
         # Check active users with >= min_sessions but 0 recorded shell history
         active_users = conn.execute(
             "SELECT actor_user, COUNT(*) as cnt, MIN(timestamp_utc), MAX(timestamp_utc), host_id, event_id "
@@ -50,37 +66,37 @@ class WipedHistoryRule(BaseRule):
             (min_sessions,),
         ).fetchall()
         for u_row in active_users:
-            u = u_row[0]
-            if any(c["actor_user"] == u for c in candidates):
+            u = (u_row[0] or "").strip("'\"")
+            if not u or u in _COMMON_SERVICE_ACCOUNTS or u in candidates:
                 continue
             hist_count = conn.execute(
-                "SELECT COUNT(*) FROM events WHERE actor_user = ? AND category = 'user_activity' "
+                "SELECT COUNT(*) FROM events WHERE (actor_user = ? OR actor_user = ?) AND category = 'user_activity' "
                 "AND subcategory IN ('shell_command','suspicious_command')",
-                (u,),
+                (u, f"'{u}'"),
             ).fetchone()[0]
             if hist_count == 0:
-                candidates.append({
+                candidates[u] = {
                     "actor_user": u,
                     "subcategory": "history_missing",
                     "source_artifact_path": f"home/{u}/.bash_history",
                     "event_id": u_row[5],
                     "host_id": u_row[4],
-                })
-        for row in candidates:
-            user = row["actor_user"]
+                }
+
+        for user, row in candidates.items():
             sessions = conn.execute(
-                "SELECT COUNT(*) FROM events WHERE actor_user = ? AND "
+                "SELECT COUNT(*) FROM events WHERE (actor_user = ? OR actor_user = ?) AND "
                 "subcategory IN ('successful_login','session_opened','login') "
                 "AND timestamp_utc IS NOT NULL",
-                (user,),
+                (user, f"'{user}'"),
             ).fetchone()[0]
             if sessions < min_sessions:
                 continue
             span = conn.execute(
                 "SELECT MIN(timestamp_utc), MAX(timestamp_utc) FROM events "
-                "WHERE actor_user = ? AND subcategory IN "
+                "WHERE (actor_user = ? OR actor_user = ?) AND subcategory IN "
                 "('successful_login','session_opened','login')",
-                (user,),
+                (user, f"'{user}'"),
             ).fetchone()
             yield Finding(
                 rule_name=self.name,
