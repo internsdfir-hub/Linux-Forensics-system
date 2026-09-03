@@ -1,15 +1,15 @@
 :root {
   /* Sleek, deep dark mode colors */
-  --bg-primary: #09090b;
-  --bg-secondary: #18181b;
-  --bg-tertiary: #27272a;
-  --border-color: rgba(255, 255, 255, 0.08);
-  --border-hover: rgba(255, 255, 255, 0.15);
+  --bg-primary: #0b0f19;
+  --bg-secondary: #111827;
+  --bg-tertiary: #1f2937;
+  --border-color: #1f2937;
+  --border-hover: #3b82f6;
   
   /* Text */
-  --text-primary: #a1a1aa;
-  --text-secondary: #71717a;
-  --text-bright: #f4f4f5;
+  --text-primary: #9ca3af;
+  --text-secondary: #6b7280;
+  --text-bright: #f3f4f6;
   
   /* Vibrant Accents */
   --accent-blue: #3b82f6;
@@ -19,18 +19,35 @@
   --accent-purple: #8b5cf6;
   
   /* Glassmorphism / Gradients */
-  --glass-bg: rgba(24, 24, 27, 0.7);
+  --glass-bg: rgba(17, 24, 39, 0.75);
   --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.2), 0 2px 4px -1px rgba(0, 0, 0, 0.1);
   --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.5), 0 4px 6px -2px rgba(0, 0, 0, 0.3);
   --shadow-glow: 0 0 15px rgba(59, 130, 246, 0.15);
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
+/* Custom Scrollbars */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg-primary);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 5px;
+  border: 2px solid var(--bg-primary);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #374151;
+}
+
 body {
-  /* System font stack optimized for a clean, modern look like Inter */
-  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+  /* System font stack optimized for a clean, modern look */
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
   background-color: var(--bg-primary);
   color: var(--text-primary);
   line-height: 1.6;

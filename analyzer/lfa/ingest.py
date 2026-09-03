@@ -99,7 +99,8 @@ def ingest_bundle(bundle_path: str | Path, case_dir: str | Path,
         _rmtree(tmp_extract)
     tmp_extract.mkdir(parents=True)
 
-    mode = "r:gz" if bundle_path.name.endswith(".gz") else "r"
+    mode = "r:*"
+
     with tarfile.open(bundle_path, mode) as tf:
         tf.extractall(tmp_extract, filter="data")
 

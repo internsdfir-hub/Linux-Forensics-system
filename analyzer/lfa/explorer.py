@@ -30,29 +30,60 @@ def render_explorer_html(case_id: str, case_info: dict[str, Any]) -> str:
   <title>LFA Explorer — Case {case_id}</title>
   <style>
     :root {{
-      --bg: #080c14;
-      --card-bg: #0f172a;
-      --card-hover: #1e293b;
-      --border: #1e293b;
-      --border-focus: #38bdf8;
-      --text: #f1f5f9;
-      --text-muted: #94a3b8;
-      --text-dim: #64748b;
-      --primary: #38bdf8;
-      --primary-hover: #0284c7;
-      --accent: #818cf8;
+      /* Deep sleek dark mode palette */
+      --bg: #0b0f19;
+      --card-bg: #111827;
+      --card-hover: #1f2937;
+      --border: #1f2937;
+      --border-focus: #3b82f6;
+      --text: #f3f4f6;
+      --text-muted: #9ca3af;
+      --text-dim: #6b7280;
+      
+      /* Accents */
+      --primary: #3b82f6;
+      --primary-hover: #2563eb;
+      --accent: #8b5cf6;
+      
+      /* Semantic colors */
       --high: #ef4444;
-      --high-bg: rgba(239, 68, 68, 0.15);
+      --high-bg: rgba(239, 68, 68, 0.12);
       --med: #f59e0b;
-      --med-bg: rgba(245, 158, 11, 0.15);
+      --med-bg: rgba(245, 158, 11, 0.12);
       --low: #10b981;
-      --low-bg: rgba(16, 185, 129, 0.15);
-      --info: #38bdf8;
-      --info-bg: rgba(56, 189, 248, 0.15);
-      --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
-      --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      --low-bg: rgba(16, 185, 129, 0.12);
+      --info: #0ea5e9;
+      --info-bg: rgba(14, 165, 233, 0.12);
+      
+      /* Typography */
+      --font: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+      --font-mono: ui-monospace, "Cascadia Code", SFMono-Regular, Consolas, "Courier New", monospace;
+      
+      /* Effects */
+      --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+      --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.2), 0 2px 4px -1px rgba(0, 0, 0, 0.1);
+      --glass: rgba(17, 24, 39, 0.75);
     }}
+    
     * {{ box-sizing: border-box; margin: 0; padding: 0; }}
+    
+    /* Custom Scrollbars */
+    ::-webkit-scrollbar {{
+      width: 10px;
+      height: 10px;
+    }}
+    ::-webkit-scrollbar-track {{
+      background: var(--bg);
+    }}
+    ::-webkit-scrollbar-thumb {{
+      background: var(--border);
+      border-radius: 5px;
+      border: 2px solid var(--bg);
+    }}
+    ::-webkit-scrollbar-thumb:hover {{
+      background: #374151;
+    }}
+    
     body {{
       background-color: var(--bg);
       color: var(--text);
@@ -62,20 +93,23 @@ def render_explorer_html(case_id: str, case_info: dict[str, Any]) -> str:
       flex-direction: column;
       height: 100vh;
       overflow: hidden;
+      -webkit-font-smoothing: antialiased;
     }}
+    
     header {{
       background: var(--card-bg);
       border-bottom: 1px solid var(--border);
-      padding: 0.75rem 1.5rem;
+      padding: 0.85rem 1.75rem;
       display: flex;
       justify-content: space-between;
       align-items: center;
       flex-shrink: 0;
+      box-shadow: var(--shadow-sm);
     }}
     .header-left {{
       display: flex;
       align-items: center;
-      gap: 1.25rem;
+      gap: 1.5rem;
     }}
     .back-link {{
       color: var(--text-muted);
@@ -83,20 +117,22 @@ def render_explorer_html(case_id: str, case_info: dict[str, Any]) -> str:
       font-size: 0.875rem;
       display: flex;
       align-items: center;
-      gap: 0.35rem;
-      padding: 0.35rem 0.65rem;
-      background: rgba(255, 255, 255, 0.05);
+      gap: 0.4rem;
+      padding: 0.4rem 0.75rem;
+      background: rgba(255, 255, 255, 0.03);
       border-radius: 6px;
-      transition: all 0.15s ease;
+      transition: all 0.2s ease;
+      border: 1px solid transparent;
     }}
     .back-link:hover {{
       color: #fff;
-      background: rgba(255, 255, 255, 0.1);
+      background: rgba(255, 255, 255, 0.08);
+      border-color: rgba(255, 255, 255, 0.1);
     }}
     .case-badge {{
-      font-size: 1.15rem;
+      font-size: 1.2rem;
       font-weight: 700;
-      letter-spacing: -0.01em;
+      letter-spacing: -0.02em;
       color: #fff;
       display: flex;
       align-items: center;
@@ -106,26 +142,33 @@ def render_explorer_html(case_id: str, case_info: dict[str, Any]) -> str:
       font-size: 0.85rem;
       color: var(--text-muted);
       display: flex;
-      gap: 1rem;
+      gap: 1.25rem;
+      padding-left: 1rem;
+      border-left: 1px solid var(--border);
     }}
+    .header-meta strong {{
+      color: var(--text);
+      font-weight: 600;
+    }}
+    
     .header-right {{
       display: flex;
       align-items: center;
-      gap: 0.75rem;
+      gap: 1rem;
     }}
     .nav-tabs {{
       display: flex;
-      gap: 0.5rem;
-      background: rgba(0, 0, 0, 0.2);
-      padding: 0.25rem;
+      gap: 0.25rem;
+      background: rgba(0, 0, 0, 0.25);
+      padding: 0.3rem;
       border-radius: 8px;
-      border: 1px solid var(--border);
+      border: 1px solid rgba(255,255,255,0.05);
     }}
     .tab-btn {{
       background: transparent;
       border: none;
       color: var(--text-muted);
-      padding: 0.45rem 1rem;
+      padding: 0.5rem 1.15rem;
       font-size: 0.875rem;
       font-weight: 600;
       border-radius: 6px;
@@ -133,62 +176,75 @@ def render_explorer_html(case_id: str, case_info: dict[str, Any]) -> str:
       display: flex;
       align-items: center;
       gap: 0.5rem;
-      transition: all 0.15s ease;
+      transition: all 0.2s ease;
+      position: relative;
     }}
     .tab-btn:hover {{
-      color: var(--text);
+      color: #fff;
       background: rgba(255, 255, 255, 0.05);
     }}
     .tab-btn.active {{
+      background: var(--card-bg);
+      color: var(--primary);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.4);
+    }}
+    .tab-btn.active::after {{
+      content: '';
+      position: absolute;
+      bottom: -4px;
+      left: 10%;
+      width: 80%;
+      height: 2px;
       background: var(--primary);
-      color: #0b0f19;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+      border-radius: 2px;
+      box-shadow: 0 0 8px var(--primary);
     }}
     .tab-badge {{
       font-size: 0.75rem;
-      padding: 0.1rem 0.45rem;
+      padding: 0.15rem 0.5rem;
       border-radius: 9999px;
-      background: rgba(0, 0, 0, 0.25);
+      background: rgba(255, 255, 255, 0.1);
       color: inherit;
     }}
     .tab-btn.active .tab-badge {{
-      background: rgba(0, 0, 0, 0.2);
-      color: #0b0f19;
-      font-weight: 700;
+      background: rgba(59, 130, 246, 0.15);
+      color: var(--primary);
     }}
 
     .btn {{
       display: inline-flex;
       align-items: center;
       gap: 0.4rem;
-      padding: 0.45rem 0.9rem;
+      padding: 0.5rem 1rem;
       border-radius: 6px;
       font-size: 0.85rem;
       font-weight: 600;
       text-decoration: none;
       border: 1px solid transparent;
       cursor: pointer;
-      transition: all 0.15s ease;
+      transition: all 0.2s ease;
+      box-shadow: var(--shadow-sm);
     }}
     .btn-secondary {{
-      background: rgba(255, 255, 255, 0.08);
+      background: rgba(255, 255, 255, 0.05);
       color: var(--text);
-      border-color: var(--border);
+      border-color: rgba(255,255,255,0.1);
     }}
     .btn-secondary:hover {{
-      background: rgba(255, 255, 255, 0.15);
+      background: rgba(255, 255, 255, 0.1);
       color: #fff;
+      border-color: rgba(255,255,255,0.2);
     }}
     .btn-primary {{
       background: var(--primary);
-      color: #0b0f19;
+      color: #fff;
+      border-color: var(--primary-hover);
     }}
     .btn-primary:hover {{
       background: var(--primary-hover);
-      color: #fff;
+      box-shadow: 0 0 12px rgba(59, 130, 246, 0.4);
     }}
 
-    /* Main Container */
     main {{
       flex: 1;
       display: flex;
@@ -196,7 +252,6 @@ def render_explorer_html(case_id: str, case_info: dict[str, Any]) -> str:
       overflow: hidden;
       position: relative;
     }}
-
     .tab-pane {{
       display: none;
       flex: 1;
@@ -208,81 +263,83 @@ def render_explorer_html(case_id: str, case_info: dict[str, Any]) -> str:
       display: flex;
     }}
 
-    /* Tab 1: Log & Event Explorer */
+    /* Tab 1: Toolbar */
     .filter-toolbar {{
       background: var(--card-bg);
       border-bottom: 1px solid var(--border);
-      padding: 0.75rem 1.5rem;
+      padding: 0.85rem 1.75rem;
       display: flex;
       flex-wrap: wrap;
-      gap: 0.75rem;
+      gap: 0.85rem;
       align-items: center;
       flex-shrink: 0;
+      z-index: 10;
     }}
     .search-box {{
       flex: 1;
-      min-width: 260px;
+      min-width: 280px;
       position: relative;
     }}
-    .search-input {{
-      width: 100%;
-      background: #080c14;
+    .search-input, .filter-select {{
+      background: rgba(0,0,0,0.2);
       border: 1px solid var(--border);
       color: var(--text);
       font-size: 0.875rem;
-      padding: 0.5rem 0.85rem 0.5rem 2.2rem;
       border-radius: 6px;
       outline: none;
-      transition: border-color 0.15s ease;
+      transition: all 0.2s ease;
     }}
-    .search-input:focus {{
+    .search-input {{
+      width: 100%;
+      padding: 0.5rem 1rem 0.5rem 2.5rem;
+    }}
+    .filter-select {{
+      padding: 0.5rem 1rem;
+      cursor: pointer;
+    }}
+    .search-input:focus, .filter-select:focus {{
       border-color: var(--primary);
+      box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.25);
     }}
     .search-icon {{
       position: absolute;
-      left: 0.75rem;
+      left: 0.85rem;
       top: 50%;
       transform: translateY(-50%);
       color: var(--text-dim);
       pointer-events: none;
     }}
-    .filter-select {{
-      background: #080c14;
-      border: 1px solid var(--border);
-      color: var(--text);
-      font-size: 0.85rem;
-      padding: 0.5rem 0.75rem;
-      border-radius: 6px;
-      outline: none;
-      cursor: pointer;
-    }}
-    .filter-select:focus {{
-      border-color: var(--primary);
-    }}
+    
     .pill-group {{
       display: flex;
       gap: 0.35rem;
+      background: rgba(0,0,0,0.15);
+      padding: 0.25rem;
+      border-radius: 8px;
+      border: 1px solid var(--border);
     }}
     .sev-pill {{
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid var(--border);
+      background: transparent;
+      border: 1px solid transparent;
       color: var(--text-muted);
-      padding: 0.35rem 0.65rem;
+      padding: 0.35rem 0.75rem;
       font-size: 0.8rem;
-      border-radius: 6px;
+      font-weight: 600;
+      border-radius: 5px;
       cursor: pointer;
-      transition: all 0.15s ease;
+      transition: all 0.2s ease;
     }}
     .sev-pill:hover {{
       color: #fff;
+      background: rgba(255,255,255,0.05);
     }}
-    .sev-pill.active-all {{ background: rgba(255, 255, 255, 0.15); color: #fff; border-color: var(--text-muted); }}
-    .sev-pill.active-high {{ background: var(--high-bg); color: #f87171; border-color: var(--high); }}
-    .sev-pill.active-med {{ background: var(--med-bg); color: #fbbf24; border-color: var(--med); }}
-    .sev-pill.active-low {{ background: var(--low-bg); color: #34d399; border-color: var(--low); }}
-    .sev-pill.active-info {{ background: var(--info-bg); color: #38bdf8; border-color: var(--info); }}
+    .sev-pill.active-all {{ background: rgba(255, 255, 255, 0.1); color: #fff; }}
+    .sev-pill.active-high {{ background: var(--high-bg); color: #fca5a5; box-shadow: 0 0 0 1px var(--high) inset; }}
+    .sev-pill.active-med {{ background: var(--med-bg); color: #fcd34d; box-shadow: 0 0 0 1px var(--med) inset; }}
+    .sev-pill.active-low {{ background: var(--low-bg); color: #6ee7b7; box-shadow: 0 0 0 1px var(--low) inset; }}
+    .sev-pill.active-info {{ background: var(--info-bg); color: #7dd3fc; box-shadow: 0 0 0 1px var(--info) inset; }}
 
-    /* Table & Event Grid */
+    /* Table */
     .table-container {{
       flex: 1;
       overflow: auto;
@@ -290,128 +347,142 @@ def render_explorer_html(case_id: str, case_info: dict[str, Any]) -> str:
     }}
     table.events-table {{
       width: 100%;
-      border-collapse: collapse;
+      border-collapse: separate;
+      border-spacing: 0;
       text-align: left;
       font-size: 0.875rem;
     }}
     table.events-table th {{
       position: sticky;
       top: 0;
-      background: #0f172a;
+      background: var(--glass);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
       color: var(--text-muted);
       font-weight: 600;
-      padding: 0.65rem 1rem;
+      padding: 0.75rem 1.25rem;
       border-bottom: 1px solid var(--border);
       z-index: 10;
       white-space: nowrap;
       user-select: none;
+      text-transform: uppercase;
+      font-size: 0.75rem;
+      letter-spacing: 0.05em;
     }}
-    table.events-table th.sortable {{
-      cursor: pointer;
-    }}
-    table.events-table th.sortable:hover {{
-      color: #fff;
-    }}
+    table.events-table th.sortable {{ cursor: pointer; transition: color 0.2s; }}
+    table.events-table th.sortable:hover {{ color: #fff; }}
+    
     table.events-table td {{
-      padding: 0.65rem 1rem;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+      padding: 0.75rem 1.25rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.03);
       vertical-align: top;
+      transition: background 0.15s;
     }}
     table.events-table tr:hover td {{
-      background: rgba(255, 255, 255, 0.02);
+      background: rgba(255, 255, 255, 0.03);
     }}
     table.events-table tr.expanded-parent td {{
-      background: rgba(56, 189, 248, 0.03);
+      background: rgba(59, 130, 246, 0.04);
       border-bottom: none;
     }}
 
     .timestamp-cell {{
       font-family: var(--font-mono);
       font-size: 0.8rem;
-      color: #cbd5e1;
+      color: #94a3b8;
       white-space: nowrap;
     }}
     .user-tag {{
       font-family: var(--font-mono);
-      background: rgba(255, 255, 255, 0.06);
-      padding: 0.15rem 0.45rem;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      padding: 0.15rem 0.5rem;
       border-radius: 4px;
-      font-size: 0.8rem;
+      font-size: 0.75rem;
       color: #e2e8f0;
       display: inline-block;
     }}
     .category-tag {{
-      font-size: 0.775rem;
+      font-size: 0.75rem;
       color: var(--text-muted);
-      background: rgba(255, 255, 255, 0.04);
+      background: rgba(255, 255, 255, 0.05);
       padding: 0.15rem 0.5rem;
       border-radius: 4px;
       white-space: nowrap;
+      text-transform: capitalize;
     }}
     .subcat-tag {{
       font-family: var(--font-mono);
       font-size: 0.75rem;
-      color: var(--accent);
+      color: var(--primary);
     }}
     .desc-cell {{
-      color: #e2e8f0;
+      color: #f1f5f9;
       max-width: 500px;
       word-break: break-word;
+      font-weight: 500;
     }}
     .artifact-link {{
       font-family: var(--font-mono);
-      font-size: 0.775rem;
+      font-size: 0.75rem;
       color: var(--primary);
       text-decoration: none;
       cursor: pointer;
       display: inline-block;
-      max-width: 220px;
+      max-width: 200px;
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
+      padding: 0.15rem 0.4rem;
+      border-radius: 4px;
+      transition: background 0.2s;
     }}
     .artifact-link:hover {{
+      background: rgba(59, 130, 246, 0.1);
       text-decoration: underline;
     }}
 
     .badge-sev {{
       display: inline-block;
-      padding: 0.15rem 0.5rem;
-      border-radius: 4px;
-      font-size: 0.725rem;
+      padding: 0.15rem 0.6rem;
+      border-radius: 9999px;
+      font-size: 0.7rem;
       font-weight: 700;
       text-transform: uppercase;
+      letter-spacing: 0.05em;
     }}
-    .badge-sev-high {{ background: var(--high-bg); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.3); }}
-    .badge-sev-medium {{ background: var(--med-bg); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.3); }}
-    .badge-sev-low {{ background: var(--low-bg); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); }}
-    .badge-sev-info {{ background: var(--info-bg); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.3); }}
+    .badge-sev-high {{ background: var(--high-bg); color: #fca5a5; border: 1px solid rgba(239,68,68,0.4); }}
+    .badge-sev-medium {{ background: var(--med-bg); color: #fcd34d; border: 1px solid rgba(245,158,11,0.4); }}
+    .badge-sev-low {{ background: var(--low-bg); color: #6ee7b7; border: 1px solid rgba(16,185,129,0.4); }}
+    .badge-sev-info {{ background: var(--info-bg); color: #7dd3fc; border: 1px solid rgba(14,165,233,0.4); }}
 
     /* Expand Drawer */
     tr.event-detail-row {{
-      background: #0b1120;
+      background: #0f172a;
     }}
     .detail-drawer {{
-      padding: 1.25rem 1.5rem;
-      border-top: 1px dashed var(--border);
+      padding: 1.5rem 2rem 2rem 4rem;
       border-bottom: 1px solid var(--border);
+      box-shadow: inset 0 4px 6px -4px rgba(0,0,0,0.5);
     }}
     .detail-grid {{
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 1rem;
-      margin-bottom: 1rem;
-      background: rgba(0, 0, 0, 0.3);
-      padding: 1rem;
-      border-radius: 6px;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1.25rem;
+      margin-bottom: 1.5rem;
+      background: rgba(0,0,0,0.2);
+      border: 1px solid rgba(255,255,255,0.05);
+      padding: 1.25rem;
+      border-radius: 8px;
       font-size: 0.825rem;
     }}
     .detail-item strong {{
       color: var(--text-dim);
       display: block;
-      margin-bottom: 0.2rem;
-      font-size: 0.75rem;
+      margin-bottom: 0.3rem;
+      font-size: 0.7rem;
       text-transform: uppercase;
+      letter-spacing: 0.05em;
     }}
     .detail-item span {{
       color: #e2e8f0;
@@ -419,40 +490,43 @@ def render_explorer_html(case_id: str, case_info: dict[str, Any]) -> str:
       word-break: break-all;
     }}
     .raw-box {{
-      background: #050810;
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      padding: 1rem;
+      background: #030712;
+      border: 1px solid #1f2937;
+      border-radius: 8px;
+      padding: 1.25rem;
       font-family: var(--font-mono);
       font-size: 0.825rem;
       color: #38bdf8;
       overflow-x: auto;
       white-space: pre-wrap;
       word-break: break-all;
-      margin-bottom: 0.75rem;
+      margin-bottom: 1rem;
+      box-shadow: inset 0 2px 4px rgba(0,0,0,0.5);
     }}
     .drawer-actions {{
       display: flex;
       gap: 0.75rem;
     }}
 
-    /* Pagination Footer */
+    /* Pagination */
     .table-footer {{
       background: var(--card-bg);
       border-top: 1px solid var(--border);
-      padding: 0.65rem 1.5rem;
+      padding: 0.75rem 1.75rem;
       display: flex;
       justify-content: space-between;
       align-items: center;
       flex-shrink: 0;
       font-size: 0.85rem;
       color: var(--text-muted);
+      box-shadow: 0 -1px 2px rgba(0,0,0,0.05);
     }}
     .pagination-controls {{
       display: flex;
-      gap: 0.5rem;
+      gap: 0.75rem;
       align-items: center;
     }}
+    #page-display {{ font-weight: 600; color: var(--text); }}
 
     /* Tab 2: Artifact Explorer */
     .dual-pane {{
@@ -461,15 +535,17 @@ def render_explorer_html(case_id: str, case_info: dict[str, Any]) -> str:
       overflow: hidden;
     }}
     .tree-pane {{
-      width: 380px;
+      width: 400px;
       background: var(--card-bg);
       border-right: 1px solid var(--border);
       display: flex;
       flex-direction: column;
       flex-shrink: 0;
+      box-shadow: 2px 0 8px rgba(0,0,0,0.1);
+      z-index: 5;
     }}
     .tree-search {{
-      padding: 0.75rem 1rem;
+      padding: 1rem;
       border-bottom: 1px solid var(--border);
     }}
     .tree-content {{
@@ -478,59 +554,57 @@ def render_explorer_html(case_id: str, case_info: dict[str, Any]) -> str:
       padding: 0.5rem;
     }}
     .tree-folder {{
-      margin-bottom: 0.5rem;
+      margin-bottom: 0.75rem;
     }}
     .tree-folder-title {{
-      font-size: 0.8rem;
+      font-size: 0.75rem;
       font-weight: 700;
       color: var(--text-dim);
       text-transform: uppercase;
-      padding: 0.35rem 0.5rem;
+      letter-spacing: 0.05em;
+      padding: 0.5rem 0.75rem;
       display: flex;
       align-items: center;
-      gap: 0.4rem;
+      gap: 0.5rem;
     }}
     .tree-file {{
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 0.4rem 0.65rem;
+      padding: 0.4rem 0.75rem 0.4rem 1.5rem;
       border-radius: 6px;
       cursor: pointer;
-      font-size: 0.825rem;
+      font-size: 0.8rem;
       font-family: var(--font-mono);
       color: var(--text-muted);
       transition: all 0.15s ease;
+      margin-bottom: 2px;
     }}
     .tree-file:hover {{
-      background: rgba(255, 255, 255, 0.05);
+      background: rgba(255, 255, 255, 0.04);
       color: #fff;
     }}
     .tree-file.selected {{
-      background: rgba(56, 189, 248, 0.15);
+      background: rgba(59, 130, 246, 0.15);
       color: var(--primary);
       font-weight: 600;
+      border-left: 3px solid var(--primary);
+      padding-left: calc(1.5rem - 3px);
     }}
-    .file-size {{
-      font-size: 0.75rem;
-      color: var(--text-dim);
-    }}
-    .file-badge-ok {{
-      color: #34d399;
-      font-size: 0.75rem;
-    }}
+    .file-size {{ font-size: 0.7rem; color: var(--text-dim); }}
+    .file-badge-ok {{ color: #10b981; font-size: 0.75rem; }}
 
     .viewer-pane {{
       flex: 1;
       display: flex;
       flex-direction: column;
       overflow: hidden;
-      background: #080c14;
+      background: var(--bg);
     }}
     .viewer-header {{
       background: var(--card-bg);
       border-bottom: 1px solid var(--border);
-      padding: 0.75rem 1.5rem;
+      padding: 0.85rem 1.5rem;
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -538,98 +612,116 @@ def render_explorer_html(case_id: str, case_info: dict[str, Any]) -> str:
     }}
     .file-meta-tags {{
       display: flex;
-      gap: 0.75rem;
-      font-size: 0.8rem;
+      gap: 1rem;
+      font-size: 0.75rem;
       color: var(--text-muted);
       align-items: center;
-      margin-top: 0.25rem;
+      margin-top: 0.35rem;
+      font-family: var(--font-mono);
     }}
     .viewer-body {{
       flex: 1;
       overflow: auto;
-      padding: 1rem;
+      padding: 1rem 0;
       font-family: var(--font-mono);
       font-size: 0.85rem;
-      line-height: 1.6;
-      background: #050810;
-      color: #cbd5e1;
-      white-space: pre-wrap;
+      line-height: 1.5;
+      background: #030712;
+      color: #d1d5db;
     }}
     .line-row {{
       display: flex;
+      min-height: 1.5em;
+    }}
+    .line-row:hover {{
+      background: rgba(255, 255, 255, 0.04);
     }}
     .line-num {{
-      width: 45px;
-      color: var(--text-dim);
+      width: 55px;
+      color: #4b5563;
       user-select: none;
       text-align: right;
       padding-right: 1rem;
       flex-shrink: 0;
+      border-right: 1px solid #1f2937;
+      margin-right: 1rem;
     }}
     .line-text {{
       flex: 1;
+      white-space: pre-wrap;
       word-break: break-all;
+      padding-right: 1rem;
     }}
 
     /* Tab 3: Findings Grid */
     .findings-container {{
       flex: 1;
       overflow-y: auto;
-      padding: 1.5rem 2rem;
+      padding: 2rem 2.5rem;
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(480px, 1fr));
-      gap: 1.25rem;
+      gap: 1.5rem;
       align-content: start;
     }}
     .finding-card {{
       background: var(--card-bg);
       border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 1.25rem;
+      border-radius: 10px;
+      padding: 1.5rem;
       display: flex;
       flex-direction: column;
-      gap: 0.85rem;
+      gap: 1rem;
       position: relative;
+      box-shadow: var(--shadow-sm);
+      transition: transform 0.2s, box-shadow 0.2s;
     }}
-    .finding-card.high {{ border-left: 4px solid var(--high); }}
-    .finding-card.medium {{ border-left: 4px solid var(--med); }}
-    .finding-card.low {{ border-left: 4px solid var(--low); }}
+    .finding-card:hover {{
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-md);
+    }}
+    .finding-card.high {{ border-top: 4px solid var(--high); }}
+    .finding-card.medium {{ border-top: 4px solid var(--med); }}
+    .finding-card.low {{ border-top: 4px solid var(--low); }}
+    
     .finding-title {{
-      font-size: 1.05rem;
+      font-size: 1.1rem;
       font-weight: 700;
       color: #fff;
       display: flex;
       justify-content: space-between;
-      align-items: center;
+      align-items: flex-start;
+      gap: 1rem;
     }}
     .finding-section {{
       font-size: 0.85rem;
-      line-height: 1.5;
+      line-height: 1.6;
+      color: #d1d5db;
     }}
     .finding-section strong {{
-      color: var(--primary);
+      color: var(--text-muted);
       display: block;
-      margin-bottom: 0.2rem;
-      font-size: 0.775rem;
+      margin-bottom: 0.3rem;
+      font-size: 0.75rem;
       text-transform: uppercase;
       letter-spacing: 0.05em;
     }}
     .finding-tech {{
-      background: #080c14;
-      border: 1px solid var(--border);
-      border-radius: 4px;
-      padding: 0.5rem 0.75rem;
+      background: rgba(0,0,0,0.3);
+      border: 1px solid rgba(255,255,255,0.05);
+      border-radius: 6px;
+      padding: 0.75rem 1rem;
       font-family: var(--font-mono);
-      font-size: 0.775rem;
+      font-size: 0.8rem;
       color: var(--text-muted);
     }}
 
     .empty-state {{
       text-align: center;
-      padding: 4rem 2rem;
+      padding: 5rem 2rem;
       color: var(--text-dim);
+      font-size: 1rem;
     }}
-    .empty-state .icon {{ font-size: 2.5rem; margin-bottom: 0.5rem; }}
+    .empty-state .icon {{ font-size: 3rem; margin-bottom: 1rem; opacity: 0.5; }}
   </style>
 </head>
 <body>
@@ -1082,12 +1174,8 @@ def render_explorer_html(case_id: str, case_info: dict[str, Any]) -> str:
         const lines = data.content.split('\\n');
         let linesHtml = '';
         lines.forEach((line, idx) => {{
-          linesHtml += `
-            <div class="line-row">
-              <div class="line-num">${{idx + 1}}</div>
-              <div class="line-text">${{escapeHtml(line)}}</div>
-            </div>
-          `;
+          const cleanLine = line.replace(/\\r$/, '');
+          linesHtml += `<div class="line-row"><div class="line-num">${{idx + 1}}</div><div class="line-text">${{escapeHtml(cleanLine) || '&nbsp;'}}</div></div>`;
         }});
         bodyEl.innerHTML = linesHtml;
       }} catch (err) {{

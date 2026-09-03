@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>LFA Forensic Report - Case {{ summary.case_id }}</title>
   <style>
-    {{ inline_css }}
+    {{ inline_css | safe }}
   </style>
 </head>
 <body>
@@ -347,7 +347,7 @@ Host ID: {{ f.host_id or 'Default' }} | Finding ID: {{ f.finding_id }}</code></p
   </div>
 
   <script>
-    {{ inline_js }}
+    {{ inline_js | safe }}
   </script>
 </body>
 </html>

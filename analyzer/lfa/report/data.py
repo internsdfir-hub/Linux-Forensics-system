@@ -156,8 +156,8 @@ def get_categorized_intel(conn: sqlite3.Connection) -> dict:
     intel["system"] = [
         dict(r) for r in _rows(
             conn,
-            "SELECT subcategory, description, raw_line "
-            "FROM events WHERE category = 'environment' "
+            "SELECT subcategory, description, raw_line, timestamp_utc "
+            "FROM events WHERE category = 'environment' AND subcategory != 'journal_message' "
             "ORDER BY subcategory, timestamp_utc"
         )
     ]
@@ -168,7 +168,14 @@ def get_categorized_intel(conn: sqlite3.Connection) -> dict:
             conn,
             "SELECT category, subcategory, timestamp_utc, description "
             "FROM events WHERE category IN ('network_config', 'persistence', 'software_changes') "
-            "ORDER BY category, timestamp_utc"
+            "ORDER BY "
+            "  CASE "
+            "    WHEN category = 'persistence' THEN 1 "
+            "    WHEN category = 'network_config' THEN 2 "
+            "    ELSE 3 "
+            "  END, "
+            "  timestamp_utc DESC "
+            "LIMIT 500"
         )
     ]
 

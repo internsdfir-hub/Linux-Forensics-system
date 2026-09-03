@@ -1,5 +1,5 @@
-// Vanilla JS table filter and sorting
-document.addEventListener('DOMContentLoaded', () => {
+// Vanilla JS table filter and tab switching
+function initReportInteractive() {
   const searchInput = document.getElementById('event-filter');
   const table = document.getElementById('events-table');
   if (searchInput && table) {
@@ -13,20 +13,29 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // Tab switching logic
+  // Tab switching logic for Forensic Intel
   const tabBtns = document.querySelectorAll('.tab-btn');
   const tabContents = document.querySelectorAll('.tab-content');
-  
+
   tabBtns.forEach(btn => {
     btn.addEventListener('click', () => {
+      const targetId = btn.getAttribute('data-target');
+      const targetEl = targetId ? document.getElementById(targetId) : null;
+      if (!targetEl) return;
+
       // Remove active from all
       tabBtns.forEach(b => b.classList.remove('active'));
       tabContents.forEach(c => c.classList.remove('active'));
-      
+
       // Add active to clicked
       btn.classList.add('active');
-      const targetId = btn.getAttribute('data-target');
-      document.getElementById(targetId).classList.add('active');
+      targetEl.classList.add('active');
     });
   });
-});
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initReportInteractive);
+} else {
+  initReportInteractive();
+}
