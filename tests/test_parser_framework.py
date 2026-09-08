@@ -122,3 +122,67 @@ def test_context_build_event_fills_provenance(tmp_path):
     from lfa.schema import validate
 
     assert validate(ev) == []
+
+
+CONTAMINATION = {
+    "operator_user": "root",
+    "operator_login_user": "kali",
+    "source_ip": "",
+    "tty": "pts/0",
+    "pid": "4242",
+    "start_utc": "2024-03-14T02:00:00Z",
+    "end_utc": "2024-03-14T02:05:00Z",
+}
+
+
+def _ctx_with_contamination():
+    from lfa.parsers.base import ParseContext
+    from lfa.timeeng import TimeContext
+
+    return ParseContext(
+        case_id="CASE-C",
+        host_id="host-c",
+        raw_host_dir=Path("."),
+        time_ctx=TimeContext("UTC", "etc_localtime"),
+        distro_profile={},
+        contamination=CONTAMINATION,
+    )
+
+
+def test_local_operator_session_is_tagged():
+    """No source IP, operator's login name, inside the window -> ours."""
+    ctx = _ctx_with_contamination()
+
+    assert ctx.is_tool_generated(None, "2024-03-14T02:01:00+00:00", "kali") is True
+
+
+def test_local_operator_matches_sudo_elevated_name_too():
+    ctx = _ctx_with_contamination()
+
+    assert ctx.is_tool_generated(None, "2024-03-14T02:01:00+00:00", "root") is True
+
+
+def test_local_session_outside_the_window_is_not_tagged():
+    ctx = _ctx_with_contamination()
+
+    assert ctx.is_tool_generated(None, "2024-03-14T09:00:00+00:00", "kali") is False
+
+
+def test_different_user_in_the_window_is_not_tagged():
+    ctx = _ctx_with_contamination()
+
+    assert ctx.is_tool_generated(None, "2024-03-14T02:01:00+00:00", "backdooruser") is False
+
+
+def test_remote_event_in_the_window_is_not_tagged_by_the_local_path():
+    """An event with a source IP must go through the IP rule, not the local one."""
+    ctx = _ctx_with_contamination()
+
+    assert ctx.is_tool_generated("203.0.113.9", "2024-03-14T02:01:00+00:00", "kali") is False
+
+
+def test_two_argument_calls_still_work():
+    """Existing parsers call this with two arguments; that must not break."""
+    ctx = _ctx_with_contamination()
+
+    assert ctx.is_tool_generated(None, "2024-03-14T02:01:00+00:00") is False

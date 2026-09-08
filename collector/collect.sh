@@ -402,6 +402,9 @@ fi
 # ------------------------------------------------ P1b contamination record --
 
 OP_USER=$(id -un 2>/dev/null || printf 'unknown')
+# Under sudo, id -un reports root. The human being audited is SUDO_USER, and
+# that is the name their session events will actually carry.
+OP_LOGIN_USER="${SUDO_USER:-$OP_USER}"
 # tty(1) prints "not a tty" on stdout AND exits nonzero - capture then check
 OP_TTY=$(tty 2>/dev/null)
 if [ $? -ne 0 ] || [ -z "$OP_TTY" ]; then OP_TTY="none"; fi
@@ -410,7 +413,7 @@ OP_SRC_IP=""
 if [ -n "${SSH_CONNECTION:-}" ]; then
     OP_SRC_IP=$(printf '%s' "$SSH_CONNECTION" | awk '{print $1}')
 fi
-log "P1b contamination: user=$OP_USER tty=$OP_TTY pid=$OP_PID src=$OP_SRC_IP"
+log "P1b contamination: user=$OP_USER login_user=$OP_LOGIN_USER tty=$OP_TTY pid=$OP_PID src=$OP_SRC_IP"
 
 # ------------------------------------------------- P3 static file collect --
 
@@ -631,8 +634,9 @@ DEGRADE_JSON=$(awk 'NR>1{printf ","} {printf "%s", $0}' "$DEGRADE_JSONL")
     printf '  },\n'
     printf '  "privilege": {"euid": "%s", "is_root": %s, "warnings": "%s"},\n' \
         "$EUID_V" "$IS_ROOT" "$(json_escape "$PRIV_WARNINGS")"
-    printf '  "contamination": {"operator_user": "%s", "source_ip": "%s", "tty": "%s", "pid": "%s", "start_utc": "%s", "end_utc": "%s"},\n' \
-        "$(json_escape "$OP_USER")" "$(json_escape "$OP_SRC_IP")" \
+    printf '  "contamination": {"operator_user": "%s", "operator_login_user": "%s", "source_ip": "%s", "tty": "%s", "pid": "%s", "start_utc": "%s", "end_utc": "%s"},\n' \
+        "$(json_escape "$OP_USER")" "$(json_escape "$OP_LOGIN_USER")" \
+        "$(json_escape "$OP_SRC_IP")" \
         "$(json_escape "$OP_TTY")" "$OP_PID" "$START_UTC" "$END_UTC"
     printf '  "journald": {"available": %s, "persistent": %s, "exported_boots": %s},\n' \
         "$( [ -n "$JCTL" ] && printf 'true' || printf 'false' )" \

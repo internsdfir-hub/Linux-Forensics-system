@@ -41,28 +41,60 @@ class ParseContext:
     contamination: dict = field(default_factory=dict)
 
     def is_tool_generated(self, source_ip: str | None,
-                          ts_utc_iso: str | None) -> bool:
+                          ts_utc_iso: str | None,
+                          actor_user: str | None = None) -> bool:
         """Auto-tag our own collection session (P1b contamination record):
         events from the operator's source IP inside the collection window
         must never show up as findings (spec: 'without this the tool reports
-        its own operator as a suspicious 3am login')."""
+        its own operator as a suspicious 3am login').
+
+        Two paths. Remote collection is identified by source IP. Local
+        collection has no source IP at all, so it is identified by the
+        operator's username INSIDE the collection window - normally seconds
+        to minutes, which keeps the false-positive risk bounded."""
         if not self.contamination:
             return False
-        op_ip = self.contamination.get("source_ip")
-        if not op_ip or not source_ip or source_ip != op_ip:
-            return False
+
         start = self.contamination.get("start_utc")
         end = self.contamination.get("end_utc")
+        op_ip = self.contamination.get("source_ip")
+
+        if source_ip:
+            if not op_ip or source_ip != op_ip:
+                return False
+            if not (start and end and ts_utc_iso):
+                # same IP but no window to check: still safer to tag
+                return True
+            return self._within_collection_window(ts_utc_iso, start, end, default=True)
+
+        # local collection: no source IP to match on
+        if not actor_user:
+            return False
+        operators = {
+            self.contamination.get("operator_user"),
+            self.contamination.get("operator_login_user"),
+        }
+        operators.discard(None)
+        operators.discard("")
+        if actor_user not in operators:
+            return False
         if not (start and end and ts_utc_iso):
-            # same IP but no window to check: still safer to tag
-            return True
+            # a local username with no window is far too broad to tag
+            return False
+        return self._within_collection_window(ts_utc_iso, start, end, default=False)
+
+    @staticmethod
+    def _within_collection_window(ts_utc_iso: str, start: str, end: str,
+                                  *, default: bool) -> bool:
+        """True when ts falls inside [start-5min, end+5min]. `default` is
+        returned when a timestamp cannot be parsed at all."""
         norm = lambda s: s.replace("Z", "+00:00")
         try:
             ts = datetime.fromisoformat(norm(ts_utc_iso))
             lo = datetime.fromisoformat(norm(start)) - timedelta(minutes=5)
             hi = datetime.fromisoformat(norm(end)) + timedelta(minutes=5)
         except ValueError:
-            return True
+            return default
         return lo <= ts <= hi
 
     def build_event(self, **kwargs) -> NormalizedEvent:

@@ -83,7 +83,9 @@ class SyslogTextParser(BaseParser):
                     severity=rule["severity"],
                     raw_line=line,
                     raw_line_offset=offset,
-                    tool_generated_flag=context.is_tool_generated(source_ip, utc),
+                    tool_generated_flag=context.is_tool_generated(
+                        source_ip, utc, groups.get("user")
+                    ),
                     notes=f"grammar:{rule_name}",
                 )
 

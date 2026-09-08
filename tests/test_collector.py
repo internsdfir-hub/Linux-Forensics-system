@@ -7,6 +7,7 @@ the never-abort rule.
 """
 import csv
 import json
+import os
 import shutil
 import subprocess
 import tarfile
@@ -216,4 +217,27 @@ def test_dash_available_for_posix_strictness():
     if "dash" not in SHELLS:
         pytest.skip("dash is not installed on this host (run in Linux/WSL for POSIX-strictness testing)")
     assert "dash" in SHELLS
+
+
+@pytest.mark.parametrize("shell", SHELLS)
+def test_manifest_records_sudo_login_user(tmp_path, shell):
+    """Under sudo, id -un reports root; the human's name must survive."""
+    root = make_fakeroot(tmp_path)
+    out = tmp_path / "out"
+
+    env = dict(os.environ)
+    env["SUDO_USER"] = "analyst"
+
+    subprocess.run(
+        [shell, str(COLLECT_SH), "-r", str(root), "-o", str(out), "-c", "CASE-SUDO"],
+        check=False,
+        capture_output=True,
+        env=env,
+    )
+
+    manifest = json.loads((out / "manifest.json").read_text(encoding="utf-8"))
+    contamination = manifest["contamination"]
+
+    assert contamination["operator_login_user"] == "analyst"
+    assert "operator_user" in contamination
 
