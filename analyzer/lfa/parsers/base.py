@@ -152,6 +152,7 @@ class ParserRun:
             p.name: {"success": 0, "fail": 0, "events": 0} for p in parsers
         }
         self.skipped: list[str] = []
+        self.failures: list[str] = []
         self.artifact_results: list[dict] = []
 
     def _log_error(self, parser: BaseParser, rel_path: str, exc: BaseException) -> None:
@@ -186,6 +187,7 @@ class ParserRun:
             except Exception as exc:  # isolation boundary: never fail the run
                 self._log_error(parser, rel_path, exc)
                 self.stats[parser.name]["fail"] += 1
+                self.failures.append(rel_path)
                 self.artifact_results.append(
                     {"artifact": rel_path, "parser": parser.name,
                      "status": "fail", "events": 0, "error": repr(exc)}

@@ -108,3 +108,96 @@ def test_stats_persisted_for_methodology_section(tmp_path):
     stats = json.loads(raw)
     assert stats["authlog_parser"]["success"] >= 1
     conn.close()
+
+
+def test_crashed_parser_is_recorded_as_fail(tmp_path, monkeypatch):
+    """A parser that raises must not be recorded as a successful parse."""
+    from lfa import db, pipeline
+    from lfa.parsers.base import BaseParser
+
+    from bundle_builder import build_bundle
+
+    class ExplodingParser(BaseParser):
+        name = "exploding_parser"
+        version = "1.0"
+        artifact_category = "user_accounts"
+        applies_to = ["etc/passwd"]
+
+        def parse(self, path, context):
+            raise RuntimeError("boom")
+            yield  # pragma: no cover - makes this a generator
+
+    monkeypatch.setattr(
+        pipeline, "discover_parsers", lambda: [ExplodingParser()]
+    )
+
+    bundle = build_bundle(
+        tmp_path / "src",
+        {"/etc/passwd": b"root:x:0:0:root:/root:/bin/bash\n"},
+    )
+    case_dir = tmp_path / "case"
+
+    from lfa import ingest
+    ingest.ingest_bundle(bundle, case_dir, "Examiner")
+
+    conn = db.open_case(case_dir / "case.db")
+    pipeline.parse_case(conn, case_dir, "CASE-FAIL")
+
+    row = conn.execute(
+        "SELECT parse_status, parse_events FROM artifacts "
+        "WHERE original_path = '/etc/passwd'"
+    ).fetchone()
+    conn.close()
+
+    assert row is not None, "artifact row was not recorded at all"
+    assert row[0] == "fail", f"expected parse_status='fail', got {row[0]!r}"
+    assert row[1] == 0
+
+
+def test_successful_parser_is_still_recorded_as_success(tmp_path, monkeypatch):
+    from lfa import db, ingest, pipeline
+    from lfa.parsers.base import BaseParser
+
+    from bundle_builder import build_bundle
+
+    class WorkingParser(BaseParser):
+        name = "working_parser"
+        version = "1.0"
+        artifact_category = "user_accounts"
+        applies_to = ["etc/passwd"]
+
+        def parse(self, path, context):
+            yield context.build_event(
+                event_kind="event",
+                timestamp_utc="2024-03-14T02:19:07+00:00",
+                timestamp_local="2024-03-14T02:19:07+00:00",
+                timestamp_confidence="exact",
+                category="user_accounts",
+                subcategory="account",
+                actor_user="root",
+                description="root account present",
+                severity="info",
+                raw_line="root:x:0:0:root:/root:/bin/bash",
+                raw_line_offset=0,
+            )
+
+    monkeypatch.setattr(pipeline, "discover_parsers", lambda: [WorkingParser()])
+
+    bundle = build_bundle(
+        tmp_path / "src",
+        {"/etc/passwd": b"root:x:0:0:root:/root:/bin/bash\n"},
+    )
+    case_dir = tmp_path / "case"
+    ingest.ingest_bundle(bundle, case_dir, "Examiner")
+
+    conn = db.open_case(case_dir / "case.db")
+    pipeline.parse_case(conn, case_dir, "CASE-OK")
+
+    row = conn.execute(
+        "SELECT parse_status, parse_events FROM artifacts "
+        "WHERE original_path = '/etc/passwd'"
+    ).fetchone()
+    conn.close()
+
+    assert row[0] == "success"
+    assert row[1] == 1

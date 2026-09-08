@@ -31,6 +31,7 @@ class PipelineStats:
     events_deduped: int = 0
     events_invalid: int = 0
     skipped: list[str] = field(default_factory=list)
+    failed: list[str] = field(default_factory=list)
     parser_stats: dict = field(default_factory=dict)
 
 
@@ -116,8 +117,10 @@ def parse_case(conn, case_dir: str | Path, case_id: str) -> PipelineStats:
             )
 
             before_skips = len(run.skipped)
+            before_fails = len(run.failures)
             events = run.parse_artifact(path, artifact_rel, context)
             was_skipped = len(run.skipped) > before_skips
+            was_failed = len(run.failures) > before_fails
 
             if events:
                 insert = db.insert_events(conn, events)
@@ -125,22 +128,35 @@ def parse_case(conn, case_dir: str | Path, case_id: str) -> PipelineStats:
                 stats.events_deduped += insert.deduped
                 stats.events_invalid += insert.invalid
 
+            # A parser that raised must never be recorded as a success: the
+            # methodology section of the report exists to tell an analyst what
+            # was NOT processed. When several parsers claim one artifact and
+            # any of them failed, "fail" is the honest answer.
+            if was_skipped:
+                artifact_status = "skip"
+            elif was_failed:
+                artifact_status = "fail"
+            else:
+                artifact_status = "success"
+
             _record_artifact(
                 conn,
                 host_id=host_id,
                 row=row,
                 artifact_rel=artifact_rel,
-                status="skip" if was_skipped else ("success" if events or not was_skipped else "fail"),
+                status=artifact_status,
                 events=len(events),
                 had_decode_errors=context.had_decode_errors,
             )
 
     stats.skipped = list(run.skipped)
+    stats.failed = list(run.failures)
     stats.parser_stats = run.stats
     db.set_meta(conn, "parser_stats", json.dumps(run.stats, sort_keys=True))
     db.set_meta(conn, "parser_artifacts",
                 json.dumps(run.artifact_results, sort_keys=True))
     db.set_meta(conn, "parser_skipped", json.dumps(sorted(run.skipped)))
+    db.set_meta(conn, "parser_failed", json.dumps(sorted(run.failures)))
     conn.commit()
     return stats
 
