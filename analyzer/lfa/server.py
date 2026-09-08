@@ -53,26 +53,41 @@ class LFAServerHandler(http.server.BaseHTTPRequestHandler):
         return getattr(self.server, "business_hours", "08-18")
 
     def _check_auth(self) -> bool:
-        """Verify token authentication if configured on server."""
+        """Verify token authentication if configured on server.
+
+        Accepts a Bearer header, an X-LFA-Token header, or an lfa_token
+        cookie. The cookie exists because a browser cannot attach headers to
+        ordinary navigation, and the dashboard has to stay usable.
+        """
         if not self.auth_token:
             return True
+
+        candidates = []
+
         auth_header = self.headers.get("Authorization", "")
-        token_header = self.headers.get("X-LFA-Token", "")
-
-        token = ""
         if auth_header.startswith("Bearer "):
-            token = auth_header[7:].strip()
-        elif token_header:
-            token = token_header.strip()
+            candidates.append(auth_header[7:].strip())
 
-        return secrets.compare_digest(token, self.auth_token)
+        token_header = self.headers.get("X-LFA-Token", "")
+        if token_header:
+            candidates.append(token_header.strip())
+
+        cookie_header = self.headers.get("Cookie", "")
+        if cookie_header:
+            for part in cookie_header.split(";"):
+                name, _, value = part.strip().partition("=")
+                if name == "lfa_token":
+                    candidates.append(value.strip())
+
+        return any(
+            secrets.compare_digest(c, self.auth_token) for c in candidates if c
+        )
 
     def _send_json(self, status_code: int, data: dict[str, Any]) -> None:
         payload = json.dumps(data, indent=2).encode("utf-8")
         self.send_response(status_code)
         self.send_header("Content-Type", "application/json; charset=utf-8")
         self.send_header("Content-Length", str(len(payload)))
-        self.send_header("Access-Control-Allow-Origin", "*")
         self.end_headers()
         self.wfile.write(payload)
 
@@ -84,12 +99,12 @@ class LFAServerHandler(http.server.BaseHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(payload)
 
-    def do_OPTIONS(self) -> None:
-        """Handle CORS pre-flight requests."""
-        self.send_response(204)
-        self.send_header("Access-Control-Allow-Origin", "*")
-        self.send_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
-        self.send_header("Access-Control-Allow-Headers", "Authorization, Content-Type, X-Case-ID, X-Examiner, X-Bundle-SHA256, X-LFA-Token")
+    def _send_redirect(self, location: str, cookie: str | None = None) -> None:
+        self.send_response(302)
+        self.send_header("Location", location)
+        if cookie:
+            self.send_header("Set-Cookie", cookie)
+        self.send_header("Content-Length", "0")
         self.end_headers()
 
     def do_GET(self) -> None:
@@ -99,6 +114,30 @@ class LFAServerHandler(http.server.BaseHTTPRequestHandler):
         if path == "":
             path = "/"
         params = urllib.parse.parse_qs(parsed_url.query)
+
+        # 0. Cookie login, so a browser can reach a token-protected server.
+        #    This is the only path that may be reached without credentials.
+        if path == "/login":
+            supplied = (params.get("token") or [""])[0]
+            if not self.auth_token:
+                self._send_redirect("/")
+                return
+            if supplied and secrets.compare_digest(supplied, self.auth_token):
+                self._send_redirect(
+                    "/",
+                    f"lfa_token={supplied}; HttpOnly; SameSite=Strict; Path=/",
+                )
+                return
+            self._send_json(401, {"error": "Unauthorized: invalid token"})
+            return
+
+        # Everything else requires credentials whenever a token is configured.
+        if not self._check_auth():
+            self._send_json(
+                401,
+                {"error": "Unauthorized: Invalid or missing authentication token"},
+            )
+            return
 
         # 1. Health / Status API
         if path in ("/api/v1/health", "/api/v1/status"):

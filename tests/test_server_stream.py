@@ -124,7 +124,10 @@ def server_instance(tmp_path):
 
 def test_server_health_and_status(server_instance):
     base_url = server_instance["url"]
-    req = urllib.request.Request(f"{base_url}/api/v1/health")
+    token = server_instance["token"]
+    req = urllib.request.Request(
+        f"{base_url}/api/v1/health", headers={"Authorization": f"Bearer {token}"}
+    )
     with urllib.request.urlopen(req) as resp:
         assert resp.status == 200
         data = json.loads(resp.read().decode("utf-8"))
@@ -236,8 +239,10 @@ def test_dashboard_and_report_serving(server_instance, tmp_path):
     )
     urllib.request.urlopen(req_ingest)
 
+    auth_headers = {"Authorization": f"Bearer {token}"}
+
     # GET Dashboard HTML
-    req_dash = urllib.request.Request(f"{base_url}/")
+    req_dash = urllib.request.Request(f"{base_url}/", headers=auth_headers)
     with urllib.request.urlopen(req_dash) as resp:
         assert resp.status == 200
         html = resp.read().decode("utf-8")
@@ -245,7 +250,7 @@ def test_dashboard_and_report_serving(server_instance, tmp_path):
         assert "DASHBOARD_CASE_01" in html
 
     # GET Case list JSON
-    req_cases = urllib.request.Request(f"{base_url}/api/v1/cases")
+    req_cases = urllib.request.Request(f"{base_url}/api/v1/cases", headers=auth_headers)
     with urllib.request.urlopen(req_cases) as resp:
         assert resp.status == 200
         cases_data = json.loads(resp.read().decode("utf-8"))
@@ -253,14 +258,19 @@ def test_dashboard_and_report_serving(server_instance, tmp_path):
         assert cases_data["cases"][0]["case_id"] == "DASHBOARD_CASE_01"
 
     # GET Report HTML
-    req_rep = urllib.request.Request(f"{base_url}/cases/DASHBOARD_CASE_01/report.html")
+    req_rep = urllib.request.Request(
+        f"{base_url}/cases/DASHBOARD_CASE_01/report.html", headers=auth_headers
+    )
     with urllib.request.urlopen(req_rep) as resp:
         assert resp.status == 200
         rep_html = resp.read().decode("utf-8")
         assert "Linux Forensic Analysis Report" in rep_html
 
-    # Security: Path traversal protection
-    req_bad_path = urllib.request.Request(f"{base_url}/cases/../secret.txt")
+    # Security: Path traversal protection (authenticated, so this exercises
+    # the traversal guard rather than the auth gate)
+    req_bad_path = urllib.request.Request(
+        f"{base_url}/cases/../secret.txt", headers=auth_headers
+    )
     with pytest.raises(urllib.error.HTTPError) as exc_info:
         urllib.request.urlopen(req_bad_path)
     assert exc_info.value.code in (400, 404)
@@ -279,8 +289,12 @@ def test_interactive_explorer_and_query_apis(server_instance, tmp_path):
     )
     urllib.request.urlopen(req_ingest)
 
+    auth_headers = {"Authorization": f"Bearer {token}"}
+
     # 1. GET Explorer Page HTML
-    req_exp = urllib.request.Request(f"{base_url}/cases/EXPLORER_CASE_01/explorer")
+    req_exp = urllib.request.Request(
+        f"{base_url}/cases/EXPLORER_CASE_01/explorer", headers=auth_headers
+    )
     with urllib.request.urlopen(req_exp) as resp:
         assert resp.status == 200
         html = resp.read().decode("utf-8")
@@ -290,7 +304,10 @@ def test_interactive_explorer_and_query_apis(server_instance, tmp_path):
         assert "tab-findings" in html
 
     # 2. GET Events API (search, filter, pagination)
-    req_events = urllib.request.Request(f"{base_url}/api/v1/cases/EXPLORER_CASE_01/events?limit=10&offset=0")
+    req_events = urllib.request.Request(
+        f"{base_url}/api/v1/cases/EXPLORER_CASE_01/events?limit=10&offset=0",
+        headers=auth_headers,
+    )
     with urllib.request.urlopen(req_events) as resp:
         assert resp.status == 200
         data = json.loads(resp.read().decode("utf-8"))
@@ -301,14 +318,18 @@ def test_interactive_explorer_and_query_apis(server_instance, tmp_path):
         assert "event_id" in data["events"][0]
 
     # Search keyword query
-    req_search = urllib.request.Request(f"{base_url}/api/v1/cases/EXPLORER_CASE_01/events?q=user1")
+    req_search = urllib.request.Request(
+        f"{base_url}/api/v1/cases/EXPLORER_CASE_01/events?q=user1", headers=auth_headers
+    )
     with urllib.request.urlopen(req_search) as resp:
         assert resp.status == 200
         data_s = json.loads(resp.read().decode("utf-8"))
         assert any("user1" in e["description"] or "user1" in e["raw_line"] for e in data_s["events"])
 
     # 3. GET Artifacts API
-    req_arts = urllib.request.Request(f"{base_url}/api/v1/cases/EXPLORER_CASE_01/artifacts")
+    req_arts = urllib.request.Request(
+        f"{base_url}/api/v1/cases/EXPLORER_CASE_01/artifacts", headers=auth_headers
+    )
     with urllib.request.urlopen(req_arts) as resp:
         assert resp.status == 200
         arts = json.loads(resp.read().decode("utf-8"))
@@ -317,7 +338,10 @@ def test_interactive_explorer_and_query_apis(server_instance, tmp_path):
         assert any("passwd" in a["original_path"] for a in arts["artifacts"])
 
     # 4. GET Artifact Content API
-    req_content = urllib.request.Request(f"{base_url}/api/v1/cases/EXPLORER_CASE_01/artifact-content?path=/etc/passwd")
+    req_content = urllib.request.Request(
+        f"{base_url}/api/v1/cases/EXPLORER_CASE_01/artifact-content?path=/etc/passwd",
+        headers=auth_headers,
+    )
     with urllib.request.urlopen(req_content) as resp:
         assert resp.status == 200
         content_data = json.loads(resp.read().decode("utf-8"))
@@ -326,7 +350,9 @@ def test_interactive_explorer_and_query_apis(server_instance, tmp_path):
         assert len(content_data["sha256"]) == 64
 
     # 5. GET Findings API
-    req_findings = urllib.request.Request(f"{base_url}/api/v1/cases/EXPLORER_CASE_01/findings")
+    req_findings = urllib.request.Request(
+        f"{base_url}/api/v1/cases/EXPLORER_CASE_01/findings", headers=auth_headers
+    )
     with urllib.request.urlopen(req_findings) as resp:
         assert resp.status == 200
         findings_data = json.loads(resp.read().decode("utf-8"))
