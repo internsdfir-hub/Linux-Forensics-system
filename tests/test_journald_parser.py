@@ -181,3 +181,37 @@ def test_journald_sequence_gap_detected(tmp_path, ctx):
     assert "expected seq 102, got 150" in gaps[0].description
     assert gaps[0].severity == "high"
 
+
+
+def test_logind_session_actor_user_has_no_quotes(tmp_path):
+    """End-to-end: a logind journal entry must yield a bare username."""
+    import json as _json
+
+    from lfa.parsers.base import ParseContext
+    from lfa.parsers.journald import JournaldParser
+    from lfa.timeeng import TimeContext
+
+    entry = {
+        "__REALTIME_TIMESTAMP": "1710382747000000",
+        "_COMM": "systemd-logind",
+        "_PID": "712",
+        "USER_ID": "kali",
+        "MESSAGE": "New session 'c1' of user 'kali' with class 'user' and type 'tty'.",
+    }
+    journal = tmp_path / "boot-0.json"
+    journal.write_text(_json.dumps(entry) + "\n", encoding="utf-8")
+
+    context = ParseContext(
+        case_id="CASE-Q",
+        host_id="host-q",
+        raw_host_dir=tmp_path,
+        time_ctx=TimeContext("UTC", "etc_localtime"),
+        distro_profile={"distro_id": "debian"},
+        artifact_rel="journal/boot-0.json",
+        artifact_sha256="b" * 64,
+    )
+
+    events = list(JournaldParser().parse(journal, context))
+    users = {e.actor_user for e in events if e.actor_user}
+
+    assert users == {"kali"}, users

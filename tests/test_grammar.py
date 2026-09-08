@@ -90,3 +90,70 @@ def test_every_rule_declares_required_metadata():
         assert rule["category"], name
         assert rule["subcategory"], name
         assert rule["severity"] in {"info", "low", "medium", "high"}, name
+
+
+def test_logind_username_is_unquoted(tmp_path):
+    """systemd-logind wraps names in single quotes; actor_user must not."""
+    from lfa.parsers.authlog import GRAMMAR_DIR
+    from lfa.parsers.grammar import GrammarEngine
+
+    engine = GrammarEngine.load(GRAMMAR_DIR, "debian")
+    line = (
+        "systemd-logind[712]: New session 'c1' of user 'kali' "
+        "with class 'user' and type 'tty'."
+    )
+
+    matches = engine.match_line(line)
+    users = [g.get("user") for _, _, g in matches if "user" in g]
+
+    assert users, "expected the logind rule to match"
+    assert all(u == "kali" for u in users), users
+
+
+def test_unquoted_usernames_are_left_alone(tmp_path):
+    from lfa.parsers.authlog import GRAMMAR_DIR
+    from lfa.parsers.grammar import GrammarEngine
+
+    engine = GrammarEngine.load(GRAMMAR_DIR, "debian")
+    line = "sshd[123]: Failed password for admin from 203.0.113.9 port 22"
+
+    matches = engine.match_line(line)
+    users = [g.get("user") for _, _, g in matches if "user" in g]
+
+    assert users == ["admin"]
+
+
+def test_apostrophe_inside_a_name_is_preserved():
+    """Only a matched surrounding pair is stripped, never an inner quote."""
+    from lfa.parsers.grammar import GrammarEngine
+
+    engine = GrammarEngine({
+        "probe": {
+            "pattern": r"user (?P<user>\S+)",
+            "category": "login_activity",
+            "subcategory": "successful_login",
+            "severity": "info",
+        }
+    })
+
+    assert engine.match_line("user o'brien")[0][2]["user"] == "o'brien"
+    assert engine.match_line("user 'o'brien'")[0][2]["user"] == "o'brien"
+
+
+def test_non_identifier_groups_are_not_normalised():
+    """Only user-ish groups are touched; `session` keeps its quotes."""
+    from lfa.parsers.grammar import GrammarEngine
+
+    engine = GrammarEngine({
+        "probe": {
+            "pattern": r"session (?P<session>\S+) of user (?P<user>\S+)",
+            "category": "login_activity",
+            "subcategory": "session_opened",
+            "severity": "info",
+        }
+    })
+
+    groups = engine.match_line("session 'c1' of user 'kali'")[0][2]
+
+    assert groups["user"] == "kali"
+    assert groups["session"] == "'c1'"

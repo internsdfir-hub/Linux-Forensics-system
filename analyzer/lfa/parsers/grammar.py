@@ -22,6 +22,23 @@ _FAMILY = {
     "rhel-family": "rhel",
 }
 
+# Groups that name a principal. Some log formats quote these — systemd-logind
+# writes "New session 'c1' of user 'kali'" — and a quoted value will not join
+# against the same username recorded by /etc/passwd or cron. Normalising here
+# rather than in each pattern fixes every grammar consumer at once.
+_IDENTIFIER_GROUPS = ("user", "target_user", "group")
+
+
+def _unquote(value: str) -> str:
+    """Strip one matched surrounding pair of single or double quotes.
+
+    An apostrophe inside a name is preserved: only a genuine matching pair
+    that wraps the whole value is removed.
+    """
+    if len(value) >= 2 and value[0] == value[-1] and value[0] in ("'", '"'):
+        return value[1:-1]
+    return value
+
 
 class GrammarEngine:
     def __init__(self, rules: dict[str, dict]):
@@ -57,5 +74,8 @@ class GrammarEngine:
             m = regex.search(line)
             if m:
                 groups = {k: v for k, v in m.groupdict().items() if v is not None}
+                for key in _IDENTIFIER_GROUPS:
+                    if key in groups:
+                        groups[key] = _unquote(groups[key])
                 out.append((name, self.rules[name], groups))
         return out
