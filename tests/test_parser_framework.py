@@ -186,3 +186,57 @@ def test_two_argument_calls_still_work():
     ctx = _ctx_with_contamination()
 
     assert ctx.is_tool_generated(None, "2024-03-14T02:01:00+00:00") is False
+
+
+def test_authlog_parser_forwards_actor_user_to_is_tool_generated(tmp_path):
+    """Every existing test for the local-tagging feature calls
+    ParseContext.is_tool_generated directly. None of them prove authlog.py's
+    call site actually forwards groups.get("user") as the third argument -
+    replacing that argument with None would leave those tests green while
+    silently reverting the whole feature for real parser output. This runs
+    the real AuthLogParser over a no-IP sudo line and checks the emitted
+    event."""
+    from datetime import datetime, timezone
+
+    from lfa.parsers.authlog import AuthLogParser
+    from lfa.timeeng import TimeContext
+
+    # sudo_command has no "ip" capture group at all, so source_ip is None -
+    # this line can only be tagged via the actor_user path.
+    line = (
+        "Mar 14 02:25:00 web1 sudo:    kaliuser : TTY=pts/1 ; PWD=/root ; "
+        "USER=root ; COMMAND=/usr/bin/id\n"
+    )
+    log_path = tmp_path / "auth.log"
+    log_path.write_text(line, encoding="utf-8")
+
+    contamination = {
+        "operator_user": "root",
+        "operator_login_user": "kaliuser",
+        "source_ip": "",
+        "start_utc": "2024-03-14T02:20:00Z",
+        "end_utc": "2024-03-14T02:30:00Z",
+    }
+    from lfa.parsers.base import ParseContext
+
+    ctx = ParseContext(
+        case_id="C1",
+        host_id="H1",
+        raw_host_dir=tmp_path,
+        time_ctx=TimeContext("UTC", "etc_localtime"),
+        distro_profile={"distro_id": "debian"},
+        artifact_sha256="a" * 64,
+        artifact_mtime=datetime(2024, 3, 20, tzinfo=timezone.utc).timestamp(),
+        contamination=contamination,
+    )
+    parser = AuthLogParser()
+    ctx.artifact_rel = "var/log/auth.log"
+    ctx.parser_name = parser.name
+    ctx.parser_version = parser.version
+
+    events = list(parser.parse(log_path, ctx))
+    sudo_event = next(e for e in events if e.subcategory == "sudo_command")
+
+    assert sudo_event.source_ip is None
+    assert sudo_event.actor_user == "kaliuser"
+    assert sudo_event.tool_generated_flag is True

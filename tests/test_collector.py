@@ -228,16 +228,42 @@ def test_manifest_records_sudo_login_user(tmp_path, shell):
     env = dict(os.environ)
     env["SUDO_USER"] = "analyst"
 
-    subprocess.run(
-        [shell, str(COLLECT_SH), "-r", str(root), "-o", str(out), "-c", "CASE-SUDO"],
+    proc = subprocess.run(
+        [shell, str(COLLECT_SH), "-r", _sh_path(root), "-o", _sh_path(out), "-c", "CASE-SUDO"],
         check=False,
         capture_output=True,
         env=env,
     )
+    assert proc.returncode == 0, proc.stderr
 
     manifest = json.loads((out / "manifest.json").read_text(encoding="utf-8"))
     contamination = manifest["contamination"]
 
     assert contamination["operator_login_user"] == "analyst"
     assert "operator_user" in contamination
+
+
+@pytest.mark.parametrize("shell", SHELLS)
+def test_manifest_falls_back_to_op_user_without_sudo_user(tmp_path, shell):
+    """The ordinary local-console path this task exists for: no sudo in
+    play, so ${SUDO_USER:-$OP_USER} must fall back to OP_USER and
+    operator_login_user must equal operator_user."""
+    root = make_fakeroot(tmp_path)
+    out = tmp_path / "out"
+
+    env = dict(os.environ)
+    env.pop("SUDO_USER", None)
+
+    proc = subprocess.run(
+        [shell, str(COLLECT_SH), "-r", _sh_path(root), "-o", _sh_path(out), "-c", "CASE-NOSUDO"],
+        check=False,
+        capture_output=True,
+        env=env,
+    )
+    assert proc.returncode == 0, proc.stderr
+
+    manifest = json.loads((out / "manifest.json").read_text(encoding="utf-8"))
+    contamination = manifest["contamination"]
+
+    assert contamination["operator_login_user"] == contamination["operator_user"]
 

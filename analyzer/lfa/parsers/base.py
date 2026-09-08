@@ -70,6 +70,13 @@ class ParseContext:
         # local collection: no source IP to match on
         if not actor_user:
             return False
+        # Residual risk (accepted, not fixed here): collection normally runs
+        # under sudo, so operator_user is "root" here. Any no-IP root-actor
+        # event inside the window is excluded from rules by this set - e.g.
+        # an attacker's sudo-to-root session during a live-incident
+        # collection. The event still appears in the timeline/explorer, it
+        # is only excluded from correlation rules. Tightening this predicate
+        # is a spec change for the repo owner to approve.
         operators = {
             self.contamination.get("operator_user"),
             self.contamination.get("operator_login_user"),
