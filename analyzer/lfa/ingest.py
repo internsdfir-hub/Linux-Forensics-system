@@ -200,7 +200,10 @@ def verify_raw(case_dir: str | Path) -> VerifyReport:
     """Final re-verification: prove nothing under raw/ changed since ingest."""
     case_dir = Path(case_dir)
     report = VerifyReport()
-    for host_dir in sorted((case_dir / "raw").iterdir()):
+    raw_root = case_dir / "raw"
+    if not raw_root.is_dir():
+        return report
+    for host_dir in sorted(raw_root.iterdir()):
         record = host_dir / "_verified_hashes.json"
         if not record.exists():
             continue

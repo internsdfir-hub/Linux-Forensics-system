@@ -44,13 +44,26 @@ def cmd_analyse(args) -> int:
 def cmd_verify(args) -> int:
     case_dir = Path(args.case_dir)
     print(f"[*] Verifying evidence integrity in '{case_dir}'")
-    mismatches = ingest.verify_raw(case_dir)
-    if mismatches:
-        print(f"[!] INTEGRITY FAILURE: {len(mismatches)} artifact(s) failed hash verification!", file=sys.stderr)
-        for m in mismatches:
+    report = ingest.verify_raw(case_dir)
+
+    if report.mismatches:
+        print(
+            f"[!] INTEGRITY FAILURE: {len(report.mismatches)} artifact(s) "
+            f"failed hash verification!",
+            file=sys.stderr,
+        )
+        for m in report.mismatches:
             print(f"    - {m}", file=sys.stderr)
         return 1
-    print("[+] All raw evidence artifacts verified clean against collection manifests.")
+
+    if report.reverified == 0:
+        print("[*] No raw evidence recorded for this case; nothing to verify.")
+        return 0
+
+    print(
+        f"[+] All {report.reverified} raw evidence artifact(s) verified clean "
+        f"against collection manifests."
+    )
     return 0
 
 
