@@ -9,6 +9,7 @@ Provides:
 from __future__ import annotations
 
 import html
+import json
 from typing import Any
 
 from . import __version__
@@ -18,7 +19,18 @@ def render_explorer_html(case_id: str, case_info: dict[str, Any]) -> str:
     """Render the single-page interactive investigation explorer."""
     # case_id, examiner and host ids are all evidence-derived or wire-derived.
     # They are interpolated into this page's markup, so they are escaped here.
-    case_id = html.escape(str(case_id), quote=True)
+    # case_id also reaches a JS string literal (CASE_ID below), which needs
+    # its own encoder - html.escape does not escape backslashes and is the
+    # wrong primitive for a <script> sink. Keep the raw value for that.
+    case_id_raw = str(case_id)
+    # json.dumps alone does not escape angle brackets, so a raw value
+    # containing "</script>" would still terminate the enclosing <script>
+    # block early - the HTML parser looks for that literal sequence
+    # regardless of JS string context. Replacing the angle brackets with
+    # their \uXXXX escapes decodes back to the identical string in JS while
+    # making that breakout impossible.
+    case_id_js = json.dumps(case_id_raw).replace("<", "\\u003c").replace(">", "\\u003e")
+    case_id = html.escape(case_id_raw, quote=True)
     examiner = html.escape(
         str(case_info.get("examiner", "Forensic Investigator")), quote=True
     )
@@ -882,7 +894,7 @@ def render_explorer_html(case_id: str, case_info: dict[str, Any]) -> str:
   </main>
 
   <script>
-    const CASE_ID = "{case_id}";
+    const CASE_ID = {case_id_js};
     let currentTab = 'events';
     let currentSeverity = 'all';
     let currentSort = 'timestamp_utc';

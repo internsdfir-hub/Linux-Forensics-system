@@ -5,6 +5,7 @@ machine_id/hostname read off the machine under investigation. Both reach
 server-rendered HTML.
 """
 import json
+import re
 from pathlib import Path
 
 from lfa.explorer import render_explorer_html
@@ -57,6 +58,7 @@ def test_dashboard_escapes_a_malicious_case_id():
     html_out = _render_dashboard([_case_info(case_id=PAYLOAD)])
 
     assert "<script>alert" not in html_out
+    assert "&lt;script&gt;" in html_out
 
 
 def test_explorer_escapes_a_malicious_examiner():
@@ -70,12 +72,32 @@ def test_explorer_escapes_a_malicious_host_id():
     html_out = render_explorer_html("CASE-1", _case_info(hosts=[PAYLOAD]))
 
     assert "<script>alert" not in html_out
+    assert "&lt;script&gt;" in html_out
 
 
 def test_explorer_escapes_a_malicious_case_id():
     html_out = render_explorer_html(PAYLOAD, _case_info())
 
     assert "<script>alert" not in html_out
+    assert "&lt;script&gt;" in html_out
+
+
+def test_explorer_case_id_with_trailing_backslash_is_a_valid_js_string():
+    """html.escape does not escape backslashes and is the wrong primitive for
+    a <script> sink. A case_id ending in an odd number of backslashes must
+    not turn the closing quote of the CASE_ID literal into an escaped quote,
+    which would leave the JS string unterminated.
+    """
+    html_out = render_explorer_html("foo\\", _case_info())
+
+    match = re.search(r"const CASE_ID = (.+?);", html_out)
+    assert match is not None, "CASE_ID assignment not found"
+
+    js_literal = match.group(1)
+    # json.dumps output is both valid JSON and a valid JS string literal, so
+    # parsing it as JSON proves the browser would see a properly terminated
+    # string assignment with the exact original value.
+    assert json.loads(js_literal) == "foo\\"
 
 
 def test_examiner_header_is_sanitised():

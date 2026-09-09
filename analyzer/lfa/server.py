@@ -743,7 +743,7 @@ class LFAServerHandler(http.server.BaseHTTPRequestHandler):
 
         # Never render the live token into the page. The examiner already knows
         # it - they started the server with it.
-        token_arg = '-T "<YOUR-INGEST-TOKEN>"' if self.auth_token else ''
+        token_arg = '-T "&lt;YOUR-INGEST-TOKEN&gt;"' if self.auth_token else ''
 
         server_port = self.server.server_address[1] if hasattr(self.server, "server_address") else 8443
 
