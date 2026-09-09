@@ -188,7 +188,9 @@ class UtmpParser(BaseParser):
                     f"host={host} tv_sec={tv_sec}"
                 ),
                 raw_line_offset=offset,
-                tool_generated_flag=context.is_tool_generated(source_ip, ts.utc_iso),
+                tool_generated_flag=context.is_tool_generated(
+                    source_ip, ts.utc_iso, user or None
+                ),
                 notes=f"utmp record index {index}",
             )
             emitted += 1
@@ -276,7 +278,9 @@ class UtmpParser(BaseParser):
                             severity="info",
                             raw_line=f"id={id_val} type={type_val} user={user} tty={tty} host={remote_host} service={service} login={login_us}",
                             raw_line_offset=int(id_val or 0),
-                            tool_generated_flag=context.is_tool_generated(source_ip, ts.utc_iso),
+                            tool_generated_flag=context.is_tool_generated(
+                                source_ip, ts.utc_iso, user or None
+                            ),
                             notes=f"wtmpdb record id {id_val}",
                         )
 
@@ -304,7 +308,9 @@ class UtmpParser(BaseParser):
                             severity="info",
                             raw_line=f"id={id_val} type={type_val} user={user} tty={tty} host={remote_host} service={service} logout={logout_us}",
                             raw_line_offset=int(id_val or 0),
-                            tool_generated_flag=context.is_tool_generated(source_ip, ts_out.utc_iso),
+                            tool_generated_flag=context.is_tool_generated(
+                                source_ip, ts_out.utc_iso, user or None
+                            ),
                             notes=f"wtmpdb logout id {id_val}",
                         )
         finally:

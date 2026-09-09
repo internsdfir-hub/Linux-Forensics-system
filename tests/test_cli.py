@@ -63,3 +63,24 @@ def test_verify_handles_case_with_no_raw_directory(tmp_path, capsys):
 
     assert rc == 0
     assert "no raw evidence" in capsys.readouterr().out.lower()
+
+
+def test_verify_fails_when_integrity_records_are_missing(tmp_path, capsys):
+    """Deleting a host's _verified_hashes.json must not make `lfa verify`
+    silently report success - that is the exact anti-forensic move (wipe
+    the integrity record, keep the evidence) the command exists to catch.
+    """
+    case_dir = _analysed_case(tmp_path)
+
+    host_dir = next((case_dir / "raw").iterdir())
+    record = host_dir / "_verified_hashes.json"
+    record.chmod(0o644)
+    record.unlink()
+
+    rc = main(["verify", str(case_dir)])
+
+    assert rc == 1
+    err = capsys.readouterr().err
+    assert "INTEGRITY FAILURE" in err
+    assert "integrity records missing" in err.lower()
+    assert host_dir.name in err

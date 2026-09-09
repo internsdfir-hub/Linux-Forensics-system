@@ -1,8 +1,17 @@
-"""Evidence must never be rendered as markup.
+"""Server-side HTML rendering of evidence-derived values must escape them.
 
 examiner comes from the X-Examiner ingest header; host_id comes from
 machine_id/hostname read off the machine under investigation. Both reach
-server-rendered HTML.
+server-rendered HTML (the dashboard and the explorer page shell), and
+this file covers that rendering path only.
+
+Out of scope, tracked separately, and NOT covered here: analyzer/lfa/
+explorer.py builds inline onclick handlers using escapeHtml where
+escapeJs is required, so an HTML-attribute value that is entity-decoded
+before being parsed as JavaScript (e.g. &#039; becoming a live quote) can
+break out of the handler client-side. That is a pre-existing client-side
+XSS distinct from the server-rendering issues this file tests, and fixing
+it is out of scope for this branch.
 """
 import json
 import re

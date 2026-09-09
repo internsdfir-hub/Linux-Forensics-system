@@ -100,6 +100,10 @@ def test_login_sets_a_cookie_and_redirects(server):
     assert "lfa_token=" in cookie
     assert "HttpOnly" in cookie
     assert "SameSite=Strict" in cookie
+    # Plain HTTP (the default, no --cert/--key) must NOT get a Secure
+    # cookie - the browser would then refuse to send it back over http://,
+    # breaking the default local workflow.
+    assert "Secure" not in cookie
 
 
 def test_cookie_authenticates_subsequent_requests(server):
@@ -168,6 +172,25 @@ def test_no_cors_header_is_emitted(server):
     )
     resp = urllib.request.urlopen(req, timeout=10)
     assert resp.headers.get("Access-Control-Allow-Origin") is None
+
+
+def test_log_message_redacts_token_from_access_log(capsys):
+    """/login?token=SECRET is the one endpoint allowed to carry the token
+    in the query string. BaseHTTPRequestHandler.log_request prints the
+    full request line to stderr on every request unless log_message is
+    overridden - this proves the override strips the value before it is
+    written, while leaving the rest of the line intact.
+    """
+    handler = LFAServerHandler.__new__(LFAServerHandler)
+    handler.client_address = ("127.0.0.1", 54321)
+
+    handler.log_message('"%s" %s %s', "GET /login?token=SUPERSECRET HTTP/1.1", "302", "-")
+
+    logged = capsys.readouterr().err
+    assert "SUPERSECRET" not in logged
+    assert "token=<redacted>" in logged
+    assert "GET /login" in logged
+    assert "302" in logged
 
 
 def test_server_without_a_token_stays_open(tmp_path):

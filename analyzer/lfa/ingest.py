@@ -206,6 +206,11 @@ def verify_raw(case_dir: str | Path) -> VerifyReport:
     for host_dir in sorted(raw_root.iterdir()):
         record = host_dir / "_verified_hashes.json"
         if not record.exists():
+            if any(p.is_file() for p in host_dir.rglob("*")):
+                report.mismatches.append(
+                    f"{host_dir.name}: integrity records missing "
+                    f"(raw evidence present but unverifiable)"
+                )
             continue
         expected = json.loads(record.read_text(encoding="utf-8"))
         for rel, digest in expected.items():

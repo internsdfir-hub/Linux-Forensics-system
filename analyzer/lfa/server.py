@@ -14,6 +14,7 @@ import hashlib
 import html
 import http.server
 import json
+import re
 import secrets
 import socketserver
 import ssl
@@ -23,7 +24,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-from . import __version__, db
+from . import __version__
 from .explorer import render_explorer_html
 from .pipeline import run_analysis_pipeline
 
@@ -44,10 +45,24 @@ def sanitise_examiner(value: str | None) -> str:
     return cleaned[:128]
 
 
+_TOKEN_QS_RE = re.compile(r"token=[^&\s]*")
+
+
 class LFAServerHandler(http.server.BaseHTTPRequestHandler):
     """HTTP Request Handler for LFA Streaming Ingest and Investigation Dashboard."""
 
     server_version = f"LFAServer/{__version__}"
+
+    def log_message(self, format: str, *args) -> None:
+        """Redact any token= query parameter before it reaches the access log.
+
+        /login?token=SECRET is the one endpoint allowed to accept the token
+        in the query string (a plain browser navigation cannot attach a
+        header), which means it would otherwise land in stderr, once per
+        session, via BaseHTTPRequestHandler's default request logging.
+        """
+        message = _TOKEN_QS_RE.sub("token=<redacted>", format % args)
+        super().log_message("%s", message)
 
     @property
     def cases_dir(self) -> Path:
@@ -150,9 +165,10 @@ class LFAServerHandler(http.server.BaseHTTPRequestHandler):
                 self._send_redirect("/")
                 return
             if supplied and self._token_matches(supplied):
+                secure_attr = "; Secure" if isinstance(self.connection, ssl.SSLSocket) else ""
                 self._send_redirect(
                     "/",
-                    f"lfa_token={supplied}; HttpOnly; SameSite=Strict; Path=/",
+                    f"lfa_token={supplied}; HttpOnly; SameSite=Strict; Path=/{secure_attr}",
                 )
                 return
             self._send_json(401, {"error": "Unauthorized: invalid token"})
@@ -217,8 +233,8 @@ class LFAServerHandler(http.server.BaseHTTPRequestHandler):
         # 8. Main SOC Web Dashboard
         if path == "/" or path == "/dashboard":
             cases = self._list_cases()
-            html = self._render_dashboard_html(cases)
-            self._send_html(200, html)
+            page = self._render_dashboard_html(cases)
+            self._send_html(200, page)
             return
 
         # 9. Static Report / Evidence Export file serving: /cases/<case_id>/report.html
@@ -511,8 +527,8 @@ class LFAServerHandler(http.server.BaseHTTPRequestHandler):
                 "has_report": (case_dir / "report.html").exists(),
                 "report_url": f"/cases/{case_id}/report.html",
             }
-        html = render_explorer_html(case_id, case_info)
-        self._send_html(200, html)
+        page = render_explorer_html(case_id, case_info)
+        self._send_html(200, page)
 
     def do_POST(self) -> None:
         """Handle Streaming Evidence Ingestion."""

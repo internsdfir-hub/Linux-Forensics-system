@@ -195,6 +195,36 @@ def test_wtmpdb_sqlite_parsing(tmp_path, ctx):
     assert validate(logout_ev) == []
 
 
+def test_operator_local_login_is_tagged_tool_generated(tmp_path):
+    """A local wtmp login for the operator, inside the collection window,
+    must come back tool_generated - same protection authlog/journald
+    already get via context.is_tool_generated(ip, ts, user). Before the
+    fix, the utmp call sites passed only (source_ip, ts_utc_iso), so a
+    local console login/logout for the operator was never matched against
+    contamination['operator_user'] and stayed untagged.
+    """
+    ctx = ParseContext(
+        case_id="C1",
+        host_id="H1",
+        raw_host_dir=tmp_path,
+        time_ctx=TimeContext("Asia/Karachi", "etc_localtime"),
+        distro_profile={"distro_id": "debian"},
+        artifact_sha256="a" * 64,
+        contamination={
+            "operator_user": "root",
+            "start_utc": "2024-03-14T02:00:00+00:00",
+            "end_utc": "2024-03-14T02:10:00+00:00",
+        },
+    )
+    # tv_sec=1710382000 -> 2024-03-14T02:06:40+00:00 (see test_wtmp_logins_extracted)
+    rec = make_record(USER_PROCESS, 1234, "pts/0", "root", "", 1710382000)
+    events = parse(tmp_path, ctx, rec)
+    login = next(e for e in events if e.subcategory == "login")
+    assert login.actor_user == "root"
+    assert login.source_ip is None
+    assert login.tool_generated_flag is True
+
+
 def test_utmp_with_surrogate_and_non_utf8_bytes(tmp_path, ctx):
     """Raw dirty bytes in utmp headers should not crash database or JSON encoding."""
     rec = make_record(USER_PROCESS, 42, "tty1", "testuser", "host\xb9\x9e", 1710382000)
