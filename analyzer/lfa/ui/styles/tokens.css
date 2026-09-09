@@ -1,0 +1,68 @@
+/* Design tokens: the single source of type, space, radius, motion and the
+   NAMES of every colour role. Theme files redefine colour values only.
+
+   Colour tokens are named for meaning, never for hue. There is no
+   --accent-blue here, because "blue" tells a reader nothing about when to
+   use it, and a token nobody understands gets bypassed with a literal. */
+
+:root {
+  /* Type families. System stacks only - no webfont, no fetch. */
+  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
+               "Helvetica Neue", Arial, sans-serif;
+  --font-serif: ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
+  --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas,
+               "Liberation Mono", monospace;
+
+  /* Type scale: 1.200 minor third, 16px base. */
+  --text-xs: 0.694rem;
+  --text-sm: 0.833rem;
+  --text-base: 1rem;
+  --text-md: 1.2rem;
+  --text-lg: 1.44rem;
+  --text-xl: 1.728rem;
+  --text-2xl: 2.074rem;
+  --text-3xl: 2.488rem;
+
+  --leading-tight: 1.25;
+  --leading-normal: 1.6;
+  --leading-loose: 1.75;
+
+  --weight-normal: 400;
+  --weight-medium: 500;
+  --weight-semibold: 600;
+  --weight-bold: 700;
+
+  /* Spacing scale: 4px base, geometric-ish. */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.5rem;
+  --space-6: 2rem;
+  --space-7: 3rem;
+  --space-8: 4rem;
+  --space-9: 6rem;
+
+  /* Radii */
+  --radius-sm: 3px;
+  --radius-md: 6px;
+  --radius-lg: 10px;
+  --radius-pill: 999px;
+
+  /* Layout */
+  --measure: 72ch;          /* readable line length for body prose */
+  --page-max: 1200px;
+  --border-width: 1px;
+
+  /* Motion. Respected only when the reader has not asked for less. */
+  --motion-fast: 120ms;
+  --motion-base: 200ms;
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --motion-fast: 0ms;
+    --motion-base: 0ms;
+  }
+}
