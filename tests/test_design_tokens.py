@@ -22,8 +22,20 @@ _PALETTE_FILES = {
     "base.css",
 }
 
+# Named colours are matched only in a value position (after a colon), so
+# `white-space: nowrap` is not mistaken for a colour. currentColor is
+# deliberately absent - it is the correct way for SVG to inherit colour.
+_NAMED_COLOURS = (
+    "white|black|red|green|blue|yellow|orange|purple|gray|grey|silver|"
+    "maroon|olive|lime|aqua|teal|navy|fuchsia|magenta|cyan|pink|brown|"
+    "gold|violet|indigo|crimson|turquoise|transparent"
+)
+
 _COLOUR_LITERAL = re.compile(
-    r"#[0-9a-fA-F]{3,8}\b|\brgba?\s*\(|\bhsla?\s*\(", re.I
+    r"#[0-9a-fA-F]{3,8}\b"
+    r"|\b(?:rgba?|hsla?|hwb|lab|lch|oklab|oklch|color)\s*\("
+    rf"|:[^;{{}}]*\b(?:{_NAMED_COLOURS})\b",
+    re.I,
 )
 _VAR_USE = re.compile(r"var\(\s*(--[a-z0-9-]+)", re.I)
 _VAR_DEF = re.compile(r"^\s*(--[a-z0-9-]+)\s*:", re.I | re.M)
@@ -47,6 +59,33 @@ def test_component_stylesheets_contain_no_raw_colour_literals():
     assert not offenders, (
         "colour belongs in tokens.css or a theme file, referenced via var():\n"
         + "\n".join(offenders)
+    )
+
+
+@pytest.mark.parametrize("declaration", [
+    "color: #fff;",
+    "background: rgb(1,2,3);",
+    "color: hsl(1 2% 3%);",
+    "color: oklch(0.7 0.1 200);",
+    "color: white;",
+    "background: transparent;",
+    "border: 1px solid #abc123;",
+])
+def test_colour_literal_pattern_matches_real_colours(declaration):
+    assert _COLOUR_LITERAL.search(declaration), (
+        f"expected _COLOUR_LITERAL to flag: {declaration!r}"
+    )
+
+
+@pytest.mark.parametrize("declaration", [
+    "white-space: nowrap;",
+    "color: var(--text-primary);",
+    "fill: currentColor;",
+    "font-family: var(--font-sans);",
+])
+def test_colour_literal_pattern_ignores_non_colours(declaration):
+    assert not _COLOUR_LITERAL.search(declaration), (
+        f"expected _COLOUR_LITERAL NOT to flag: {declaration!r}"
     )
 
 
