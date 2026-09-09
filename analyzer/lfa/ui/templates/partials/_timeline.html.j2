@@ -1,0 +1,55 @@
+<section id="sec-timeline" aria-labelledby="h-timeline">
+  <h2 id="h-timeline">Timeline</h2>
+
+  <figure class="chart">
+    {{ svg_chart | safe }}
+    <figcaption>
+      Event volume per day
+      {%- if summary.first_event_utc %}, {{ summary.first_event_utc[:10] }}
+      to {{ summary.last_event_utc[:10] }}{% endif %}.
+    </figcaption>
+  </figure>
+
+  <figure class="chart">
+    {{ failures_chart | safe }}
+    <figcaption>Failed authentication attempts per hour. A tall isolated bar is
+      the shape of password guessing.</figcaption>
+  </figure>
+
+  <h3>Event sample</h3>
+  <p class="muted">Showing up to {{ events | length }} normalised events in
+     chronological order. The complete set is in the canonical exports.</p>
+
+  <div class="table-tools">
+    <label class="visually-hidden" for="event-filter">Filter events</label>
+    <input id="event-filter" type="search" placeholder="Filter events&hellip;"
+           data-filters="events-table" autocomplete="off">
+  </div>
+
+  <div class="table-scroll">
+    <table id="events-table" class="data-table" data-sortable>
+      <thead>
+        <tr>
+          <th scope="col" data-sort="text">Time (UTC)</th>
+          <th scope="col" data-sort="text">Category</th>
+          <th scope="col" data-sort="text">User</th>
+          <th scope="col" data-sort="text">Source</th>
+          <th scope="col" data-sort="text">Severity</th>
+          <th scope="col">Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for e in events %}
+        <tr>
+          <td class="mono">{{ e.timestamp_utc or '&mdash;' }}</td>
+          <td>{{ e.category }}</td>
+          <td>{{ e.actor_user or '&mdash;' }}</td>
+          <td class="mono">{{ e.source_ip or e.source_host or '&mdash;' }}</td>
+          <td><span class="badge badge--{{ e.severity }}">{{ e.severity }}</span></td>
+          <td>{{ e.description }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>

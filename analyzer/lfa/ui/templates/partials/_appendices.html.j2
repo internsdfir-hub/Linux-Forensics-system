@@ -1,0 +1,82 @@
+<section id="app-methodology" aria-labelledby="h-methodology">
+  <h2 id="h-methodology">Appendix A &mdash; Methodology, limitations and tool audit</h2>
+
+  <h3>How this report was produced</h3>
+  <ol class="method-list">
+    <li>Artifacts were collected read-only on the target. Each file was stat'd,
+        copied, and the <em>copy</em> hashed; the source was stat'd again so that
+        growth during collection is recorded as an observation, not an error.</li>
+    <li>At ingest every file was re-hashed against the collection manifest.
+        Mismatches were quarantined and excluded from analysis.</li>
+    <li>Parsers translated each artifact into normalised events. A parser that
+        fails does so alone; the run continues and the failure is recorded.</li>
+    <li>Correlation rules ran over the normalised events. Every rule is
+        explainable: it names its threshold and the exact events it fired on.
+        No machine learning is used anywhere in this tool.</li>
+  </ol>
+
+  <h3>Coverage</h3>
+  <p>{{ artifacts | length }} artifact(s) were recorded.
+     {% set parsed = artifacts | selectattr('parse_status', 'equalto', 'success') | list %}
+     {% set skipped = artifacts | selectattr('parse_status', 'equalto', 'skip') | list %}
+     {% set failed = artifacts | selectattr('parse_status', 'equalto', 'fail') | list %}
+     {{ parsed | length }} parsed successfully,
+     {{ skipped | length }} had no parser that claimed them, and
+     {{ failed | length }} failed during parsing.</p>
+
+  {% if failed %}
+  <p class="warn">The following artifacts failed to parse and contributed no
+     events. Anything they contained is absent from this report:</p>
+  <ul class="mono">
+    {% for a in failed %}<li>{{ a.original_path }}</li>{% endfor %}
+  </ul>
+  {% endif %}
+</section>
+
+<section id="app-undetermined" aria-labelledby="h-undetermined">
+  <h2 id="h-undetermined">Appendix B &mdash; What we could not determine</h2>
+  <p>Absence of evidence is itself evidence, and stating it plainly is part of
+     an honest examination.</p>
+  <ul>
+    {% if skipped %}
+    <li>{{ skipped | length }} collected artifact(s) had no parser that claimed
+        them. Their contents were not analysed.</li>
+    {% endif %}
+    {% if summary.severity_counts.high == 0 and summary.severity_counts.medium == 0 %}
+    <li>No high or medium-severity findings fired. This means the configured
+        rules did not match, not that the host is clean.</li>
+    {% endif %}
+    <li>This examination sees only what the collector captured. Anything an
+        intruder deleted before collection, or that was never written to disk,
+        is outside its reach.</li>
+    <li>Timestamps carrying a confidence of <em>year_inferred</em> were
+        reconstructed from file modification times, because classic syslog
+        lines record no year.</li>
+  </ul>
+</section>
+
+<section id="app-glossary" aria-labelledby="h-glossary">
+  <h2 id="h-glossary">Appendix C &mdash; Glossary</h2>
+  <dl class="glossary">
+    <dt>Artifact</dt>
+    <dd>A file or command output collected from the target host.</dd>
+    <dt>Normalised event</dt>
+    <dd>One record parsed from an artifact into the tool's common schema, so
+        that evidence from different sources can be compared on a single
+        timeline.</dd>
+    <dt>Finding</dt>
+    <dd>A correlation rule firing on specific events. A finding is an indicator
+        for a human to judge, not a conclusion.</dd>
+    <dt>Confidence</dt>
+    <dd>How strongly the evidence supports a finding: High, Medium or Low.</dd>
+    <dt>Chain of custody</dt>
+    <dd>The record proving evidence has not changed since collection: a hash
+        taken at collection and re-verified at ingest.</dd>
+    <dt>Quarantined</dt>
+    <dd>An artifact whose hash did not match the manifest. It was excluded from
+        analysis because anything derived from it would be unattributable.</dd>
+    <dt>Tool-generated</dt>
+    <dd>An event caused by the collection itself, tagged so the tool does not
+        report its own operator as suspicious activity.</dd>
+  </dl>
+</section>

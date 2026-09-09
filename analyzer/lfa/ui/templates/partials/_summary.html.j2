@@ -1,0 +1,51 @@
+<section id="sec-summary" aria-labelledby="h-summary">
+  <h2 id="h-summary">Summary</h2>
+
+  <p class="lede">{{ narrative.headline }}</p>
+
+  <div class="stat-row">
+    <div class="stat stat--high">
+      <span class="stat__value">{{ summary.severity_counts.high }}</span>
+      <span class="stat__label">High</span>
+    </div>
+    <div class="stat stat--medium">
+      <span class="stat__value">{{ summary.severity_counts.medium }}</span>
+      <span class="stat__label">Medium</span>
+    </div>
+    <div class="stat stat--low">
+      <span class="stat__value">{{ summary.severity_counts.low }}</span>
+      <span class="stat__label">Low</span>
+    </div>
+    <div class="stat">
+      <span class="stat__value">{{ '{:,}'.format(summary.event_count) }}</span>
+      <span class="stat__label">Events</span>
+    </div>
+  </div>
+
+  {% if narrative.key_observations %}
+  <h3>Key observations</h3>
+  <ul class="observation-list">
+    {% for obs in narrative.key_observations %}
+    <li>
+      <p class="observation-list__title">{{ obs.title }}</p>
+      <p>{{ obs.what_happened }}</p>
+      <p class="muted">{{ obs.why_it_matters }}</p>
+    </li>
+    {% endfor %}
+  </ul>
+  {% endif %}
+
+  {% if narrative.recommended_actions %}
+  <h3>Recommended next steps</h3>
+  <ol class="action-list">
+    {% for step in narrative.recommended_actions %}
+    <li>{{ step }}</li>
+    {% endfor %}
+  </ol>
+  {% endif %}
+
+  <figure class="chart">
+    {{ severity_chart | safe }}
+    <figcaption>Findings by severity.</figcaption>
+  </figure>
+</section>

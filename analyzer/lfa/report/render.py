@@ -12,7 +12,12 @@ from pathlib import Path
 from jinja2 import Environment, FileSystemLoader
 
 from ..ui import assets
-from .chart import generate_density_svg
+from .chart import (
+    auth_failure_bursts_svg,
+    generate_density_svg,
+    severity_breakdown_svg,
+    user_activity_svg,
+)
 from .data import (
     get_artifacts_data,
     get_case_summary,
@@ -37,6 +42,9 @@ def render_report(conn: sqlite3.Connection, case_dir: Path | str, out_html_path:
     intel = get_categorized_intel(conn)
 
     svg_chart = generate_density_svg(conn)
+    severity_chart = severity_breakdown_svg(conn)
+    user_chart = user_activity_svg(conn)
+    failures_chart = auth_failure_bursts_svg(conn)
     narrative = generate_executive_summary(summary, findings)
 
     env = Environment(
@@ -54,6 +62,9 @@ def render_report(conn: sqlite3.Connection, case_dir: Path | str, out_html_path:
         events=events,
         intel=intel,
         svg_chart=svg_chart,
+        severity_chart=severity_chart,
+        user_chart=user_chart,
+        failures_chart=failures_chart,
         narrative=narrative,
         inline_css=inline_css,
         inline_js=inline_js,

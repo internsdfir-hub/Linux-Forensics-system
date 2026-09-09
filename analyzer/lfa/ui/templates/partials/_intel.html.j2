@@ -1,0 +1,75 @@
+{% macro intel_table(rows, columns) %}
+  {% if rows %}
+  <div class="table-scroll">
+    <table class="data-table" data-sortable>
+      <thead>
+        <tr>{% for c in columns %}<th scope="col" data-sort="text">{{ c[1] }}</th>{% endfor %}</tr>
+      </thead>
+      <tbody>
+        {% for r in rows %}
+        <tr>{% for c in columns %}<td>{{ r[c[0]] if r[c[0]] is not none else '&mdash;' }}</td>{% endfor %}</tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <p class="empty">Nothing recorded.</p>
+  {% endif %}
+{% endmacro %}
+
+<section id="sec-intel" aria-labelledby="h-intel">
+  <h2 id="h-intel">Intel</h2>
+
+  <h3>Accounts and access</h3>
+  <details open><summary>Local accounts ({{ intel.users | length }})</summary>
+    {{ intel_table(intel.users, [('actor_user','User'), ('description','Detail'), ('first_seen','First seen')]) }}
+  </details>
+  <details><summary>Sessions ({{ intel.sessions | length }})</summary>
+    {{ intel_table(intel.sessions, [('actor_user','User'), ('source_ip','From'), ('terminal','Terminal'), ('login_time','Login'), ('duration','Duration'), ('status','Status')]) }}
+  </details>
+  <details><summary>Failed logins ({{ intel.failed_logins | length }})</summary>
+    {{ intel_table(intel.failed_logins, [('actor_user','User'), ('source_ip','From'), ('attempt_count','Attempts'), ('first_attempt','First'), ('last_attempt','Last')]) }}
+  </details>
+
+  <h3>Network</h3>
+  <details><summary>Remote addresses ({{ intel.remote_ips | length }})</summary>
+    {{ intel_table(intel.remote_ips, [('source_ip','Address'), ('connection_count','Events'), ('users','Accounts'), ('first_seen','First'), ('last_seen','Last')]) }}
+  </details>
+  <details><summary>Interfaces ({{ intel.network_interfaces | length }})</summary>
+    {{ intel_table(intel.network_interfaces, [('description','Interface'), ('source_ip','Address'), ('notes','Notes')]) }}
+  </details>
+  <details><summary>DNS ({{ intel.dns_activity | length }})</summary>
+    {{ intel_table(intel.dns_activity, [('subcategory','Kind'), ('description','Detail'), ('notes','Source')]) }}
+  </details>
+  <details><summary>Listening and established sockets ({{ intel.volatile_sockets | length }})</summary>
+    {{ intel_table(intel.volatile_sockets, [('subcategory','State'), ('source_ip','Address'), ('actor_process','Process'), ('description','Detail')]) }}
+  </details>
+
+  <h3>Activity</h3>
+  <details><summary>Shell history ({{ intel.shell_history | length }})</summary>
+    {{ intel_table(intel.shell_history, [('actor_user','User'), ('timestamp_utc','Time'), ('description','Command')]) }}
+  </details>
+  <details><summary>Privileged and scheduled actions ({{ intel.system_additional | length }})</summary>
+    {{ intel_table(intel.system_additional, [('timestamp_utc','Time'), ('actor_user','User'), ('subcategory','Kind'), ('description','Detail')]) }}
+  </details>
+  <details><summary>Web requests ({{ intel.http_logs | length }})</summary>
+    {{ intel_table(intel.http_logs, [('timestamp_utc','Time'), ('client_ip','Client'), ('description','Request'), ('notes','Detail')]) }}
+  </details>
+  <details><summary>File transfers ({{ intel.ftp_connections | length }})</summary>
+    {{ intel_table(intel.ftp_connections, [('timestamp_utc','Time'), ('client_ip','Client'), ('actor_user','User'), ('description','Transfer')]) }}
+  </details>
+  <details><summary>Browser history and downloads ({{ intel.browser_and_downloads | length }})</summary>
+    {{ intel_table(intel.browser_and_downloads, [('timestamp_utc','Time'), ('actor_user','User'), ('subcategory','Kind'), ('description','Detail')]) }}
+  </details>
+
+  <h3>System</h3>
+  <details><summary>Hardware and USB ({{ intel.usb | length }})</summary>
+    {{ intel_table(intel.usb, [('timestamp_utc','Time'), ('subcategory','Kind'), ('description','Device')]) }}
+  </details>
+  <details><summary>Storage ({{ intel.storage | length }})</summary>
+    {{ intel_table(intel.storage, [('subcategory','Kind'), ('description','Detail'), ('notes','Notes')]) }}
+  </details>
+  <details><summary>Configuration and environment ({{ intel.system | length }})</summary>
+    {{ intel_table(intel.system, [('subcategory','Kind'), ('description','Detail')]) }}
+  </details>
+</section>

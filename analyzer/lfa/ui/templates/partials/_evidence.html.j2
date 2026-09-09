@@ -1,0 +1,45 @@
+<section id="sec-evidence" aria-labelledby="h-evidence">
+  <h2 id="h-evidence">Evidence</h2>
+
+  <h3>Artifacts collected</h3>
+  <p class="muted">{{ artifacts | length }} artifact(s). Integrity is the hash
+     recorded at collection compared against the hash recomputed at ingest.</p>
+
+  <div class="table-scroll">
+    <table class="data-table" data-sortable>
+      <thead>
+        <tr>
+          <th scope="col" data-sort="text">Path</th>
+          <th scope="col" data-sort="text">Host</th>
+          <th scope="col" data-sort="number">Size</th>
+          <th scope="col" data-sort="text">Integrity</th>
+          <th scope="col" data-sort="text">Parsed</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for a in artifacts %}
+        <tr>
+          <td class="mono">{{ a.original_path }}</td>
+          <td>{{ a.host_id }}</td>
+          <td class="num">{{ a.size if a.size is not none else '&mdash;' }}</td>
+          <td>
+            <span class="state state--{{ a.integrity or 'unknown' }}">
+              {{ a.integrity or 'unknown' }}
+            </span>
+          </td>
+          <td>
+            <span class="state state--{{ a.parse_status or 'unknown' }}">
+              {{ a.parse_status or 'unknown' }}
+            </span>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <figure class="chart">
+    {{ user_chart | safe }}
+    <figcaption>Recorded activity per account.</figcaption>
+  </figure>
+</section>
