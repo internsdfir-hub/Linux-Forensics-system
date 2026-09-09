@@ -59,6 +59,35 @@ def test_chart_is_deterministic(case, func):
     assert func(case) == func(case)
 
 
+def test_chart_output_is_stable_across_processes(case, tmp_path):
+    """Determinism must hold across RUNS, not just within one process.
+
+    Python salts str hashing per process and the salt is fixed for that
+    process's lifetime, so comparing two calls inside one interpreter
+    cannot catch a hash()-based id. Only a separate process can.
+    """
+    import subprocess
+    import sys
+
+    db_path = tmp_path / "case.db"
+
+    script = (
+        "import sqlite3, sys;"
+        "from lfa.report import chart;"
+        "conn = sqlite3.connect(sys.argv[1]);"
+        "print(chart.generate_density_svg(conn))"
+    )
+    runs = [
+        subprocess.run(
+            [sys.executable, "-c", script, str(db_path)],
+            capture_output=True, text=True, check=True,
+        ).stdout
+        for _ in range(2)
+    ]
+    assert runs[0] == runs[1]
+    assert runs[0].strip(), "subprocess produced no SVG"
+
+
 @pytest.mark.parametrize("func", CHART_FUNCS, ids=lambda f: f.__name__)
 def test_chart_is_accessible(case, func):
     svg = func(case)

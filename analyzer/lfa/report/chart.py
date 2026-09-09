@@ -133,7 +133,7 @@ def severity_breakdown_svg(conn: sqlite3.Connection, width: int = 900,
     """How many findings sit at each severity."""
     counts = dict(
         conn.execute(
-            "SELECT severity, COUNT(*) FROM findings GROUP BY severity"
+            "SELECT severity, COUNT(*) FROM findings GROUP BY severity ORDER BY severity"
         ).fetchall()
     )
     ordered = [(s, counts.get(s, 0)) for s in _SEVERITY_ORDER]
