@@ -29,7 +29,7 @@
       <summary>Technical detail</summary>
       <p class="mono">{{ f.technical_detail }}</p>
       <p class="muted">
-        Rule {{ f.rule_name }} v{{ f.rule_version }}
+        Finding {{ f.finding_id }} &middot; Rule {{ f.rule_name }} v{{ f.rule_version }}
         {%- if f.first_ts_utc %} &middot; {{ f.first_ts_utc }}{% endif %}
         {%- if f.host_id %} &middot; host {{ f.host_id }}{% endif %}
         &middot; {{ f.event_ids | length }} supporting event(s)

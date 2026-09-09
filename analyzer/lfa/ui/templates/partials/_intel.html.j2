@@ -7,7 +7,7 @@
       </thead>
       <tbody>
         {% for r in rows %}
-        <tr>{% for c in columns %}<td>{{ r[c[0]] if r[c[0]] is not none else '&mdash;' }}</td>{% endfor %}</tr>
+        <tr>{% for c in columns %}<td>{{ r[c[0]] if r[c[0]] is not none else '—' }}</td>{% endfor %}</tr>
         {% endfor %}
       </tbody>
     </table>
@@ -30,6 +30,9 @@
   <details><summary>Failed logins ({{ intel.failed_logins | length }})</summary>
     {{ intel_table(intel.failed_logins, [('actor_user','User'), ('source_ip','From'), ('attempt_count','Attempts'), ('first_attempt','First'), ('last_attempt','Last')]) }}
   </details>
+  <details><summary>Account changes ({{ intel.user_diffs | length }})</summary>
+    {{ intel_table(intel.user_diffs, [('subcategory','Change'), ('actor_user','User'), ('description','Detail'), ('timestamp_utc','Time'), ('severity','Severity')]) }}
+  </details>
 
   <h3>Network</h3>
   <details><summary>Remote addresses ({{ intel.remote_ips | length }})</summary>
@@ -37,6 +40,12 @@
   </details>
   <details><summary>Interfaces ({{ intel.network_interfaces | length }})</summary>
     {{ intel_table(intel.network_interfaces, [('description','Interface'), ('source_ip','Address'), ('notes','Notes')]) }}
+  </details>
+  <details><summary>SSH connections ({{ intel.ssh_connections | length }})</summary>
+    {{ intel_table(intel.ssh_connections, [('timestamp_utc','Time'), ('direction','Direction'), ('actor_user','User'), ('source_ip','Address'), ('description','Detail')]) }}
+  </details>
+  <details><summary>Firewall and known hosts ({{ intel.firewall_network | length }})</summary>
+    {{ intel_table(intel.firewall_network, [('subcategory','Kind'), ('timestamp_utc','Time'), ('source_ip','Address'), ('description','Detail')]) }}
   </details>
   <details><summary>DNS ({{ intel.dns_activity | length }})</summary>
     {{ intel_table(intel.dns_activity, [('subcategory','Kind'), ('description','Detail'), ('notes','Source')]) }}

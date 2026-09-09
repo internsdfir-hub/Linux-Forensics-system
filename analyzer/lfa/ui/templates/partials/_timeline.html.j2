@@ -41,10 +41,10 @@
       <tbody>
         {% for e in events %}
         <tr>
-          <td class="mono">{{ e.timestamp_utc or '&mdash;' }}</td>
+          <td class="mono">{{ e.timestamp_utc or '—' }}</td>
           <td>{{ e.category }}</td>
-          <td>{{ e.actor_user or '&mdash;' }}</td>
-          <td class="mono">{{ e.source_ip or e.source_host or '&mdash;' }}</td>
+          <td>{{ e.actor_user or '—' }}</td>
+          <td class="mono">{{ e.source_ip or e.source_host or '—' }}</td>
           <td><span class="badge badge--{{ e.severity }}">{{ e.severity }}</span></td>
           <td>{{ e.description }}</td>
         </tr>
