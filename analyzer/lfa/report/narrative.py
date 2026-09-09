@@ -14,6 +14,18 @@ _MAX_OBSERVATIONS = 5
 _MAX_ACTIONS = 5
 
 
+def _observations(findings: list[dict], severity: str) -> list[dict]:
+    return [
+        {
+            "title": f["title"],
+            "what_happened": f["what_happened"],
+            "why_it_matters": f["why_it_matters"],
+        }
+        for f in findings
+        if f["severity"] == severity
+    ][:_MAX_OBSERVATIONS]
+
+
 def generate_executive_summary(summary: dict, findings: list[dict]) -> dict:
     """Build the executive summary block.
 
@@ -47,15 +59,14 @@ def generate_executive_summary(summary: dict, findings: list[dict]) -> dict:
             f"in the collected evidence."
         )
 
-    key_observations = [
-        {
-            "title": f["title"],
-            "what_happened": f["what_happened"],
-            "why_it_matters": f["why_it_matters"],
-        }
-        for f in findings
-        if f["severity"] == "high"
-    ][:_MAX_OBSERVATIONS]
+    key_observations = _observations(findings, "high")
+    if not key_observations:
+        # A medium-only case still contributes recommended actions, so it
+        # needs observations explaining them - otherwise the report tells
+        # an analyst what to do without saying why. This fallback never
+        # fires when high-severity findings exist, so a high-severity
+        # report stays focused on what matters.
+        key_observations = _observations(findings, "medium")
 
     recommended_actions: list[str] = []
     seen: set[str] = set()
@@ -65,7 +76,12 @@ def generate_executive_summary(summary: dict, findings: list[dict]) -> dict:
         step = (f.get("check_next") or "").strip()
         if not step:
             continue
-        key = step.replace("'", "").casefold()
+        # Apostrophes are stripped only to collapse quoting variations of
+        # the same advice (e.g. "the 'admin' account" vs "the admin
+        # account"). Case is preserved: Linux usernames are case-sensitive,
+        # so 'admin' and 'Admin' are different accounts and must each keep
+        # their own recommendation.
+        key = step.replace("'", "")
         if key in seen:
             continue
         seen.add(key)

@@ -76,6 +76,41 @@ def test_low_severity_findings_do_not_contribute_actions():
     assert result["recommended_actions"] == []
 
 
+def test_case_distinct_accounts_keep_separate_actions():
+    """Linux usernames are case-sensitive: admin and Admin are different
+    accounts, and dropping one account's recommendation would mislead an
+    analyst about what still needs doing."""
+    findings = [
+        _finding(check_next="Reset the password for 'admin'."),
+        _finding(check_next="Reset the password for 'Admin'."),
+    ]
+    result = generate_executive_summary(_summary(high=2, findings=2), findings)
+    assert len(result["recommended_actions"]) == 2
+
+
+def test_medium_only_case_has_both_observations_and_actions():
+    """A medium-only case still recommends actions, so it must also explain
+    what triggered them - otherwise the report tells an analyst what to do
+    without saying why."""
+    findings = [_finding(severity="medium", title="Suspicious cron entry")]
+    result = generate_executive_summary(_summary(medium=1, findings=1), findings)
+    assert result["recommended_actions"] != []
+    assert result["key_observations"] != []
+    assert result["key_observations"][0]["title"] == "Suspicious cron entry"
+
+
+def test_high_severity_case_does_not_dilute_observations_with_medium():
+    """When high-severity findings exist, the medium fallback must not
+    fire - a high-severity report stays focused on what matters."""
+    findings = [
+        _finding(severity="high", title="Brute force succeeded"),
+        _finding(severity="medium", title="Suspicious cron entry"),
+    ]
+    result = generate_executive_summary(_summary(high=1, medium=1, findings=2), findings)
+    titles = [o["title"] for o in result["key_observations"]]
+    assert titles == ["Brute force succeeded"]
+
+
 def test_rendered_report_contains_no_markdown_asterisks(tmp_path):
     """End to end: the defect was visible as ** in real generated reports."""
     from lfa import db, ingest, pipeline
