@@ -54,6 +54,29 @@ def test_listing_does_not_modify_the_evidence_database(tmp_path):
     assert db_file.read_bytes() == before_bytes, "listing altered evidence bytes"
 
 
+def test_listing_does_not_create_schema_in_a_bare_database(tmp_path):
+    """A schemaless case.db discriminates old vs. new code: the old
+    db.open_case() path runs CREATE TABLE IF NOT EXISTS against a file with
+    no tables yet, which is a real schema write (the file grows from 0
+    bytes). The new read-only path hits "no such table: events", the
+    except swallows it, and the file is provably untouched at 0 bytes.
+    """
+    cases_dir = tmp_path / "cases"
+    case_dir = cases_dir / "CASE-1"
+    case_dir.mkdir(parents=True)
+    db_file = case_dir / "case.db"
+    conn = sqlite3.connect(str(db_file))
+    conn.close()
+
+    assert db_file.stat().st_size == 0
+
+    cases = _list(cases_dir)
+    gc.collect()
+
+    assert db_file.stat().st_size == 0, "listing wrote a schema into a bare evidence file"
+    assert cases[0]["events_count"] == 0
+
+
 def test_listing_reports_counts(tmp_path):
     cases_dir = tmp_path / "cases"
     _make_case(cases_dir, "CASE-1", "Jane Doe")
