@@ -25,6 +25,9 @@ _PALETTE_FILES = {
 # Named colours are matched only in a value position (after a colon), so
 # `white-space: nowrap` is not mistaken for a colour. currentColor is
 # deliberately absent - it is the correct way for SVG to inherit colour.
+# Matching a colour word inside a var() token name (e.g. --red-200) is
+# intentional under D4: colour tokens are named for meaning, never for hue,
+# so a hue-named token is a true positive, not a false one.
 _NAMED_COLOURS = (
     "white|black|red|green|blue|yellow|orange|purple|gray|grey|silver|"
     "maroon|olive|lime|aqua|teal|navy|fuchsia|magenta|cyan|pink|brown|"
@@ -87,6 +90,21 @@ def test_colour_literal_pattern_ignores_non_colours(declaration):
     assert not _COLOUR_LITERAL.search(declaration), (
         f"expected _COLOUR_LITERAL NOT to flag: {declaration!r}"
     )
+
+
+def test_hue_named_token_is_flagged_by_design():
+    """A token named for its hue is exactly what D4 forbids.
+
+    `--red-200` matching is a TRUE positive, not a false one: the spec
+    requires colour tokens named for meaning (--severity-high), never for
+    hue (--accent-red). If a future contributor introduces a hue-named
+    token, this guard is supposed to catch it.
+    """
+    assert _COLOUR_LITERAL.search("color: var(--red-200);")
+    assert _COLOUR_LITERAL.search("background: var(--blue-600);")
+    # Role-named tokens - the correct form - are never flagged.
+    assert not _COLOUR_LITERAL.search("color: var(--severity-high);")
+    assert not _COLOUR_LITERAL.search("background: var(--surface-raised);")
 
 
 def test_every_referenced_token_is_defined():
