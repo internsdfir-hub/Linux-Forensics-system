@@ -39,6 +39,9 @@ os_release|environment|1|0|0|/etc/debian_version
 localtime|environment|1|0|0|/etc/localtime
 localtime|environment|1|0|0|/etc/timezone
 machine_id|environment|0|0|0|/etc/machine-id
+fstab|environment|0|0|0|/etc/fstab
+dns_config|network_config|0|0|0|/etc/resolv.conf
+dns_config|network_config|0|0|0|/etc/hosts
 passwd|user_accounts|1|0|0|/etc/passwd
 passwd|user_accounts|1|0|0|/etc/passwd-
 passwd|user_accounts|1|0|0|/etc/group
@@ -108,6 +111,14 @@ known_hosts|user_activity|0|0|0|/root/.ssh/known_hosts
 browser_firefox|user_activity|0|0|0|/home/*/.mozilla/firefox/*/places.sqlite
 browser_chrome|user_activity|0|0|0|/home/*/.config/google-chrome/*/History
 browser_chrome|user_activity|0|0|0|/home/*/.config/chromium/*/History
+web_access_log|user_activity|0|1|0|/var/log/apache2/access.log
+web_access_log|user_activity|0|1|0|/var/log/apache2/error.log
+web_access_log|user_activity|0|1|0|/var/log/nginx/access.log
+web_access_log|user_activity|0|1|0|/var/log/nginx/error.log
+web_access_log|user_activity|0|1|0|/var/log/httpd/access_log
+web_access_log|user_activity|0|1|0|/var/log/httpd/error_log
+ftp_log|user_activity|0|1|0|/var/log/vsftpd.log
+ftp_log|user_activity|0|1|0|/var/log/xferlog
 audit_log|audit|0|1|0|/var/log/audit/audit.log
 # ===END ARTIFACT TABLE===
 '
@@ -318,9 +329,9 @@ if [ "$VOLATILE" = 1 ]; then
         VOLATILE_RAN=1
         run_volatile ps ps aux
         if command -v ss >/dev/null 2>&1; then
-            run_volatile ss ss -tulpn
+            run_volatile ss ss -tunap
         else
-            run_volatile netstat netstat -tulpn
+            run_volatile netstat netstat -tunap
         fi
         run_volatile ip_addr ip addr
         run_volatile mount mount

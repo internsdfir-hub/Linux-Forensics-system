@@ -39,6 +39,20 @@
   tier: core
   notes: "host_id for multi-host cases; absent on some minimal images"
 
+- id: fstab
+  category: environment
+  paths: ["/etc/fstab"]
+  required: false
+  tier: core
+  notes: "Static filesystem and partition mounts, UUIDs and options"
+
+- id: dns_config
+  category: network_config
+  paths: ["/etc/resolv.conf", "/etc/hosts"]
+  required: false
+  tier: core
+  notes: "DNS resolver configuration, nameservers, search domains, and static host mappings"
+
 - id: passwd
   category: user_accounts
   paths: ["/etc/passwd", "/etc/passwd-", "/etc/group", "/etc/group-"]
@@ -273,6 +287,30 @@
   required: false
   tier: extended
   notes: "WebKit epoch: microseconds since 1601-01-01 (trap #8)"
+
+- id: web_access_log
+  category: user_activity
+  paths:
+    [
+      "/var/log/apache2/access.log",
+      "/var/log/apache2/error.log",
+      "/var/log/nginx/access.log",
+      "/var/log/nginx/error.log",
+      "/var/log/httpd/access_log",
+      "/var/log/httpd/error_log",
+    ]
+  required: false
+  glob_rotated: true
+  tier: extended
+  notes: "HTTP/HTTPS web server access and error logs for web activity & exfiltration tracking"
+
+- id: ftp_log
+  category: user_activity
+  paths: ["/var/log/vsftpd.log", "/var/log/xferlog"]
+  required: false
+  glob_rotated: true
+  tier: extended
+  notes: "FTP file transfer and authentication logs"
 
 - id: audit_log
   category: audit

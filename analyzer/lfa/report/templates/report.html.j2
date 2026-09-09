@@ -124,20 +124,25 @@ Host ID: {{ f.host_id or 'Default' }} | Finding ID: {{ f.finding_id }}</code></p
       <h2>6. Categorized Forensic Intel</h2>
       <div class="tabs">
         <div class="tab-buttons">
-          <button class="tab-btn active" data-target="tab-users">User Information</button>
-          <button class="tab-btn" data-target="tab-logins">Login Activities</button>
-          <button class="tab-btn" data-target="tab-usb">USB Activities</button>
-          <button class="tab-btn" data-target="tab-system">System Info</button>
-          <button class="tab-btn" data-target="tab-network">Network &amp; Persistence</button>
+          <button class="tab-btn active" data-target="tab-users">1. User Accounts</button>
+          <button class="tab-btn" data-target="tab-logins">2. Login &amp; Sessions</button>
+          <button class="tab-btn" data-target="tab-failed-logins">3. Failed Logins</button>
+          <button class="tab-btn" data-target="tab-usb">4. USB Activities</button>
+          <button class="tab-btn" data-target="tab-storage">5. Storage &amp; Disks</button>
+          <button class="tab-btn" data-target="tab-network">6. Network Interfaces</button>
+          <button class="tab-btn" data-target="tab-internet">7. Internet &amp; Services</button>
+          <button class="tab-btn" data-target="tab-system-additional">8. Additional Features</button>
         </div>
 
+        <!-- Tab 1: User Accounts -->
         <div id="tab-users" class="tab-content active">
+          <h3>Local User Accounts</h3>
           <table>
             <thead>
               <tr>
                 <th>Username</th>
                 <th>First Seen (UTC)</th>
-                <th>Description</th>
+                <th>Account Details &amp; Configuration</th>
               </tr>
             </thead>
             <tbody>
@@ -148,111 +153,448 @@ Host ID: {{ f.host_id or 'Default' }} | Finding ID: {{ f.finding_id }}</code></p
                 <td>{{ u.description }}</td>
               </tr>
               {% else %}
-              <tr><td colspan="3" style="text-align: center;">No user information extracted.</td></tr>
+              <tr><td colspan="3" style="text-align: center;">No user accounts extracted.</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+
+          {% if intel.user_diffs %}
+          <h3 style="margin-top: 24px;">User Creation, Deletion &amp; Group Escalations</h3>
+          <table>
+            <thead>
+              <tr>
+                <th>Type</th>
+                <th>Target User</th>
+                <th>Timestamp (UTC)</th>
+                <th>Severity</th>
+                <th>Description</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for d in intel.user_diffs %}
+              <tr>
+                <td><span class="badge badge-info">{{ d.subcategory }}</span></td>
+                <td><strong>{{ d.actor_user or '-' }}</strong></td>
+                <td><span style="font-family: monospace;">{{ d.timestamp_utc or 'State Diff' }}</span></td>
+                <td><span class="badge badge-{{ d.severity }}">{{ d.severity }}</span></td>
+                <td>{{ d.description }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+          {% endif %}
+        </div>
+
+        <!-- Tab 2: Login & Sessions (with calculated duration) -->
+        <div id="tab-logins" class="tab-content">
+          <h3>Login Sessions &amp; Duration</h3>
+          <table>
+            <thead>
+              <tr>
+                <th>Username</th>
+                <th>Source IP / Host</th>
+                <th>Terminal</th>
+                <th>Login Time (UTC)</th>
+                <th>Logout Time (UTC)</th>
+                <th>Calculated Duration</th>
+                <th>Session Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for s in intel.sessions %}
+              <tr>
+                <td><strong>{{ s.actor_user }}</strong></td>
+                <td>{{ s.source_ip }}</td>
+                <td><code>{{ s.terminal }}</code></td>
+                <td><span style="font-family: monospace;">{{ s.login_time }}</span></td>
+                <td><span style="font-family: monospace;">{{ s.logout_time }}</span></td>
+                <td><strong>{{ s.duration }}</strong></td>
+                <td><span class="badge badge-{{ 'low' if s.status == 'Closed' else 'medium' }}">{{ s.status }}</span></td>
+              </tr>
+              {% else %}
+              <tr><td colspan="7" style="text-align: center;">No active or paired login sessions found.</td></tr>
               {% endfor %}
             </tbody>
           </table>
         </div>
 
-        <div id="tab-logins" class="tab-content">
+        <!-- Tab 3: Failed Login Attempts -->
+        <div id="tab-failed-logins" class="tab-content">
+          <h3>Failed Login Attempts Aggregation</h3>
           <table>
             <thead>
               <tr>
-                <th>Username</th>
+                <th>Target Username</th>
                 <th>Source IP</th>
-                <th>Type</th>
                 <th>Attempts</th>
                 <th>First Attempt (UTC)</th>
                 <th>Last Attempt (UTC)</th>
               </tr>
             </thead>
             <tbody>
-              {% for l in intel.logins %}
+              {% for fl in intel.failed_logins %}
               <tr>
-                <td><strong>{{ l.actor_user or 'UNKNOWN' }}</strong></td>
-                <td>{{ l.source_ip or '-' }}</td>
-                <td>
-                  <span class="badge badge-{{ 'high' if l.subcategory == 'failed' else 'info' }}">
-                    {{ l.subcategory }}
-                  </span>
-                </td>
-                <td>{{ l.attempt_count }}</td>
-                <td><span style="font-family: monospace;">{{ l.first_attempt }}</span></td>
-                <td><span style="font-family: monospace;">{{ l.last_attempt }}</span></td>
+                <td><strong>{{ fl.actor_user or 'UNKNOWN' }}</strong></td>
+                <td>{{ fl.source_ip or '-' }}</td>
+                <td><span class="badge badge-high">{{ fl.attempt_count }}</span></td>
+                <td><span style="font-family: monospace;">{{ fl.first_attempt }}</span></td>
+                <td><span style="font-family: monospace;">{{ fl.last_attempt }}</span></td>
               </tr>
               {% else %}
-              <tr><td colspan="6" style="text-align: center;">No login activities extracted.</td></tr>
+              <tr><td colspan="5" style="text-align: center;">No failed login attempts recorded.</td></tr>
               {% endfor %}
             </tbody>
           </table>
         </div>
 
+        <!-- Tab 4: USB Device Activities -->
         <div id="tab-usb" class="tab-content">
+          <h3>USB Hardware Activities</h3>
           <table>
             <thead>
               <tr>
                 <th>Timestamp (UTC)</th>
-                <th>Description</th>
-                <th>Raw Source Line</th>
+                <th>Action</th>
+                <th>Description (Vendor, Model, Serial &amp; Duration)</th>
+                <th>Notes</th>
               </tr>
             </thead>
             <tbody>
               {% for u in intel.usb %}
               <tr>
-                <td style="white-space: nowrap;"><span style="font-family: monospace;">{{ u.timestamp_utc }}</span></td>
+                <td style="white-space: nowrap;"><span style="font-family: monospace;">{{ u.timestamp_utc or '-' }}</span></td>
+                <td><span class="badge badge-{{ 'medium' if u.subcategory == 'usb_connect' else 'info' }}">{{ u.subcategory }}</span></td>
                 <td>{{ u.description }}</td>
-                <td style="font-family: monospace; font-size: 11px;">{{ u.raw_line[:80] }}...</td>
+                <td style="font-size: 12px; color: var(--text-secondary);">{{ u.notes or '-' }}</td>
               </tr>
               {% else %}
-              <tr><td colspan="3" style="text-align: center;">No USB activities detected.</td></tr>
+              <tr><td colspan="4" style="text-align: center;">No USB device activities detected.</td></tr>
               {% endfor %}
             </tbody>
           </table>
         </div>
 
-        <div id="tab-system" class="tab-content">
+        <!-- Tab 5: Storage & Hard Disks -->
+        <div id="tab-storage" class="tab-content">
+          <h3>Connected Storage Devices, Partitions &amp; Mounts</h3>
+          <table>
+            <thead>
+              <tr>
+                <th>Type</th>
+                <th>Description (Device, Filesystem, Mount Point, UUID &amp; Capacity)</th>
+                <th>Metadata / Notes</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for st in intel.storage %}
+              <tr>
+                <td><span class="badge badge-info">{{ st.subcategory }}</span></td>
+                <td>{{ st.description }}</td>
+                <td style="font-size: 12px; font-family: monospace;">{{ st.notes or '-' }}</td>
+              </tr>
+              {% else %}
+              <tr><td colspan="3" style="text-align: center;">No disk, partition or mount evidence extracted.</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Tab 6: Network Interfaces -->
+        <div id="tab-network" class="tab-content">
+          <h3>Network Interfaces &amp; Addressing</h3>
+          <table>
+            <thead>
+              <tr>
+                <th>Interface</th>
+                <th>Configuration &amp; Addressing (State, MAC, IP/CIDR)</th>
+                <th>Details</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for ni in intel.network_interfaces %}
+              <tr>
+                <td><strong>{{ ni.source_ip or ni.subcategory }}</strong></td>
+                <td>{{ ni.description }}</td>
+                <td style="font-size: 12px; font-family: monospace;">{{ ni.notes or '-' }}</td>
+              </tr>
+              {% else %}
+              <tr><td colspan="3" style="text-align: center;">No network interfaces parsed.</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+
+          {% if intel.firewall_network %}
+          <h3 style="margin-top: 24px;">Firewall Blocks &amp; Remote Host Connections</h3>
+          <table>
+            <thead>
+              <tr>
+                <th>Type</th>
+                <th>Timestamp (UTC)</th>
+                <th>Source / Target IP</th>
+                <th>Description</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for fn in intel.firewall_network %}
+              <tr>
+                <td><span class="badge badge-medium">{{ fn.subcategory }}</span></td>
+                <td><span style="font-family: monospace;">{{ fn.timestamp_utc or '-' }}</span></td>
+                <td>{{ fn.source_ip or '-' }}</td>
+                <td>{{ fn.description }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+          {% endif %}
+
+          <h3 style="margin-top: 24px;">Active Volatile Network Connections (ss / netstat)</h3>
+          <table>
+            <thead>
+              <tr>
+                <th>State</th>
+                <th>Remote IP Address</th>
+                <th>Process / PID</th>
+                <th>Connection Details (Local -> Remote)</th>
+                <th>Evidence Source</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for sock in intel.volatile_sockets %}
+              <tr>
+                <td><span class="badge badge-{% if sock.subcategory == 'established' %}high{% elif sock.subcategory == 'listen' %}medium{% else %}low{% endif %}">{{ sock.subcategory }}</span></td>
+                <td><strong>{{ sock.source_ip or '-' }}</strong></td>
+                <td>{{ sock.actor_process or '-' }}</td>
+                <td>{{ sock.description }}</td>
+                <td style="font-size: 12px; font-family: monospace;">{{ sock.notes or '-' }}</td>
+              </tr>
+              {% else %}
+              <tr><td colspan="5" style="text-align: center;">No active volatile sockets parsed.</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Tab 7: Internet & Network Activities -->
+        <div id="tab-internet" class="tab-content">
+          <!-- 7a. Remote IP Connections -->
+          <h3>Remote IP Connections &amp; Communicating Hosts</h3>
+          <table>
+            <thead>
+              <tr>
+                <th>Remote IP Address</th>
+                <th>Total Interactions</th>
+                <th>Associated Users</th>
+                <th>Observed Services</th>
+                <th>First Seen (UTC)</th>
+                <th>Last Seen (UTC)</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for rip in intel.remote_ips %}
+              <tr>
+                <td><strong>{{ rip.source_ip }}</strong></td>
+                <td><span class="badge badge-info">{{ rip.connection_count }}</span></td>
+                <td>{{ rip.users or '-' }}</td>
+                <td><span style="font-family: monospace; font-size: 11px;">{{ rip.services }}</span></td>
+                <td><span style="font-family: monospace;">{{ rip.first_seen }}</span></td>
+                <td><span style="font-family: monospace;">{{ rip.last_seen }}</span></td>
+              </tr>
+              {% else %}
+              <tr><td colspan="6" style="text-align: center;">No external remote IP connections observed.</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+
+          <!-- 7b. SSH Connections -->
+          <h3 style="margin-top: 28px;">SSH Connections (Inbound &amp; Outbound)</h3>
+          <table>
+            <thead>
+              <tr>
+                <th>Timestamp (UTC)</th>
+                <th>Direction</th>
+                <th>User</th>
+                <th>Remote Host / IP</th>
+                <th>Event / Subcategory</th>
+                <th>Session Details</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for sc in intel.ssh_connections %}
+              <tr>
+                <td><span style="font-family: monospace;">{{ sc.timestamp_utc or 'Static Key/Host' }}</span></td>
+                <td><span class="badge badge-{{ 'medium' if sc.direction == 'Outbound' else 'low' }}">{{ sc.direction }}</span></td>
+                <td><strong>{{ sc.actor_user or '-' }}</strong></td>
+                <td>{{ sc.source_ip or '-' }}</td>
+                <td><code>{{ sc.subcategory }}</code></td>
+                <td>{{ sc.description }}</td>
+              </tr>
+              {% else %}
+              <tr><td colspan="6" style="text-align: center;">No SSH connection activities detected.</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+
+          <!-- 7c. DNS Requests & Resolvers -->
+          <h3 style="margin-top: 28px;">DNS Requests &amp; Resolver Configuration</h3>
+          <table>
+            <thead>
+              <tr>
+                <th>Type</th>
+                <th>IP / Nameserver</th>
+                <th>Hostname / Domain</th>
+                <th>Configuration / Resolution Details</th>
+                <th>Evidence Source</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for dns in intel.dns_activity %}
+              <tr>
+                <td><span class="badge badge-info">{{ dns.subcategory }}</span></td>
+                <td><strong>{{ dns.source_ip or '-' }}</strong></td>
+                <td>{{ dns.source_host or '-' }}</td>
+                <td>{{ dns.description }}</td>
+                <td style="font-size: 12px; font-family: monospace;">{{ dns.notes or '-' }}</td>
+              </tr>
+              {% else %}
+              <tr><td colspan="5" style="text-align: center;">No DNS resolver or query evidence extracted.</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+
+          <!-- 7d. HTTP / HTTPS Logs -->
+          <h3 style="margin-top: 28px;">HTTP / HTTPS Web Server Logs</h3>
+          <table>
+            <thead>
+              <tr>
+                <th>Timestamp (UTC)</th>
+                <th>Client IP</th>
+                <th>User</th>
+                <th>Request Description</th>
+                <th>Status &amp; User-Agent</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for http in intel.http_logs %}
+              <tr>
+                <td><span style="font-family: monospace;">{{ http.timestamp_utc or '-' }}</span></td>
+                <td><strong>{{ http.client_ip or '-' }}</strong></td>
+                <td>{{ http.actor_user or '-' }}</td>
+                <td>{{ http.description }}</td>
+                <td style="font-size: 12px; font-family: monospace;">{{ http.notes or '-' }}</td>
+              </tr>
+              {% else %}
+              <tr><td colspan="5" style="text-align: center;">No HTTP/HTTPS web server requests recorded.</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+
+          <!-- 7e. FTP Connections -->
+          <h3 style="margin-top: 28px;">FTP Connections &amp; File Transfers</h3>
+          <table>
+            <thead>
+              <tr>
+                <th>Timestamp (UTC)</th>
+                <th>Client IP</th>
+                <th>User</th>
+                <th>Transfer / Action</th>
+                <th>Details</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for ftp in intel.ftp_connections %}
+              <tr>
+                <td><span style="font-family: monospace;">{{ ftp.timestamp_utc or '-' }}</span></td>
+                <td><strong>{{ ftp.client_ip or '-' }}</strong></td>
+                <td>{{ ftp.actor_user or '-' }}</td>
+                <td>{{ ftp.description }}</td>
+                <td style="font-size: 12px; font-family: monospace;">{{ ftp.notes or '-' }}</td>
+              </tr>
+              {% else %}
+              <tr><td colspan="5" style="text-align: center;">No FTP transfer or session logs detected.</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+
+          <!-- 7f. Browser Activities & Download History -->
+          <h3 style="margin-top: 28px;">Browser Activities &amp; Download History</h3>
           <table>
             <thead>
               <tr>
                 <th>Timestamp (UTC)</th>
                 <th>Type</th>
-                <th>Description</th>
+                <th>User</th>
+                <th>Activity Description / URL</th>
+                <th>Target File / Notes</th>
               </tr>
             </thead>
             <tbody>
-              {% for s in intel.system %}
+              {% for b in intel.browser_and_downloads %}
               <tr>
-                <td style="white-space: nowrap;"><span style="font-family: monospace;">{{ s.timestamp_utc or '-' }}</span></td>
-                <td><span class="badge badge-info">{{ s.subcategory }}</span></td>
-                <td>{{ s.description }}</td>
+                <td><span style="font-family: monospace;">{{ b.timestamp_utc or '-' }}</span></td>
+                <td><span class="badge badge-info">{{ b.subcategory }}</span></td>
+                <td><strong>{{ b.actor_user or '-' }}</strong></td>
+                <td>{{ b.description }}</td>
+                <td style="font-size: 12px; font-family: monospace;">{{ b.notes or '-' }}</td>
               </tr>
               {% else %}
-              <tr><td colspan="3" style="text-align: center;">No system info extracted.</td></tr>
+              <tr><td colspan="5" style="text-align: center;">No browser history or download events recorded.</td></tr>
               {% endfor %}
             </tbody>
           </table>
         </div>
 
-        <div id="tab-network" class="tab-content">
+        <!-- Tab 8: Additional Features -->
+        <div id="tab-system-additional" class="tab-content">
+          <h3>Security &amp; Persistence Activities (Cron, Sudo, Commands, Services)</h3>
           <table>
             <thead>
               <tr>
-                <th>Timestamp (UTC)</th>
                 <th>Category</th>
                 <th>Subcategory</th>
+                <th>User</th>
+                <th>Timestamp (UTC)</th>
+                <th>Severity</th>
                 <th>Description</th>
               </tr>
             </thead>
             <tbody>
-              {% for n in intel.network_persistence %}
+              {% for sa in intel.system_additional %}
               <tr>
-                <td style="white-space: nowrap;"><span style="font-family: monospace;">{{ n.timestamp_utc or '-' }}</span></td>
-                <td><span class="badge badge-medium">{{ n.category }}</span></td>
-                <td><span class="badge badge-info">{{ n.subcategory }}</span></td>
-                <td>{{ n.description }}</td>
+                <td><span class="badge badge-info">{{ sa.category }}</span></td>
+                <td>{{ sa.subcategory }}</td>
+                <td><strong>{{ sa.actor_user or '-' }}</strong></td>
+                <td><span style="font-family: monospace;">{{ sa.timestamp_utc or '-' }}</span></td>
+                <td><span class="badge badge-{{ sa.severity }}">{{ sa.severity }}</span></td>
+                <td>{{ sa.description }}</td>
               </tr>
               {% else %}
-              <tr><td colspan="4" style="text-align: center;">No network/persistence info extracted.</td></tr>
+              <tr><td colspan="6" style="text-align: center;">No additional security events recorded.</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+
+          <h3 style="margin-top: 24px;">Interactive Shell History</h3>
+          <table>
+            <thead>
+              <tr>
+                <th>Timestamp (UTC)</th>
+                <th>User</th>
+                <th>Command Executed</th>
+                <th>Severity</th>
+                <th>Evidence Source</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for sh in intel.shell_history %}
+              <tr>
+                <td><span style="font-family: monospace;">{{ sh.timestamp_utc or 'Unknown' }}</span></td>
+                <td><strong>{{ sh.actor_user or '-' }}</strong></td>
+                <td style="font-family: monospace;">{{ sh.description }}</td>
+                <td><span class="badge badge-{{ sh.severity }}">{{ sh.severity }}</span></td>
+                <td style="font-size: 12px; font-family: monospace;">{{ sh.notes or '-' }}</td>
+              </tr>
+              {% else %}
+              <tr><td colspan="5" style="text-align: center;">No interactive shell history extracted.</td></tr>
               {% endfor %}
             </tbody>
           </table>

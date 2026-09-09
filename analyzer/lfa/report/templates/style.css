@@ -301,7 +301,7 @@ tr:hover td {
   margin-top: 24px;
 }
 .tab-buttons {
-  display: inline-flex;
+  display: flex;
   background: var(--bg-secondary);
   border: 1px solid var(--border-color);
   border-radius: 10px;
@@ -309,6 +309,8 @@ tr:hover td {
   margin-bottom: 24px;
   overflow-x: auto;
   box-shadow: var(--shadow-sm);
+  flex-wrap: wrap;
+  gap: 4px;
 }
 .tab-btn {
   background: transparent;

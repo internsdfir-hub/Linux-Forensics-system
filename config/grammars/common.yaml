@@ -46,6 +46,13 @@ sshd_disconnect:
   severity: info
   process: sshd
 
+sshd_received_disconnect:
+  pattern: 'sshd\[(?P<pid>\d+)\]: Received disconnect from (?P<ip>\S+): \d+: (?P<reason>.*)'
+  category: login_activity
+  subcategory: disconnect
+  severity: info
+  process: sshd
+
 sudo_command:
   pattern: 'sudo(?:\[(?P<pid>\d+)\])?:\s+(?P<user>\S+) : TTY=(?P<tty>\S+) ; PWD=(?P<pwd>\S+) ; USER=(?P<target_user>\S+) ; COMMAND=(?P<command>.*)$'
   category: privilege_escalation
