@@ -626,6 +626,8 @@ class LFAServerHandler(http.server.BaseHTTPRequestHandler):
 
     def _list_cases(self) -> list[dict[str, Any]]:
         """Scan cases directory and summarize metadata, findings, and reports."""
+        import sqlite3
+
         cases = []
         if not self.cases_dir.exists():
             return cases
@@ -662,8 +664,12 @@ class LFAServerHandler(http.server.BaseHTTPRequestHandler):
                     pass
 
             if db_path.exists():
+                conn = None
                 try:
-                    conn = db.open_case(db_path)
+                    # Read-only: listing cases must never write to evidence.
+                    conn = sqlite3.connect(
+                        f"file:{db_path.as_posix()}?mode=ro", uri=True
+                    )
                     cur = conn.cursor()
                     cur.execute("SELECT COUNT(*) FROM events")
                     case_info["events_count"] = cur.fetchone()[0]
@@ -675,11 +681,16 @@ class LFAServerHandler(http.server.BaseHTTPRequestHandler):
                     case_info["high_findings"] = cur.fetchone()[0]
 
                     if case_info["examiner"] == "Unknown":
-                        case_info["examiner"] = db.get_case_meta(conn, "examiner", "Unknown")
-
-                    conn.close()
+                        row = cur.execute(
+                            "SELECT value FROM case_meta WHERE key = 'examiner'"
+                        ).fetchone()
+                        if row and row[0]:
+                            case_info["examiner"] = row[0]
                 except Exception:
                     pass
+                finally:
+                    if conn is not None:
+                        conn.close()
 
             cases.append(case_info)
 
