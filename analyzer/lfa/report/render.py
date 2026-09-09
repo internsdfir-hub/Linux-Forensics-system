@@ -11,6 +11,7 @@ from pathlib import Path
 
 from jinja2 import Environment, FileSystemLoader
 
+from ..ui import assets
 from .chart import generate_density_svg
 from .data import (
     get_artifacts_data,
@@ -38,14 +39,12 @@ def render_report(conn: sqlite3.Connection, case_dir: Path | str, out_html_path:
     svg_chart = generate_density_svg(conn)
     narrative = generate_executive_summary(summary, findings)
 
-    tpl_dir = Path(__file__).resolve().parent / "templates"
-    env = Environment(loader=FileSystemLoader(str(tpl_dir)), autoescape=True)
+    env = Environment(
+        loader=FileSystemLoader(str(assets.TEMPLATE_DIR)), autoescape=True
+    )
 
-    css_path = tpl_dir / "style.css"
-    js_path = tpl_dir / "tables.js"
-
-    inline_css = css_path.read_text(encoding="utf-8") if css_path.exists() else ""
-    inline_js = js_path.read_text(encoding="utf-8") if js_path.exists() else ""
+    inline_css = assets.load_styles("base")
+    inline_js = assets.load_script("report")
 
     template = env.get_template("report.html.j2")
     html_content = template.render(
