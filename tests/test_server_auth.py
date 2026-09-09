@@ -7,6 +7,7 @@ import http.server
 import socketserver
 import threading
 import urllib.error
+import urllib.parse
 import urllib.request
 from pathlib import Path
 
@@ -112,6 +113,46 @@ def test_cookie_authenticates_subsequent_requests(server):
 def test_login_with_a_wrong_token_is_rejected(server):
     with pytest.raises(urllib.error.HTTPError) as exc:
         urllib.request.urlopen(f"{server}/login?token=wrong", timeout=10)
+    assert exc.value.code == 401
+
+
+def test_wrong_bearer_token_is_rejected(server):
+    """A wrong (but well-formed) credential must be rejected, not just a
+    missing one - this is the case that catches a regression like an
+    accidental prefix or startswith() check."""
+    req = urllib.request.Request(
+        f"{server}/api/v1/cases", headers={"Authorization": "Bearer wrong-token"}
+    )
+    with pytest.raises(urllib.error.HTTPError) as exc:
+        urllib.request.urlopen(req, timeout=10)
+    assert exc.value.code == 401
+
+
+def test_wrong_cookie_token_is_rejected(server):
+    req = urllib.request.Request(
+        f"{server}/api/v1/cases", headers={"Cookie": "lfa_token=wrong-token"}
+    )
+    with pytest.raises(urllib.error.HTTPError) as exc:
+        urllib.request.urlopen(req, timeout=10)
+    assert exc.value.code == 401
+
+
+def test_non_ascii_bearer_token_returns_401_not_a_crash(server):
+    """secrets.compare_digest raises TypeError on non-ASCII str arguments.
+    Before the fix, this crashed the connection instead of returning 401 -
+    a pre-auth, one-request denial of service on every GET route."""
+    req = urllib.request.Request(
+        f"{server}/api/v1/cases", headers={"Authorization": "Bearer abcédef"}
+    )
+    with pytest.raises(urllib.error.HTTPError) as exc:
+        urllib.request.urlopen(req, timeout=10)
+    assert exc.value.code == 401
+
+
+def test_non_ascii_login_token_returns_401_not_a_crash(server):
+    encoded = urllib.parse.quote("abcédef")
+    with pytest.raises(urllib.error.HTTPError) as exc:
+        urllib.request.urlopen(f"{server}/login?token={encoded}", timeout=10)
     assert exc.value.code == 401
 
 

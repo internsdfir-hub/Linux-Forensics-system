@@ -79,9 +79,19 @@ class LFAServerHandler(http.server.BaseHTTPRequestHandler):
                 if name == "lfa_token":
                     candidates.append(value.strip())
 
-        return any(
-            secrets.compare_digest(c, self.auth_token) for c in candidates if c
-        )
+        return any(self._token_matches(c) for c in candidates if c)
+
+    def _token_matches(self, candidate: str) -> bool:
+        """Compare a candidate token to the configured one without raising.
+
+        secrets.compare_digest raises TypeError when either argument is a
+        str containing non-ASCII characters. Credentials here come straight
+        from request headers/cookies/query params, so a non-ASCII value
+        must fail the comparison (401), not crash the connection.
+        """
+        if not candidate.isascii() or not self.auth_token.isascii():
+            return False
+        return secrets.compare_digest(candidate, self.auth_token)
 
     def _send_json(self, status_code: int, data: dict[str, Any]) -> None:
         payload = json.dumps(data, indent=2).encode("utf-8")
@@ -122,7 +132,7 @@ class LFAServerHandler(http.server.BaseHTTPRequestHandler):
             if not self.auth_token:
                 self._send_redirect("/")
                 return
-            if supplied and secrets.compare_digest(supplied, self.auth_token):
+            if supplied and self._token_matches(supplied):
                 self._send_redirect(
                     "/",
                     f"lfa_token={supplied}; HttpOnly; SameSite=Strict; Path=/",
