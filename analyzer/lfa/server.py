@@ -11,6 +11,7 @@ Provides:
 from __future__ import annotations
 
 import hashlib
+import html
 import http.server
 import json
 import secrets
@@ -25,6 +26,22 @@ from typing import Any
 from . import __version__, db
 from .explorer import render_explorer_html
 from .pipeline import run_analysis_pipeline
+
+
+def sanitise_examiner(value: str | None) -> str:
+    """Clean the X-Examiner header before it is stored or rendered.
+
+    This value comes off the wire from whatever streamed the bundle, and it
+    ends up in case_metadata.json and in server-rendered HTML. Strip control
+    characters, collapse whitespace, and cap the length.
+    """
+    if not value:
+        return "Remote Investigator"
+    cleaned = "".join(ch for ch in str(value) if ch.isprintable())
+    cleaned = " ".join(cleaned.split()).strip()
+    if not cleaned:
+        return "Remote Investigator"
+    return cleaned[:128]
 
 
 class LFAServerHandler(http.server.BaseHTTPRequestHandler):
@@ -525,7 +542,8 @@ class LFAServerHandler(http.server.BaseHTTPRequestHandler):
             case_id = f"stream_case_{timestamp_str}"
         case_id = "".join(c for c in case_id if c.isalnum() or c in ("-", "_", "."))
 
-        examiner = self.headers.get("X-Examiner") or self.examiner
+        examiner = sanitise_examiner(self.headers.get("X-Examiner")) \
+            if self.headers.get("X-Examiner") else self.examiner
         expected_sha256 = self.headers.get("X-Bundle-SHA256", "").strip().lower()
 
         case_dir = self.cases_dir / case_id
@@ -687,20 +705,30 @@ class LFAServerHandler(http.server.BaseHTTPRequestHandler):
             """
         else:
             for c in cases:
-                hosts_str = ", ".join(c["hosts"]) if c["hosts"] else "—"
+                case_id_safe = html.escape(str(c["case_id"]), quote=True)
+                hosts_str = html.escape(
+                    ", ".join(str(h) for h in c["hosts"]) if c["hosts"] else "—",
+                    quote=True,
+                )
+                examiner_safe = html.escape(str(c["examiner"]), quote=True)
+                report_url_safe = html.escape(str(c["report_url"] or ""), quote=True)
+
                 badge_high = f'<span class="badge badge-high">{c["high_findings"]} High</span>' if c["high_findings"] > 0 else ""
                 badge_total = f'<span class="badge badge-neutral">{c["findings_count"]} Total</span>'
 
-                explore_btn = f'<a href="/cases/{c["case_id"]}/explorer" class="btn btn-primary">🔬 Explore</a>' if c["has_db"] else '<span class="btn btn-disabled">No DB</span>'
-                report_btn = f'<a href="{c["report_url"]}" target="_blank" class="btn btn-secondary">🔍 Report</a>' if c["has_report"] else '<span class="btn btn-disabled">Pending</span>'
+                explore_btn = f'<a href="/cases/{case_id_safe}/explorer" class="btn btn-primary">🔬 Explore</a>' if c["has_db"] else '<span class="btn btn-disabled">No DB</span>'
+                report_btn = f'<a href="{report_url_safe}" target="_blank" class="btn btn-secondary">🔍 Report</a>' if c["has_report"] else '<span class="btn btn-disabled">Pending</span>'
 
-                ingest_str = c["ingest_time"][:19].replace("T", " ") if c["ingest_time"] else "—"
+                ingest_str = html.escape(
+                    c["ingest_time"][:19].replace("T", " ") if c["ingest_time"] else "—",
+                    quote=True,
+                )
 
                 rows_html += f"""
                 <tr>
-                  <td><strong class="case-title">{c["case_id"]}</strong></td>
+                  <td><strong class="case-title">{case_id_safe}</strong></td>
                   <td><span class="mono-tag">{hosts_str}</span></td>
-                  <td>{c["examiner"]}</td>
+                  <td>{examiner_safe}</td>
                   <td class="num">{c["events_count"]:,}</td>
                   <td>{badge_high} {badge_total}</td>
                   <td class="subtext">{ingest_str}</td>
@@ -713,7 +741,9 @@ class LFAServerHandler(http.server.BaseHTTPRequestHandler):
                 </tr>
                 """
 
-        token_arg = f'--token "{self.auth_token}"' if self.auth_token else ''
+        # Never render the live token into the page. The examiner already knows
+        # it - they started the server with it.
+        token_arg = '-T "<YOUR-INGEST-TOKEN>"' if self.auth_token else ''
 
         server_port = self.server.server_address[1] if hasattr(self.server, "server_address") else 8443
 

@@ -8,6 +8,7 @@ Provides:
 """
 from __future__ import annotations
 
+import html
 from typing import Any
 
 from . import __version__
@@ -15,12 +16,24 @@ from . import __version__
 
 def render_explorer_html(case_id: str, case_info: dict[str, Any]) -> str:
     """Render the single-page interactive investigation explorer."""
-    examiner = case_info.get("examiner", "Forensic Investigator")
-    hosts_str = ", ".join(case_info.get("hosts", [])) if case_info.get("hosts") else "—"
+    # case_id, examiner and host ids are all evidence-derived or wire-derived.
+    # They are interpolated into this page's markup, so they are escaped here.
+    case_id = html.escape(str(case_id), quote=True)
+    examiner = html.escape(
+        str(case_info.get("examiner", "Forensic Investigator")), quote=True
+    )
+    hosts_str = html.escape(
+        ", ".join(str(h) for h in case_info.get("hosts", []))
+        if case_info.get("hosts")
+        else "—",
+        quote=True,
+    )
     events_count = case_info.get("events_count", 0)
     findings_count = case_info.get("findings_count", 0)
     high_findings = case_info.get("high_findings", 0)
-    report_url = case_info.get("report_url", f"/cases/{case_id}/report.html")
+    report_url = html.escape(
+        str(case_info.get("report_url", f"/cases/{case_id}/report.html")), quote=True
+    )
 
     return f"""<!DOCTYPE html>
 <html lang="en">
