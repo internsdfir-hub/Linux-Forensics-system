@@ -21,6 +21,37 @@ _PAD_BOTTOM = 40
 
 _SEVERITY_ORDER = ("high", "medium", "low", "info")
 
+# Horizontal bar charts label their rows in a left gutter. _PAD_LEFT is sized
+# for the short numeric y-axis labels of the time-series charts; account names
+# are unbounded (32 chars on Linux) and overflowed it, so those two charts size
+# their own gutter instead. Capped, or one long name would starve the bars.
+_LABEL_PAD = 8
+_LABEL_GUTTER_MAX = 180
+
+
+def _text_width(text: str, size: int = 11) -> float:
+    """Estimate rendered width, with no font metrics available at render time.
+
+    Deliberately conservative: 0.62em per character over-reserves against the
+    ~0.49em Segoe UI actually needs for lowercase, and over-reserving costs a
+    few pixels of bar while under-reserving clips the label off the canvas.
+    """
+    return len(text) * size * 0.62
+
+
+def _truncate_to_width(text: str, max_width: float, size: int = 11) -> str:
+    """Shorten to fit, marking the cut. Callers keep the full string in <title>."""
+    if _text_width(text, size) <= max_width:
+        return text
+    keep = max(1, int(max_width / (size * 0.62)) - 1)
+    return text[:keep] + "…"
+
+
+def _label_gutter(labels: list[str], size: int = 11) -> float:
+    """Left gutter wide enough for the longest label, never past the cap."""
+    widest = max((_text_width(t, size) for t in labels), default=0.0)
+    return min(max(float(_PAD_LEFT), widest + _LABEL_PAD * 2), float(_LABEL_GUTTER_MAX))
+
 
 def _open(width: int, height: int, title: str, desc: str) -> list[str]:
     ident = "lfa-" + hashlib.sha256(title.encode("utf-8")).hexdigest()[:8]
@@ -149,17 +180,18 @@ def severity_breakdown_svg(conn: sqlite3.Connection, width: int = 900,
     )
 
     row_h = (height - _PAD_TOP - _PAD_BOTTOM) / len(ordered)
-    plot_w = width - _PAD_LEFT - _PAD_RIGHT
+    gutter = _label_gutter([s for s, _ in ordered])
+    plot_w = width - gutter - _PAD_RIGHT
 
     for i, (sev, n) in enumerate(ordered):
         y = _PAD_TOP + row_h * i + row_h * 0.15
         h = row_h * 0.7
         w = (n / top) * plot_w if top else 0
-        parts.append(_bar(_PAD_LEFT, y, w, h, f"--severity-{sev}",
+        parts.append(_bar(gutter, y, w, h, f"--severity-{sev}",
                           f"{sev}: {n} finding(s)"))
-        parts.append(_label(_PAD_LEFT - 8, y + h / 2 + 4, sev, anchor="end",
+        parts.append(_label(gutter - _LABEL_PAD, y + h / 2 + 4, sev, anchor="end",
                             token="--text-secondary"))
-        parts.append(_label(_PAD_LEFT + w + 8, y + h / 2 + 4, str(n),
+        parts.append(_label(gutter + w + _LABEL_PAD, y + h / 2 + 4, str(n),
                             anchor="start", token="--text-secondary"))
 
     parts.append("</svg>")
@@ -187,17 +219,23 @@ def user_activity_svg(conn: sqlite3.Connection, width: int = 900,
     )
 
     row_h = (height - _PAD_TOP - _PAD_BOTTOM) / len(rows)
-    plot_w = width - _PAD_LEFT - _PAD_RIGHT
+    # Account names are unbounded, so the gutter follows the longest one up to
+    # the cap, and anything past the cap is truncated in the label only - the
+    # full name stays in the bar's <title> and in the events table.
+    gutter = _label_gutter([str(u) for u, _ in rows])
+    plot_w = width - gutter - _PAD_RIGHT
+    label_room = gutter - _LABEL_PAD * 2
 
     for i, (user, n) in enumerate(rows):
         y = _PAD_TOP + row_h * i + row_h * 0.15
         h = row_h * 0.7
         w = (n / top) * plot_w if top else 0
-        parts.append(_bar(_PAD_LEFT, y, w, h, "--accent-primary",
+        parts.append(_bar(gutter, y, w, h, "--accent-primary",
                           f"{user}: {n} events"))
-        parts.append(_label(_PAD_LEFT - 8, y + h / 2 + 4, user, anchor="end",
-                            token="--text-secondary"))
-        parts.append(_label(_PAD_LEFT + w + 8, y + h / 2 + 4, str(n),
+        parts.append(_label(gutter - _LABEL_PAD, y + h / 2 + 4,
+                            _truncate_to_width(str(user), label_room),
+                            anchor="end", token="--text-secondary"))
+        parts.append(_label(gutter + w + _LABEL_PAD, y + h / 2 + 4, str(n),
                             anchor="start", token="--text-secondary"))
 
     parts.append("</svg>")

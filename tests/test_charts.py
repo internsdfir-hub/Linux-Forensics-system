@@ -129,3 +129,95 @@ def test_user_activity_respects_its_limit(case):
     """One bar per account, never more than the limit."""
     svg = chart.user_activity_svg(case, limit=2)
     assert svg.count("<rect") == 2, "expected exactly one bar per account"
+
+
+# --- Real-evidence defects (found in Task 8's inspection) --------------------
+#
+# The bar charts reserved a fixed 56px left gutter, which was sized for the
+# short numeric y-axis labels of the time-series charts. The horizontal bar
+# charts reuse that gutter for arbitrary-length account names, so on the real
+# WSL/Kali bundle `backdooruser` - the one account an examiner most needs to
+# read - was right-anchored at x=48 and ran off the left edge of the canvas.
+
+def _end_anchored_labels(svg):
+    """Every category label, as (anchor_x, text). These extend LEFTWARD."""
+    return [
+        (float(x), text)
+        for x, text in re.findall(
+            r'<text[^>]*\sx="([\d.]+)"[^>]*text-anchor="end"[^>]*>([^<]*)</text>',
+            svg,
+        )
+    ]
+
+
+@pytest.fixture
+def long_name_case(tmp_path, event_factory):
+    """One account whose name is far wider than the old fixed gutter."""
+    conn = db.open_case(tmp_path / "case.db")
+    db.insert_events(conn, [
+        event_factory(
+            timestamp_utc=f"2024-03-14T00:{n:02d}:00+00:00",
+            actor_user="backdooruser" if n % 2 else "root",
+            raw_line=f"line {n}",
+        )
+        for n in range(10)
+    ])
+    conn.commit()
+    yield conn
+    conn.close()
+
+
+def test_text_width_estimate_grows_with_the_string():
+    assert chart._text_width("backdooruser") > chart._text_width("root")
+    # A sanity floor: no real sans font is narrower than 5px/char at size 11,
+    # so an estimate below this would under-reserve the gutter.
+    assert chart._text_width("backdooruser") >= 5 * len("backdooruser")
+
+
+def test_account_labels_are_not_clipped_off_the_left_edge(long_name_case):
+    svg = chart.user_activity_svg(long_name_case)
+    for x, text in _end_anchored_labels(svg):
+        assert x - chart._text_width(text) >= 0, (
+            f"label {text!r} anchored at x={x} runs off the left edge"
+        )
+
+
+def test_severity_labels_are_not_clipped_off_the_left_edge(case):
+    svg = chart.severity_breakdown_svg(case)
+    for x, text in _end_anchored_labels(svg):
+        assert x - chart._text_width(text) >= 0
+
+
+def test_a_pathological_account_name_does_not_starve_the_bars(tmp_path,
+                                                              event_factory):
+    """A 32-char name is legal on Linux. The gutter must cap, not consume."""
+    conn = db.open_case(tmp_path / "case.db")
+    db.insert_events(conn, [
+        event_factory(timestamp_utc="2024-03-14T00:00:00+00:00",
+                      actor_user="a" * 32, raw_line="x")
+    ])
+    conn.commit()
+    svg = chart.user_activity_svg(conn, width=900)
+    conn.close()
+
+    origins = [float(x) for x in re.findall(r'<rect[^>]*\sx="([\d.]+)"', svg)]
+    assert origins, "the chart must still draw a bar"
+    assert max(origins) <= 900 * 0.5, (
+        "the label gutter must be capped so bars keep at least half the canvas"
+    )
+
+
+def test_an_over_long_label_is_truncated_but_survives_in_the_tooltip(
+        tmp_path, event_factory):
+    conn = db.open_case(tmp_path / "case.db")
+    db.insert_events(conn, [
+        event_factory(timestamp_utc="2024-03-14T00:00:00+00:00",
+                      actor_user="a" * 60, raw_line="x")
+    ])
+    conn.commit()
+    svg = chart.user_activity_svg(conn, width=900)
+    conn.close()
+
+    labels = [t for _, t in _end_anchored_labels(svg)]
+    assert any(t.endswith("…") for t in labels), "expected an ellipsis"
+    assert "a" * 60 in svg, "the untruncated name must remain in the <title>"
