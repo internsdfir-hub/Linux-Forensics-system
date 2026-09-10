@@ -264,7 +264,11 @@ def test_dashboard_and_report_serving(server_instance, tmp_path):
     with urllib.request.urlopen(req_rep) as resp:
         assert resp.status == 200
         rep_html = resp.read().decode("utf-8")
-        assert "Linux Forensic Analysis Report" in rep_html
+        # Two assertions, because one string cannot carry both facts: the
+        # heading proves the server served the rendered report rather than an
+        # error page, and the case id proves it served THIS case's report.
+        assert "<h1>Forensic Examination Report</h1>" in rep_html
+        assert "DASHBOARD_CASE_01" in rep_html
 
     # Security: Path traversal protection (authenticated, so this exercises
     # the traversal guard rather than the auth gate)
