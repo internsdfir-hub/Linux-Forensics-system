@@ -301,3 +301,6 @@ section > h2 {
   .report-header h1 { font-size: var(--text-xl); }
   .finding { padding: var(--space-4); }
 }
+
+/* Notes that only make sense on paper. The print sheet reveals them. */
+.print-only { display: none; }

@@ -19,6 +19,11 @@
   <h3>Event sample</h3>
   <p class="muted">Showing up to {{ events | length }} normalised events in
      chronological order. The complete set is in the canonical exports.</p>
+  {# Paper cannot carry 1,500 rows, so print.css caps the table. Say so on the
+     page itself, or a printed report silently under-states what it contains. #}
+  <p class="muted print-only">This printed copy shows the first 60 rows of the
+     table below. The full sample is in the on-screen report, and the complete
+     set is in the canonical exports.</p>
 
   <div class="table-tools">
     <label class="visually-hidden" for="event-filter">Filter events</label>

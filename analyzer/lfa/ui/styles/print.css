@@ -31,6 +31,9 @@
   .table-tools,
   .report-toc { display: none !important; }
 
+  /* ... and notes that only make sense on paper appear. */
+  .print-only { display: block !important; }
+
   /* Everything collapsed on screen must be open on paper - a printed report
      that hides half its evidence behind a disclosure triangle is useless. */
   details { display: block; }
