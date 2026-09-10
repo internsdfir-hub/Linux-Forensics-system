@@ -12,14 +12,14 @@ from lfa.ui import assets
 
 # Files allowed to contain raw colour values. Everything else must use var().
 #
-# base.css is the pre-redesign stylesheet. Task 6 rewrites it onto tokens and
-# REMOVES it from this set. If you are reading this after Task 6 landed, the
-# exemption is stale and should be deleted.
+# print.css is here because paper is not a screen: it redefines the palette
+# tokens themselves inside @media print so the report prints on white with
+# black text regardless of the theme in force on screen.
 _PALETTE_FILES = {
     "tokens.css",
     "theme-document.css",
     "theme-console.css",
-    "base.css",
+    "print.css",
 }
 
 # Named colours are matched only in a value position (after a colon), so

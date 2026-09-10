@@ -51,7 +51,9 @@ def render_report(conn: sqlite3.Connection, case_dir: Path | str, out_html_path:
         loader=FileSystemLoader(str(assets.TEMPLATE_DIR)), autoescape=True
     )
 
-    inline_css = assets.load_styles("base")
+    inline_css = assets.load_styles(
+        "tokens", "theme-document", "base", "report", "print"
+    )
     inline_js = assets.load_script("report")
 
     template = env.get_template("report.html.j2")
