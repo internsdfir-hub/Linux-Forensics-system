@@ -118,16 +118,21 @@ class SshdConfigRule(BaseRule):
         """
         for row in _rows(conn, query):
             desc = row["description"] or row["raw_line"]
+            # The event's own description already names the specific directive
+            # (PermitRootLogin / PermitEmptyPasswords / PasswordAuthentication).
+            # Drive the finding from it so a non-root setting is not mislabelled
+            # as "root login enabled".
+            setting = (row["raw_line"] or "").strip() or desc
             yield Finding(
                 rule_name=self.name,
                 rule_version=self.version,
                 severity="high",
-                title="Insecure SSH configuration: Direct root login enabled",
+                title=f"Insecure SSH configuration: {setting}",
                 plain=PlainSummary(
-                    what_happened="SSH daemon is configured to permit direct root login (PermitRootLogin yes)",
-                    why_it_matters="Direct root login over SSH allows attackers to target the root account directly via brute-force and credential stuffing without user attribution.",
+                    what_happened=desc,
+                    why_it_matters="An over-permissive SSH daemon widens the network attack surface: direct root login, empty passwords, or password authentication all let an attacker in over the network, often with no user attribution.",
                     confidence="High",
-                    check_next="Disable PermitRootLogin in /etc/ssh/sshd_config and require key-based sudo access.",
+                    check_next="Harden /etc/ssh/sshd_config: set PermitRootLogin no, PermitEmptyPasswords no, prefer key-based authentication, then restart sshd.",
                 ),
                 technical_detail=f"Insecure sshd configuration detected: {desc}",
                 event_ids=[row["event_id"]],

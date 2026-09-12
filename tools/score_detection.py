@@ -42,16 +42,24 @@ def score_case(case_dir: Path | str, ground_truth_file: Path | str) -> int:
 
     detected_count = 0
     missed_count = 0
+    evidence_count = 0
 
     print(f"{'Threat ID':<25} {'Expected Rule':<25} {'Status':<10}")
     print("-" * 65)
 
     for threat in injected_threats:
         t_id = threat["threat_id"]
-        exp_rule = threat["expected_rule"]
-        status = "DETECTED" if exp_rule in fired_rules else "MISSED"
+        exp_rule = threat.get("expected_rule")
 
-        if status == "DETECTED":
+        # Evidence-only threats (expected_rule is null) are validated on the
+        # timeline/events table, not the findings table. They are not scored as
+        # detections or misses; they carry no rule to fire.
+        if exp_rule is None:
+            evidence_count += 1
+            print(f"{t_id:<25} {'(evidence layer)':<25} [EVIDENCE]")
+            continue
+
+        if exp_rule in fired_rules:
             detected_count += 1
             print(f"{t_id:<25} {exp_rule:<25} [PASS]")
         else:
@@ -59,13 +67,16 @@ def score_case(case_dir: Path | str, ground_truth_file: Path | str) -> int:
             print(f"{t_id:<25} {exp_rule:<25} [FAIL/MISS]")
 
     total = len(injected_threats)
-    detection_rate = (detected_count / total * 100.0) if total > 0 else 0.0
+    rule_backed = detected_count + missed_count
+    detection_rate = (detected_count / rule_backed * 100.0) if rule_backed > 0 else 0.0
 
     print("-" * 65)
     print(f"Total Injected Threats: {total}")
+    print(f"Rule-backed Threats:    {rule_backed}")
     print(f"Detections Triggered:   {detected_count}")
     print(f"Missed Indicators:      {missed_count}")
-    print(f"Overall Detection Rate: {detection_rate:.1f}%")
+    print(f"Evidence-only (unscored): {evidence_count}")
+    print(f"Detection Rate (rule-backed): {detection_rate:.1f}%")
     print("=======================================================\n")
 
     return 0 if missed_count == 0 else 1

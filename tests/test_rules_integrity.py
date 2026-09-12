@@ -200,6 +200,27 @@ def test_sshd_config_and_preload_rules(tmp_path, event_factory):
     conn.close()
 
 
+def test_sshd_rule_does_not_mislabel_non_root_settings(tmp_path, event_factory):
+    # A PermitEmptyPasswords finding must not be reported as "root login".
+    conn = db.open_case(tmp_path / "c.db")
+    db.insert_events(conn, [
+        event_factory(raw_line="PermitEmptyPasswords yes",
+                      event_kind="state_finding", timestamp_utc=None,
+                      timestamp_local=None, timestamp_confidence="unknown",
+                      category="persistence", subcategory="sshd_setting",
+                      actor_user=None, severity="high",
+                      source_artifact_path="etc/ssh/sshd_config",
+                      description="PermitEmptyPasswords yes - accounts with an "
+                                  "empty password may log in over SSH"),
+    ])
+    ssh = run_rule(conn, SshdConfigRule())
+    assert len(ssh) == 1
+    text = (ssh[0].title + " " + ssh[0].plain.what_happened)
+    assert "PermitEmptyPasswords" in text or "empty password" in text.lower()
+    assert "PermitRootLogin" not in text
+    conn.close()
+
+
 def test_privileged_group_rule(tmp_path, event_factory):
     conn = db.open_case(tmp_path / "c.db")
     db.insert_events(conn, [
