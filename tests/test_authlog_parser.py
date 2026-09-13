@@ -107,6 +107,44 @@ def test_non_utf8_bytes_survive(tmp_path):
     assert any(e.source_ip == "1.2.3.4" for e in events)
 
 
+# Regression: `logger -t sshd` (used by the testlab scenario scripts, and by
+# any host whose syslog daemon drops the PID) writes the tag as bare "sshd:"
+# with no "[pid]". The grammar originally hard-required "sshd[<pid>]:" for the
+# Failed/Accepted/Invalid patterns, so every injected brute-force line was
+# silently dropped and brute_force / brute_force_success / persistence_after_login
+# never fired on the real Metasploitable bundles. The PID is now optional; these
+# lines must parse identically to their bracketed equivalents.
+LOGGER_LINES = (
+    "Sep 13 16:07:43 metasploitable sshd: Failed password for root from 203.0.113.9 port 49152 ssh2\n"
+    "Sep 13 16:07:45 metasploitable sshd: Failed password for invalid user postgres from 203.0.113.9 port 49152 ssh2\n"
+    "Sep 13 16:07:45 metasploitable sshd: Accepted password for msfadmin from 203.0.113.9 port 49158 ssh2\n"
+    "Sep 13 16:07:50 metasploitable sshd: Invalid user backup from 203.0.113.9 port 49160\n"
+)
+
+
+def test_pidless_sshd_tag_parsed(tmp_path):
+    """Bracket-less `sshd:` lines (logger / PID-stripping syslog) parse the same
+    as `sshd[pid]:` lines. Guards the brute-force detection path."""
+    events, _ = parse_file(tmp_path, content=LOGGER_LINES)
+
+    failed = [e for e in events if e.subcategory == "failed_login"]
+    assert len(failed) == 2, [e.subcategory for e in events]
+    assert failed[0].actor_user == "root"
+    assert failed[0].source_ip == "203.0.113.9"
+    # "Failed password for invalid user postgres" carries the username through
+    assert failed[1].actor_user == "postgres"
+
+    accepted = [e for e in events if e.subcategory == "successful_login"]
+    assert len(accepted) == 1
+    assert accepted[0].actor_user == "msfadmin"
+    assert accepted[0].source_ip == "203.0.113.9"
+
+    invalid = [e for e in events if e.subcategory == "invalid_user"]
+    assert len(invalid) == 1
+    assert invalid[0].actor_user == "backup"
+    assert invalid[0].source_ip == "203.0.113.9"
+
+
 def test_contamination_session_auto_tagged(tmp_path):
     contamination = {
         "source_ip": "10.9.9.9",

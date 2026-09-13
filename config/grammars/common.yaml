@@ -5,21 +5,21 @@
 #   method (password|publickey), port, tty, pwd, target_user, group
 
 sshd_failed_password:
-  pattern: 'sshd\[(?P<pid>\d+)\]: Failed password for (?:invalid user )?(?P<user>\S+) from (?P<ip>\S+) port (?P<port>\d+)'
+  pattern: 'sshd(?:\[(?P<pid>\d+)\])?: Failed password for (?:invalid user )?(?P<user>\S+) from (?P<ip>\S+) port (?P<port>\d+)'
   category: login_activity
   subcategory: failed_login
   severity: low
   process: sshd
 
 sshd_invalid_user:
-  pattern: 'sshd\[(?P<pid>\d+)\]: Invalid user (?P<user>\S+) from (?P<ip>\S+)(?: port (?P<port>\d+))?'
+  pattern: 'sshd(?:\[(?P<pid>\d+)\])?: Invalid user (?P<user>\S+) from (?P<ip>\S+)(?: port (?P<port>\d+))?'
   category: login_activity
   subcategory: invalid_user
   severity: low
   process: sshd
 
 sshd_accepted:
-  pattern: 'sshd\[(?P<pid>\d+)\]: Accepted (?P<method>password|publickey|keyboard-interactive/pam) for (?P<user>\S+) from (?P<ip>\S+) port (?P<port>\d+)'
+  pattern: 'sshd(?:\[(?P<pid>\d+)\])?: Accepted (?P<method>password|publickey|keyboard-interactive/pam) for (?P<user>\S+) from (?P<ip>\S+) port (?P<port>\d+)'
   category: login_activity
   subcategory: successful_login
   severity: info
@@ -40,14 +40,14 @@ sshd_session_closed:
   process: sshd
 
 sshd_disconnect:
-  pattern: 'sshd\[(?P<pid>\d+)\]: Disconnected from(?: authenticating| invalid)? user (?P<user>\S+) (?P<ip>\S+) port (?P<port>\d+)'
+  pattern: 'sshd(?:\[(?P<pid>\d+)\])?: Disconnected from(?: authenticating| invalid)? user (?P<user>\S+) (?P<ip>\S+) port (?P<port>\d+)'
   category: login_activity
   subcategory: disconnect
   severity: info
   process: sshd
 
 sshd_received_disconnect:
-  pattern: 'sshd\[(?P<pid>\d+)\]: Received disconnect from (?P<ip>\S+): \d+: (?P<reason>.*)'
+  pattern: 'sshd(?:\[(?P<pid>\d+)\])?: Received disconnect from (?P<ip>\S+): \d+: (?P<reason>.*)'
   category: login_activity
   subcategory: disconnect
   severity: info
