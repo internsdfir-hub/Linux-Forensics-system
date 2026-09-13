@@ -185,6 +185,76 @@ Notation: **Findings** = rows expected in the `findings` table (scored).
 
 ---
 
+## 4b. Where to look in the UI
+
+You have **two** UIs, and they answer different questions. Use both on every
+incident — if a fact appears in only one of them, that is itself a finding
+about the tool.
+
+| UI | Start it with | What it is for |
+|----|---------------|----------------|
+| **Report** (`cases/<CASE>/report.html`) | open the file, or `python -m lfa report --case-dir cases/<CASE>` to re-render | The narrative deliverable. Findings with plain-English reasoning, the timeline, the Intel panels, and the appendices that state what the tool could *not* determine. This is what you hand to a reader. |
+| **Explorer** (`python -m lfa serve`, then **🔬 Explore** on the case card) | `python -m lfa serve --cases-dir cases` → `http://127.0.0.1:8000` | The investigation surface. Three tabs — **📋 Event Timeline**, **📁 Artifact Tree**, **🚨 SOC Findings** — with live search and filters over the whole `events` table, not the report's 1500-row sample. Use it to *hunt*; use the report to *explain*. |
+
+### Orientation — the six report sections
+
+`Summary` → `Findings` → `Timeline` → `Evidence` → `Intel` → `Appendices`.
+
+- **Summary** — counts, key observations, recommended next steps. Your first
+  sanity check: did the incident move the numbers at all?
+- **Findings** — one block per scored rule, each with *what happened / why it
+  matters / confidence / what to check next*. **Confidence is the column to
+  scrutinise**, not just presence.
+- **Timeline** — sortable, filterable event sample. Note the printed row cap;
+  the Explorer has no cap.
+- **Evidence** — host inventory and the artifact list with SHA-256 per file.
+  This is where you prove the finding came from a file you actually collected.
+- **Intel** — four panels (**Accounts and access**, **Network**, **Activity**,
+  **System**), each a set of collapsible tables. This is the per-incident
+  landing zone; the table below names which one.
+- **Appendix A** (methodology + coverage), **Appendix B** (*what we could not
+  determine* — on Metasploitable this should explicitly mention the missing
+  journald/auditd/systemd), **Appendix C** (glossary).
+
+### Explorer — the filters you will actually use
+
+Event Timeline tab: free-text **search** (keyword, command, IP, user,
+artifact), a **Category** dropdown (`login_activity`, `privilege_escalation`,
+`persistence`, `user_activity`, `hardware_usb`, `user_accounts`, …), **severity
+pills** (All / High / Med / Low / Info), a **User** dropdown, and a page-size
+selector. Click a row to expand it to the raw line, byte offset and source
+artifact path — that is your chain of custody back to the file.
+
+### Per-incident UI checks
+
+| # | Explorer (Event Timeline tab) | Report — Findings | Report — Intel panel |
+|---|-------------------------------|-------------------|----------------------|
+| **1** Unauthorized login | Category `login_activity`; search `203.0.113.9` | `off_hours_privileged` — check the hour it names matches the injected 03:14 | **Accounts and access** → *Sessions* (the login with its terminal + duration) and *Remote addresses* |
+| **2** Brute force | Category `login_activity`, severity **High**; search `Failed password` | `brute_force` and `brute_force_success` — confirm the success is linked to the same source IP as the burst | **Accounts and access** → *Failed logins* (grouped with attempt count, first/last) then *Sessions* for the success |
+| **3** Insider activity | Search the insider username; Category `user_activity` | `off_hours_privileged`, `wiped_history` — the latter must cite the ≥3 sessions that make an empty history meaningful | **Accounts and access** → *Sessions* (the 4 sessions); **Activity** → *Shell history* (should be **empty** for that user — absence is the evidence) |
+| **4** USB data theft | Category `hardware_usb` | **none — by design.** Confirm the Findings section does *not* invent one | **System** → *Hardware and USB* (connect/disconnect with vendor/product/serial and duration) and *Storage* (the mount) |
+| **5** Privilege escalation | Category `user_accounts` and `privilege_escalation` | `uid0_account`, `passwordless_account`, `privileged_group_member`, `new_account_privilege_grant` — **four separate findings**; diff against BASELINE, Metasploitable ships some already | **Accounts and access** → *Local accounts* (the new `sysmon`/`svc_backup`/`helpdesk`) and *Account changes* |
+| **6** Suspicious process | Category `user_activity`, severity **High**; search `nc -e`, `/dev/tcp`, `curl` | `suspicious_process` — read the **confidence**: Medium if history/ps only, High only if correlated to a brute-forced login. A history-only finding must say history is editable | **Activity** → *Shell history* (the typed commands); **Network** → *Listening and established sockets* if a shell was still alive |
+
+### Artifact Tree tab — prove the file, not just the event
+
+For every incident, switch to **📁 Artifact Tree** and open the file the
+finding cites. You are checking three things:
+
+1. the artifact is **present** in the bundle at the path the finding names;
+2. its **SHA-256** matches the Evidence section of the report (and
+   `python -m lfa verify cases/<CASE>` passes);
+3. the **raw line** shown when you expand the event really exists at that byte
+   offset in that file.
+
+Files worth opening per incident: **1/2** `var/log/auth.log`; **3**
+`home/<insider>/.bash_history` (zero bytes) and `var/log/wtmp`; **4**
+`var/log/dmesg` (or `kern.log`); **5** `etc/passwd`, `etc/shadow`, `etc/group`;
+**6** `home/*/.bash_history`, `volatile/ps.txt`, and `var/log/audit/audit.log`
+if you installed auditd.
+
+---
+
 ## 5. The chained incident (the finale)
 
 Run everything on **one** CLEAN snapshot, in kill-chain order, then collect
@@ -256,6 +326,45 @@ PY
 python tools/score_detection.py --case-dir cases/CASE-CHAIN \
        --ground-truth testlab/scenarios/chain.ground_truth.json
 ```
+
+---
+
+### Checking the chain in the UI — the correlations are the point
+
+A chained case is judged on **links**, not on counts. Anyone can list six
+findings; the question is whether the tool tied them into one story.
+
+**In the Explorer:**
+
+1. **Event Timeline tab → search the attacker IP** (`203.0.113.9`) with
+   Category `all`. This single query should return the whole kill chain in
+   order: the failure burst, the accepted login, then everything the attacker
+   did. If the later stages do not carry the IP, check whether the *findings*
+   still correlate them by time — that is the rule's job, not the event's.
+2. **Severity pill → High**, Category `all`. Read it top to bottom as a
+   narrative. Gaps here are the tool's blind spots.
+3. **🚨 SOC Findings tab** — count the findings and subtract the BASELINE set.
+   Only the delta is attributable to the chain.
+
+**In the report — the findings that exist *only* because of chaining:**
+
+| Finding | What to verify in its text |
+|---------|----------------------------|
+| `brute_force_success` | names the same source IP as the burst, and a success timestamp *after* it |
+| `persistence_after_login` | cites the login it correlated against, and the SSH key / cron entry created inside the 120-minute window |
+| `suspicious_process` at **High** confidence | its *why it matters* explicitly references the brute-forced login — if it still reads Medium, the payload fell outside the 60-minute window or the login did not correlate |
+| `first_seen` | only means anything against BASELINE; confirm the new accounts/keys/cron are named as absent from the earlier collection |
+
+**Then read Appendix B — "What we could not determine".** On a chained
+Metasploitable case this is the most important page in the report: it should
+name the missing journald/auditd/systemd coverage and any event it could not
+time confidently. A chained case that claims certainty everywhere is
+overclaiming.
+
+**Cross-check the single-incident cases:** every finding in `CASE-01` …
+`CASE-06` should also appear in `CASE-CHAIN`. One that does not is a real
+defect — either a rule that only fires in isolation, or evidence one scenario
+overwrote for another.
 
 ---
 
