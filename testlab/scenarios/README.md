@@ -20,7 +20,7 @@ offline, and compare the findings against the ground truth each script records.
 | 3 | Insider activity | ✅ **Fully** | `sudo sh 03_insider_activity.sh`. Real account + real history wipe; off-hours timestamp is injected so you needn't work at 2am. |
 | 4 | USB data theft | ⚠️ **Partially** | **Manual + automatic.** Needs a VM with USB passthrough (VirtualBox/VMware) or bare metal — **not WSL**. Insertion is physical; the evidence it leaves is fully reproducible. |
 | 5 | Privilege escalation | ✅ **Fully** | `sudo sh 05_privilege_escalation.sh`. 100% genuine `/etc/passwd`,`/etc/shadow`,`/etc/group` mutations. High blast radius — snapshot first. |
-| 6 | Suspicious process execution | ✅ **Fully** (with auditd) | `sudo sh 06_suspicious_process_execution.sh`. Real command execution; needs `auditd` installed (`apt-get install auditd`) — **absent on WSL**, use a real VM. Now scored by the `suspicious_process` rule. |
+| 6 | Suspicious process execution | ✅ **Fully** | `sudo sh 06_suspicious_process_execution.sh`. Real command execution. `auditd` (`apt-get install auditd`, **absent on WSL**) gives kernel-level proof; without it the `suspicious_process` rule still scores from shell history — run the payload commands interactively so they land in `~/.bash_history`. |
 
 Legend: ✅ fully scriptable & deterministic · ⚠️ needs a physical/manual step or specific hardware.
 
@@ -60,7 +60,7 @@ Two output layers matter (see the parser/rule split in the analyzer):
 | 3 | Finding + evidence | `off_hours_privileged`, `wiped_history` | staged files, session records |
 | 4 | **Evidence only** | *(none today)* | `usb_connect` / `usb_disconnect`, `storage_device` |
 | 5 | Finding (×4) | `uid0_account`, `passwordless_account`, `privileged_group_member`, `new_account_privilege_grant` | `/etc/passwd`, `/etc/group` diffs |
-| 6 | Finding + evidence | `suspicious_process` | `process_execution` (auditd), `running_process` (ps) timeline entries |
+| 6 | Finding + evidence | `suspicious_process` | `process_execution` (auditd), `running_process` (ps), `shell_command` / `suspicious_command` (history) timeline entries |
 
 Scenario 4 is evidence-only **by design** — the same way the existing `usb`,
 `netstat`, and `browser` parsers work. That is a defensible scope boundary to
@@ -70,6 +70,15 @@ Scenario 6 is now a **scored finding**: the `suspicious_process` rule flags
 reverse-shell / C2-beacon / encoded-payload command shapes, and raises the
 finding to **high confidence** when the command ran within an hour of a login
 from an IP that also brute-forced the host (post-compromise execution).
+
+It reads three artifacts, so it does not depend on any one of them: auditd
+`execve` records, the `ps aux` snapshot, and shell history. History is what
+makes the scenario score on a host with no auditd and no surviving process
+— the Metasploitable default — but it is also the weakest source, so a
+history-only finding is capped at **Medium** confidence and says why: history
+records what was *typed*, not what the kernel ran, and the account owner can
+edit or wipe it. A command recorded by two of the three artifacts is merged
+into **one** finding that names both sources.
 
 ---
 
@@ -128,6 +137,9 @@ carries a `verify` command per threat for exactly that manual check.
   execution evidence to a scored finding: flags reverse-shell / C2-beacon /
   encoded-payload command shapes, high confidence when correlated with a
   brute-forced login. Scenario #6 is now scored, not evidence-only.
+  v1.1 also consumes shell history (`shell_command`, `suspicious_command`),
+  which removes the auditd / live-process dependency, and merges the same
+  command seen in several artifacts into one corroborated finding.
 - **New parsers `sshdconfig.py` + `startup.py`** — turn `/etc/ssh/sshd_config`,
   `/etc/ld.so.preload`, and shell startup files into events, reviving
   `sshd_config_risk` and `ld_preload_rootkit`, which previously **could not

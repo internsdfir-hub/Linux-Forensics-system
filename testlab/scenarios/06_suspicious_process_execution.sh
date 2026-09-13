@@ -25,13 +25,22 @@
 #   In a real deployment you would bake (a)+(c) into the golden image.
 #
 # DETECTION LAYER
-#   EVIDENCE + SEVERITY. process_execution / running_process events; known
-#   malicious command shapes are raised to high/medium severity by the parser.
-#   No dedicated correlation rule today, so score_detection does not score this
-#   — validate with the SQL in the tickbox.
+#   FINDING. The `suspicious_process` rule scores these command shapes from any
+#   of three artifacts, so no single capture channel is required:
+#     - auditd execve   -> process_execution   (kernel-level proof, strongest)
+#     - ps aux snapshot -> running_process     (only if still alive at collect)
+#     - shell history   -> shell_command / suspicious_command
+#   History is what makes this scenario score on a host with no auditd (the
+#   Metasploitable default). It is capped at Medium confidence because it
+#   records what was TYPED, not what ran, and the account owner can edit it.
+#   NOTE: this script is non-interactive `sh`, so the commands below do NOT
+#   land in ~/.bash_history. To exercise the history path, re-type them at an
+#   interactive bash shell and `exit` so bash flushes the file before you
+#   collect.
 #
-# REPRODUCIBLE: YES for the execution + capture. auditd must be installed
-#   (apt-get install auditd) and is absent on WSL — use a real VM.
+# REPRODUCIBLE: YES for the execution + capture. auditd (apt-get install
+#   auditd) is absent on WSL - use a real VM for the kernel-audit path; the
+#   history path works anywhere.
 
 set -e
 DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
@@ -80,15 +89,15 @@ write_ground_truth "$DIR/06_suspicious_process_execution.ground_truth.json" \
   '[
     {"threat_id":"T1071_curl_c2","name":"curl C2 beacon executed",
      "expected_rule":"suspicious_process","detection_layer":"finding",
-     "details":"execve of curl to '"$ATTACKER_IP"' captured by auditd; suspicious_process rule fires",
-     "verify":"SELECT * FROM events WHERE subcategory=\"process_execution\" AND description LIKE \"%curl%\""},
+     "details":"curl beacon to '"$ATTACKER_IP"' seen by auditd execve, by ps, or in shell history; suspicious_process rule fires from any of them",
+     "verify":"SELECT subcategory,timestamp_utc,description FROM events WHERE subcategory IN (\"process_execution\",\"running_process\",\"shell_command\",\"suspicious_command\") AND description LIKE \"%curl%\""},
     {"threat_id":"T1059_reverse_shell","name":"netcat / bash reverse shell",
      "expected_rule":"suspicious_process","detection_layer":"finding",
-     "details":"execve of nc -e /bin/sh or bash /dev/tcp; correlated to a suspicious login = high confidence",
-     "verify":"SELECT * FROM events WHERE subcategory=\"process_execution\" AND severity=\"high\""},
+     "details":"nc -e /bin/sh or bash /dev/tcp, from auditd execve or shell history; correlated to a brute-forced login = high confidence",
+     "verify":"SELECT subcategory,timestamp_utc,description FROM events WHERE description LIKE \"%/dev/tcp/%\" OR description LIKE \"%nc -e%\""},
     {"threat_id":"T1027_base64","name":"base64-decoded payload piped to shell",
      "expected_rule":null,"detection_layer":"evidence",
-     "details":"execve chain base64 -> sh; auditd records each execve separately, so the pipe shape may only appear in shell history",
+     "details":"execve chain base64 -> sh; auditd records each execve separately, so the piped shape only survives in shell history - scored only if the command was typed interactively",
      "verify":"SELECT * FROM events WHERE description LIKE \"%base64%\""}
   ]'
 echo "[+] Scenario 06 complete. NOTE: collect the bundle AFTER this runs so audit.log is captured."
