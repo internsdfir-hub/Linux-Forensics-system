@@ -1,0 +1,7 @@
+<!--
+    Context configuration file for the Tomcat webdav Web App
+-->
+
+<Context path="/webdav" docBase="/usr/share/tomcat5.5-webapps/webdav"
+   debug="0" privileged="true" allowLinking="true">
+</Context>

@@ -1,0 +1,109 @@
+# This is an automatically generated file.
+# Please see <file:/usr/share/doc/menu/README> for information.
+
+# to use your own menu, copy this to ~/.fluxbox/menu, then edit
+# ~/.fluxbox/init and change the session.menuFile path to ~/.fluxbox/menu
+
+[begin] (Fluxbox)
+
+# Automatically generated file. Do not edit (see /usr/share/doc/menu/html/index.html)
+
+   [submenu] (Applications) {}
+      [submenu] (Accessibility) {}
+         [exec] (Xmag) {xmag} <>
+      [end]
+      [submenu] (Editors) {}
+         [exec] (Nano) { x-terminal-emulator -T "Nano" -e /bin/nano} </usr/share/nano/nano-menu.xpm>
+         [exec] (Xedit) {xedit} <>
+      [end]
+      [submenu] (Graphics) {}
+         [exec] (X Window Snapshot) {xwd | xwud} <>
+      [end]
+      [submenu] (Network) {}
+         [submenu] (Communication) {}
+            [exec] (Pidgin) {/usr/bin/pidgin} </usr/share/pixmaps/pidgin-menu.xpm>
+            [exec] (Xbiff) {xbiff} <>
+         [end]
+         [submenu] (File Transfer) {}
+            [exec] (FileZilla) {/usr/bin/filezilla} </usr/share/pixmaps/filezilla.xpm>
+         [end]
+         [exec] (Telnet) { x-terminal-emulator -T "Telnet" -e /usr/bin/telnet} <>
+         [exec] (w3m) { x-terminal-emulator -T "w3m" -e /usr/bin/w3m /usr/share/doc/w3m/MANUAL.html} <>
+         [submenu] (Web Browsing) {}
+            [exec] (Firefox Browser) {/usr/bin/firefox} </usr/share/pixmaps/firefox.png>
+         [end]
+      [end]
+      [submenu] (Programming) {}
+         [exec] (GDB) { x-terminal-emulator -T "GDB" -e /usr/bin/gdb} <>
+         [exec] (Python (v2.5\)) { x-terminal-emulator -T "Python (v2.5)" -e /usr/bin/python2.5} </usr/share/pixmaps/python2.5.xpm>
+      [end]
+      [submenu] (Science) {}
+         [submenu] (Mathematics) {}
+            [exec] (Xcalc) {xcalc} <>
+         [end]
+      [end]
+      [submenu] (Shells) {}
+         [exec] (Bash) { x-terminal-emulator -T "Bash" -e /bin/bash --login} <>
+         [exec] (Dash) { x-terminal-emulator -T "Dash" -e /bin/dash -i} <>
+         [exec] (Sh) { x-terminal-emulator -T "Sh" -e /bin/sh --login} <>
+      [end]
+      [submenu] (System) {}
+         [submenu] (Administration) {}
+            [exec] (Aptitude) { x-terminal-emulator -T "Aptitude" -e /usr/bin/aptitude} <>
+            [exec] (Debian Task selector) { x-terminal-emulator -T "Debian Task selector" -e su-to-root -c tasksel} <>
+            [exec] (DSL/PPPoE configuration tool) { x-terminal-emulator -T "DSL/PPPoE configuration tool" -e /usr/sbin/pppoeconf} </usr/share/pixmaps/pppoeconf.xpm>
+            [exec] (Editres) {editres} <>
+            [exec] (pppconfig) { x-terminal-emulator -T "pppconfig" -e su-to-root -p root -c /usr/sbin/pppconfig} <>
+            [exec] (Xclipboard) {xclipboard} <>
+            [exec] (Xfontsel) {xfontsel} <>
+            [exec] (Xkill) {xkill} <>
+            [exec] (Xrefresh) {xrefresh} <>
+         [end]
+         [submenu] (Hardware) {}
+            [exec] (Xvidtune) {xvidtune} <>
+         [end]
+         [submenu] (Monitoring) {}
+            [exec] (Pstree) { x-terminal-emulator -T "Pstree" -e /usr/bin/pstree.x11} </usr/share/pixmaps/pstree16.xpm>
+            [exec] (Top) { x-terminal-emulator -T "Top" -e /usr/bin/top} <>
+            [exec] (Xconsole) {xconsole -file /dev/xconsole} <>
+            [exec] (Xev) {x-terminal-emulator -e xev} <>
+            [exec] (Xload) {xload} <>
+         [end]
+      [end]
+      [submenu] (Terminal Emulators) {}
+         [exec] (Eterm) {/usr/bin/Eterm} <>
+         [exec] (XTerm) {xterm} </usr/share/pixmaps/xterm-color_32x32.xpm>
+         [exec] (XTerm (Unicode\)) {uxterm} </usr/share/pixmaps/xterm-color_32x32.xpm>
+      [end]
+      [submenu] (Viewers) {}
+         [exec] (Xditview) {xditview} <>
+      [end]
+   [end]
+   [submenu] (Games) {}
+      [submenu] (Toys) {}
+         [exec] (Oclock) {oclock} <>
+         [exec] (Xclock (analog\)) {xclock -analog} <>
+         [exec] (Xclock (digital\)) {xclock -digital -update 1} <>
+         [exec] (Xeyes) {xeyes} <>
+         [exec] (Xlogo) {xlogo} <>
+      [end]
+   [end]
+   [submenu] (Help) {}
+      [exec] (Info) { x-terminal-emulator -T "Info" -e info} <>
+      [exec] (Xman) {xman} <>
+   [end]
+   [submenu] (Window Managers) {}
+      [restart] (FluxBox)  {/usr/bin/startfluxbox}
+   [end]
+
+   [config] (Configuration)
+   [submenu] (Styles) {}
+      [stylesdir] (/usr/share/fluxbox/styles)
+      [stylesdir] (~/.fluxbox/styles)
+   [end]
+   [workspaces] (Workspaces)
+   [reconfig] (Reconfigure)
+   [restart] (Restart)
+   [exit] (Exit)
+
+[end]

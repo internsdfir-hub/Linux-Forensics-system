@@ -1,0 +1,11 @@
+#!/bin/bash
+set -e
+
+if test -e /boot/memtest86+.bin ; then
+  echo "Found memtest86+ image: /boot/memtest86+.bin" >&2
+  cat << EOF
+menuentry "Memory test (memtest86+)" {
+	linux	${GRUB_DRIVE_BOOT}/memtest86+.bin
+}
+EOF
+fi

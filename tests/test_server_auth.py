@@ -217,3 +217,45 @@ def test_server_without_a_token_stays_open(tmp_path):
     finally:
         httpd.shutdown()
         httpd.server_close()
+
+
+def test_banner_directs_the_examiner_to_the_login_url(capsys, tmp_path, monkeypatch):
+    """With a token set, the banner must print a URL that actually works.
+
+    It advertised the bare dashboard URL, which returns 401 for a browser
+    that has no cookie yet - the first thing an examiner tries is the one
+    thing guaranteed to fail. The banner has to name /login?token=... so the
+    documented starting point hands over a usable session.
+    """
+    from lfa import server as server_mod
+
+    monkeypatch.setattr(
+        server_mod.socketserver.ThreadingMixIn, "serve_forever",
+        lambda self, *a, **k: None, raising=False,
+    )
+    port = _find_free_port()
+    server_mod.run_server(
+        host="127.0.0.1", port=port, cases_dir=tmp_path / "cases", token=TOKEN,
+    )
+
+    out = capsys.readouterr().out
+    assert f"/login?token={TOKEN}" in out, (
+        "banner must print the login URL that mints the session cookie"
+    )
+
+
+def test_banner_omits_the_login_url_when_no_token_is_set(capsys, tmp_path, monkeypatch):
+    """An open server has no cookie to mint, so /login is noise."""
+    from lfa import server as server_mod
+
+    monkeypatch.setattr(
+        server_mod.socketserver.ThreadingMixIn, "serve_forever",
+        lambda self, *a, **k: None, raising=False,
+    )
+    port = _find_free_port()
+    server_mod.run_server(
+        host="127.0.0.1", port=port, cases_dir=tmp_path / "cases", token=None,
+    )
+
+    out = capsys.readouterr().out
+    assert "/login?token=" not in out

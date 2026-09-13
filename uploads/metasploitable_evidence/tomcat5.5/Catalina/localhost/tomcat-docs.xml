@@ -1,0 +1,8 @@
+<!--
+    Context configuration file for the Tomcat Documentation
+    Needed to allow linking to the JSP/Servlet API documentations
+-->
+
+<Context path="/tomcat-docs" docBase="/usr/share/tomcat5.5-webapps/tomcat-docs"
+         debug="0" privileged="false" allowLinking="true">
+</Context>

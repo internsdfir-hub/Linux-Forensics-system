@@ -1,0 +1,7 @@
+<!--
+    Context configuration file for the Tomcat servlets-examples Web App
+-->
+
+<Context path="/servlets-examples" docBase="/usr/share/tomcat5.5-webapps/servlets-examples"
+   debug="0" privileged="true" allowLinking="true">
+</Context>

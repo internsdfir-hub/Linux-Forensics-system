@@ -1,0 +1,12 @@
+/dev/mapper/metasploitable-root / ext3 rw,relatime,errors=remount-ro 0 0
+proc /proc proc rw,noexec,nosuid,nodev 0 0
+/sys /sys sysfs rw,noexec,nosuid,nodev 0 0
+varrun /var/run tmpfs rw,noexec,nosuid,nodev,mode=0755 0 0
+varlock /var/lock tmpfs rw,noexec,nosuid,nodev,mode=1777 0 0
+udev /dev tmpfs rw,mode=0755 0 0
+devshm /dev/shm tmpfs rw 0 0
+devpts /dev/pts devpts rw,gid=5,mode=620 0 0
+/dev/sda1 /boot ext3 rw,relatime 0 0
+securityfs /sys/kernel/security securityfs rw 0 0
+rpc_pipefs /var/lib/nfs/rpc_pipefs rpc_pipefs rw 0 0
+nfsd /proc/fs/nfsd nfsd rw 0 0

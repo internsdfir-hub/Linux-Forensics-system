@@ -1,0 +1,26 @@
+// This is the Debian specific preferences file for Mozilla Firefox
+// You can make any change in here, it is the purpose of this file.
+// You can, with this file and all files present in the
+// /etc/firefox/pref directory, override any preference that is
+// present in /usr/lib/firefox/defaults/pref directory.
+// While your changes will be kept on upgrade if you modify files in
+// /etc/firefox/pref, please note that they won't be kept if you
+// do them in /usr/lib/firefox/defaults/pref.
+
+pref("extensions.update.enabled", true);
+
+// Use LANG environment variable to choose locale
+pref("intl.locale.matchOS", true);
+
+// Disable default browser checking.
+pref("browser.shell.checkDefaultBrowser", false);
+
+// Prevent EULA dialog to popup on first run
+pref("browser.EULA.override", true);
+
+// identify default locale to use if no /usr/lib/firefox-addons/searchplugins/LOCALE
+// exists for the current used LOCALE
+pref("distribution.searchplugins.defaultLocale", "en-US");
+
+// Enable the NetworkManager integration
+pref("toolkit.networkmanager.disable", false);

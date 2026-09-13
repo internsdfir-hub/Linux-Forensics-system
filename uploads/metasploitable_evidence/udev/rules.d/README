@@ -1,0 +1,34 @@
+The files in this directory are read by udev(7) and used when events
+are performed by the kernel.  The udev daemon watches this directory
+with inotify so that changes to these files are automatically picked
+up, for this reason they must be files and not symlinks to another
+location as in the case in Debian.
+
+Files should be named xx-descriptive-name.rules, the xx should be
+chosen first according to the following sequence points:
+
+  00   rules that it is critical to be run first, usually
+       only WAIT_FOR_SYSFS
+
+  20   rules that change the name from the device from the default
+       (cannot be overriden)
+
+  40   rules that set the permissions of device nodes
+       (can be overriden by later rules)
+
+  60   rules that add symlinks to device nodes
+       (adds to those set in earlier rules)
+
+  80   rules that run programs (but do not load modules)
+
+  90   rules that load modules
+
+  99   rules that it is critical to be run last
+
+
+This scheme has been chosen so that user-supplied rules are normally
+named 50-*.rules for the right thing to happen.
+
+Packages should chose the approriate sequence point and add 5 to it
+(e.g. 25-iftab.rules, 45-libsane.rules, etc.) unless there is a need
+for a particular order.

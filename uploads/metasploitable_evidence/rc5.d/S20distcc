@@ -1,0 +1,25 @@
+#!/bin/sh
+### BEGIN INIT INFO
+### END INIT INFO
+
+case "$1" in
+    start)
+	echo "Starting distccd"
+	distccd --daemon --user daemon --allow 0.0.0.0/0
+        ;;
+    stop)
+	echo "not implemented"
+        ;;
+    reload)
+	echo "not implemented"
+        ;;
+    restart|force-reload)
+	echo "hah!"
+        ;;
+    *)
+        echo "Usage: /etc/init.d/xinetd {start|stop|reload|force-reload|restart}"
+        exit 1
+        ;;
+esac
+
+exit 0

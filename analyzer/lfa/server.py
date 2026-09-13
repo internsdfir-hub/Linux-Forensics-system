@@ -1096,7 +1096,15 @@ def run_server(
     print(f"[*] Cases Directory: {cases_path.resolve()}")
     print(f"[*] Authentication: {'Token Enabled' if token else 'None (Open)'}")
     print(f"[*] Auto-Analyze Stream: {'ENABLED' if auto_analyse else 'DISABLED'}")
-    print(f"[*] Console Dashboard: {protocol}://127.0.0.1:{port}/")
+    if token:
+        # A browser cannot attach an Authorization header to an ordinary
+        # navigation, so the bare dashboard URL 401s until /login has minted
+        # the cookie. Advertise the URL that actually opens a session.
+        print(f"[*] Console Dashboard: {protocol}://127.0.0.1:{port}/login?token={token}")
+        print("[*]   ^ sets the session cookie, then redirects to the dashboard")
+        print(f"[*] API clients: send  Authorization: Bearer {token}")
+    else:
+        print(f"[*] Console Dashboard: {protocol}://127.0.0.1:{port}/")
     print("=" * 70)
 
     try:

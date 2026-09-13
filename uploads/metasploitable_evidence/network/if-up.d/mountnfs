@@ -1,0 +1,6 @@
+#! /bin/sh
+
+# Not for loopback!
+[ "$IFACE" != "lo" ] || exit 0
+
+/lib/init/mountall-net-fs
