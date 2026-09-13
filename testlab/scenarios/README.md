@@ -21,8 +21,17 @@ offline, and compare the findings against the ground truth each script records.
 | 4 | USB data theft | ⚠️ **Partially** | **Manual + automatic.** Needs a VM with USB passthrough (VirtualBox/VMware) or bare metal — **not WSL**. Insertion is physical; the evidence it leaves is fully reproducible. |
 | 5 | Privilege escalation | ✅ **Fully** | `sudo sh 05_privilege_escalation.sh`. 100% genuine `/etc/passwd`,`/etc/shadow`,`/etc/group` mutations. High blast radius — snapshot first. |
 | 6 | Suspicious process execution | ✅ **Fully** | `sudo sh 06_suspicious_process_execution.sh`. Real command execution. `auditd` (`apt-get install auditd`, **absent on WSL**) gives kernel-level proof; without it the `suspicious_process` rule still scores from shell history — run the payload commands interactively so they land in `~/.bash_history`. |
+| 7 | Persistence (SSH key + cron) | ✅ **Fully** | `sudo sh 07_persistence.sh`. Genuine key in `/root/.ssh/authorized_keys` + cron beacon in `/etc/cron.d/lfa_beacon`. **Evidence-only in isolation** (no rule scores a lone key/cron); the `persistence_after_login` *finding* needs a preceding brute-forced login — run it inside `chain.sh`, or set `LFA_WITH_ANCHOR=1` to inject that login here. |
+| — | **Chain (all of the above)** | ✅ **Fully** | `sudo sh chain.sh`. Runs 02→01→05→07→06→03 in kill-chain order on **one** snapshot so the correlations form (`brute_force_success`, `persistence_after_login`, `suspicious_process` High). Stops **before** collection and prints the collect→analyse→verify→score block. `LFA_LIVE_SHELL=1` leaves a live reverse shell for the `ps`/netstat path. |
 
 Legend: ✅ fully scriptable & deterministic · ⚠️ needs a physical/manual step or specific hardware.
+
+> **Cross-version.** Every script runs on a modern box **and** on Metasploitable 2
+> (Ubuntu 8.04 "Hardy"): `lib.sh` provides `have`, `lab_timeout`, and `http_get`
+> shims so the modern-only calls (`timeout`, `curl`) degrade gracefully where
+> Hardy lacks them (`timeout` arrived in coreutils 7.0; `curl` is often not
+> installed). auditd/journald simply produce nothing on Hardy — the
+> history / auth.log / passwd / cron paths carry the case.
 
 ---
 
@@ -130,6 +139,16 @@ carries a `verify` command per threat for exactly that manual check.
 
 ## What changed to support these
 
+- **New scenario `07_persistence.sh`** — plants a genuine SSH key + cron beacon
+  (T1098.004 / T1053.003). Evidence-only in isolation; feeds the
+  `persistence_after_login` correlation once a brute-forced login precedes it.
+- **New driver `chain.sh`** — runs the six-stage kill chain on one snapshot in
+  order, so the emergent correlations (`brute_force_success`,
+  `persistence_after_login`, `suspicious_process` High) actually form. Stops
+  before collection and hands you the examiner-side command block.
+- **`lib.sh` cross-version shims** — `have`, `lab_timeout`, `http_get` let every
+  scenario run on Metasploitable 2 (Hardy has no `timeout`, often no `curl`)
+  without a forked, drift-prone parallel script set.
 - **New parser `execution.py`** — `auditd_parser` (real `execve` capture with
   epoch timestamps and reconstructed argv) and `ps_parser` (`ps aux` snapshot).
   Both were *collected already* but nothing read them; this closes scenario #6.
