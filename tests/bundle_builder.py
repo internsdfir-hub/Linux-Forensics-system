@@ -23,10 +23,12 @@ def build_bundle(
     case_id: str = "CASE-ING",
     tamper: set[str] = frozenset(),
     gzip_it: bool = False,
+    manifest_header: bool = True,
 ) -> Path:
     """files maps original_path (e.g. "/etc/passwd" or "journal/boot-0.json")
     to content bytes. Paths in `tamper` get a wrong sha256 in the manifest,
-    simulating post-collection modification."""
+    simulating post-collection modification. Set manifest_header=False to omit
+    the CSV header line, simulating a truncated/corrupted manifest."""
     out_dir.mkdir(parents=True, exist_ok=True)
 
     rows = []
@@ -58,7 +60,8 @@ def build_bundle(
 
     buf = io.StringIO()
     writer = csv.DictWriter(buf, fieldnames=list(rows[0].keys()), lineterminator="\n")
-    writer.writeheader()
+    if manifest_header:
+        writer.writeheader()
     writer.writerows(rows)
     payload["hash_manifest.csv"] = buf.getvalue().encode()
 

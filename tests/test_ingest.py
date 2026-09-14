@@ -47,6 +47,19 @@ def test_corrupted_file_quarantined_and_analysis_continues(tmp_path):
     assert not (raw / "collected/files/var/log/auth.log").exists()
 
 
+def test_headerless_manifest_still_ingests(tmp_path):
+    # A truncated/corrupted bundle whose hash_manifest.csv lost its header row
+    # must not crash ingest: DictReader would otherwise eat the first file as
+    # the header, read every original_path as empty, resolve to the collected/
+    # directory and hard-fail hashing it. The known columns are supplied instead.
+    bundle = build_bundle(tmp_path / "b", BASE_FILES, manifest_header=False)
+    result = ingest.ingest_bundle(bundle, tmp_path / "case", examiner="M")
+    assert result.verified == 4
+    assert result.failed == []
+    raw = tmp_path / "case" / "raw" / result.host_id
+    assert (raw / "collected/files/etc/passwd").exists()
+
+
 def test_gzip_bundle_supported(tmp_path):
     bundle = build_bundle(tmp_path / "b", BASE_FILES, gzip_it=True)
     result = ingest.ingest_bundle(bundle, tmp_path / "case", examiner="M")

@@ -27,6 +27,13 @@ from .schema import clean_surrogates
 # statuses in hash_manifest.csv that carry no verifiable file
 _NO_FILE_STATUSES = {"unreadable", "redacted", "copy_failed", "stat_failed"}
 
+# The columns collect.sh writes as the hash_manifest.csv header (in order).
+# Kept here so we can still read a manifest whose header line went missing.
+_MANIFEST_FIELDS = (
+    "original_path", "sha256", "size", "mode", "owner",
+    "atime", "mtime", "ctime", "source_was_active", "status",
+)
+
 
 def _rmtree(path: Path) -> None:
     """Recursively remove a directory tree, clearing read-only flags on Windows."""
@@ -77,14 +84,32 @@ def stored_rel_path(original_path: str) -> str:
     return f"collected/{original_path}"
 
 
-def _read_hash_manifest(raw_host: Path) -> list[dict]:
+def read_hash_manifest(manifest: Path) -> list[dict]:
+    """Read hash_manifest.csv into row dicts, tolerating a missing header.
+
+    csv.DictReader treats the first line as field names, so a manifest whose
+    header line is absent (a truncated/corrupted bundle) would silently consume
+    a real file as the header and key every other row under the wrong names -
+    `original_path` then reads empty, resolves to the `collected` directory,
+    and hashing it crashes the whole analysis. Detect that case and supply the
+    known field names explicitly. Rows without an original_path are dropped.
+    """
     import csv
 
-    manifest = raw_host / "hash_manifest.csv"
+    manifest = Path(manifest)
     if not manifest.exists():
         return []
     with open(manifest, encoding="utf-8", errors="surrogateescape", newline="") as fh:
-        return list(csv.DictReader(fh))
+        first = fh.readline()
+        fh.seek(0)
+        has_header = first.split(",", 1)[0].strip().strip('"') == "original_path"
+        reader = (csv.DictReader(fh) if has_header
+                  else csv.DictReader(fh, fieldnames=list(_MANIFEST_FIELDS)))
+        return [row for row in reader if (row.get("original_path") or "").strip()]
+
+
+def _read_hash_manifest(raw_host: Path) -> list[dict]:
+    return read_hash_manifest(raw_host / "hash_manifest.csv")
 
 
 def ingest_bundle(bundle_path: str | Path, case_dir: str | Path,
@@ -133,8 +158,15 @@ def ingest_bundle(bundle_path: str | Path, case_dir: str | Path,
         if status in _NO_FILE_STATUSES:
             result.skipped.append({"original_path": original, "status": status})
             continue
+        if not original.strip():
+            # a blank path resolves to the collected/ directory itself
+            result.skipped.append({"original_path": original, "status": "no_path"})
+            continue
         rel = stored_rel_path(original)
         stored = raw_host / rel
+        if stored.is_dir():
+            result.skipped.append({"original_path": original, "status": "is_directory"})
+            continue
         if not stored.exists():
             result.failed.append(
                 {"original_path": original, "reason": "listed in manifest but absent from bundle"}

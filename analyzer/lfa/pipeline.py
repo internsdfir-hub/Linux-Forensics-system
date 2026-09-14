@@ -12,7 +12,6 @@ would be unattributable.
 """
 from __future__ import annotations
 
-import csv
 import json
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -44,15 +43,11 @@ def _load_case_metadata(case_dir: Path) -> dict:
 
 def _artifact_rows(host_dir: Path) -> dict[str, dict]:
     """hash_manifest rows keyed by the bundle-relative stored path."""
-    from .ingest import stored_rel_path
+    from .ingest import read_hash_manifest, stored_rel_path
 
     rows: dict[str, dict] = {}
-    manifest = host_dir / "hash_manifest.csv"
-    if not manifest.exists():
-        return rows
-    with open(manifest, encoding="utf-8", errors="surrogateescape", newline="") as fh:
-        for row in csv.DictReader(fh):
-            rows[stored_rel_path(row["original_path"])] = row
+    for row in read_hash_manifest(host_dir / "hash_manifest.csv"):
+        rows[stored_rel_path(row["original_path"])] = row
     return rows
 
 
