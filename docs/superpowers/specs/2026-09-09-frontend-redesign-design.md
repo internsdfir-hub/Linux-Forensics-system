@@ -210,7 +210,7 @@ of three, which is worse than either endpoint.
   handlers, so it must not reintroduce the pattern** — but fixing it is tracked
   separately and is not this work's deliverable.
 - Any change to parsers, rules, the schema, the collector, or the export path.
-- `tools/remote_collector.py` and `tools/receiver_server.py`.
+- `testlab/data_exfil_simulator.py` and `testlab/data_exfil_receiver.py`.
 
 ---
 

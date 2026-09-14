@@ -20,7 +20,7 @@
 - **Determinism must hold.** Identical evidence must still produce byte-identical canonical exports. Never introduce `uuid4()`, wall-clock values, or set/dict iteration order into anything that reaches an event or an export.
 - **Rules must never abort the run.** Parser and rule error isolation boundaries stay intact.
 - **Run the full suite with `python -m pytest`** from the repo root. It takes roughly 4 minutes; that is normal, not a hang.
-- **Do not touch** `tools/remote_collector.py` or `tools/receiver_server.py`. They are out of scope.
+- **Do not touch** `testlab/data_exfil_simulator.py` or `testlab/data_exfil_receiver.py`. They are out of scope.
 
 ---
 

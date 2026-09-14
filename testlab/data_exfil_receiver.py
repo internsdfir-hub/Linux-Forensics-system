@@ -13,13 +13,13 @@ class ReceiverHandler(BaseHTTPRequestHandler):
                 return
 
             filename = self.headers.get('X-Filename', 'evidence.zip')
-            
+
             # Ensure the uploads directory exists
             os.makedirs("uploads", exist_ok=True)
             filepath = os.path.join("uploads", os.path.basename(filename))
 
             print(f"[*] Receiving {content_length} bytes. Saving to {filepath}...")
-            
+
             with open(filepath, 'wb') as f:
                 remaining = content_length
                 chunk_size = 1024 * 1024
@@ -32,7 +32,7 @@ class ReceiverHandler(BaseHTTPRequestHandler):
                     remaining -= len(data)
 
             print(f"[+] Successfully saved {filename}.")
-            
+
             self.send_response(200)
             self.end_headers()
             self.wfile.write(b"File received successfully.\n")
@@ -45,8 +45,8 @@ class ReceiverHandler(BaseHTTPRequestHandler):
 def run(port):
     server_address = ('0.0.0.0', port)
     httpd = HTTPServer(server_address, ReceiverHandler)
-    print(f"[*] Starting receiver server on port {port}...")
-    print("[*] Waiting for evidence...")
+    print(f"[*] Starting data-exfil receiver on port {port}...")
+    print("[*] Waiting for incoming exfil payloads...")
     try:
         httpd.serve_forever()
     except KeyboardInterrupt:
@@ -55,7 +55,7 @@ def run(port):
     print("[*] Server stopped.")
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description="Central Server for receiving forensic collections.")
+    parser = argparse.ArgumentParser(description="Receiver server for data exfiltration simulation.")
     parser.add_argument('--port', type=int, default=8000, help="Port to listen on")
     args = parser.parse_args()
     run(args.port)

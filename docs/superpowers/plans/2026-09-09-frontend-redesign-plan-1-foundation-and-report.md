@@ -23,14 +23,14 @@
 - **Evidence is never trusted as markup.** Every evidence-derived value rendered into HTML stays escaped, exactly as the hardening branch established. Jinja `autoescape=True` remains on; never add `| safe` to a value that came from evidence.
 - **Test import style is `from lfa...`**, not `from analyzer.lfa...`.
 - **Run the suite with `python -m pytest` from the repo root.** It takes 12–15 minutes. Run focused tests during development; the controller runs the full suite.
-- **The working tree contains uncommitted work belonging to the repo owner** — `collector/collect.sh`, `config/artifacts.yaml`, `analyzer/lfa/report/data.py`, report templates, `tools/remote_collector.py`, and several untracked parser files. It is NOT yours. Stage only the exact paths each task names, run `git diff --cached` before every commit, and never use `git add -A`. Never run `git reset --hard`, `git checkout -f`, `git clean`, or `git stash`.
+- **The working tree contains uncommitted work belonging to the repo owner** — `collector/collect.sh`, `config/artifacts.yaml`, `analyzer/lfa/report/data.py`, report templates, `testlab/data_exfil_simulator.py`, and several untracked parser files. It is NOT yours. Stage only the exact paths each task names, run `git diff --cached` before every commit, and never use `git add -A`. Never run `git reset --hard`, `git checkout -f`, `git clean`, or `git stash`.
 
 ---
 
 ### Task 0: Land the in-progress report and parser work first
 
 **Files:**
-- Commit (already written by the repo owner, not by you): `analyzer/lfa/report/data.py`, `analyzer/lfa/report/templates/report.html.j2`, `analyzer/lfa/report/templates/style.css`, `config/artifacts.yaml`, `config/grammars/common.yaml`, `collector/collect.sh`, `tools/remote_collector.py`, and the untracked parsers `analyzer/lfa/parsers/{browser,dns,ftplog,netifaces,netstat,storage,weblog}.py` with their tests.
+- Commit (already written by the repo owner, not by you): `analyzer/lfa/report/data.py`, `analyzer/lfa/report/templates/report.html.j2`, `analyzer/lfa/report/templates/style.css`, `config/artifacts.yaml`, `config/grammars/common.yaml`, `collector/collect.sh`, `testlab/data_exfil_simulator.py`, and the untracked parsers `analyzer/lfa/parsers/{browser,dns,ftplog,netifaces,netstat,storage,weblog}.py` with their tests.
 
 **Interfaces:**
 - Consumes: nothing.

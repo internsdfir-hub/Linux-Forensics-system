@@ -3,7 +3,7 @@
 **Date:** 2026-09-09
 **Status:** Approved for implementation
 **Scope:** Cluster 1 (correctness of forensic claims) + Cluster 2 (server hardening).
-Cluster 3 (the `remote_collector.py` / `receiver_server.py` second evidence path)
+Cluster 3 (the `data_exfil_simulator.py` / `data_exfil_receiver.py` second evidence path)
 is explicitly **out of scope** and left untouched.
 
 ---
@@ -126,7 +126,7 @@ puts a secret into a cacheable page.
 
 Deliberately excluded from this work, to be revisited separately:
 
-- Cluster 3: `tools/remote_collector.py` and `tools/receiver_server.py`.
+- Cluster 3: `testlab/data_exfil_simulator.py` and `testlab/data_exfil_receiver.py`.
 - `ftplog.py` treating local timestamps as UTC.
 - `weblog.py` silently dropping error logs.
 - The `brute_force` rule reporting all-time failures as one campaign.
