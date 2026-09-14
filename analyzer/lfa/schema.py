@@ -97,9 +97,20 @@ class NormalizedEvent:
 FIELD_NAMES = tuple(f.name for f in fields(NormalizedEvent))
 
 
-def compute_event_hash(host_id: str, source_path: str, offset: int, raw_line: str) -> str:
-    """Dedupe key: hash(host_id, source_path, offset, raw_line) per spec 2.5."""
-    material = "\x1f".join((host_id, source_path, str(offset), raw_line))
+def compute_event_hash(host_id: str, source_path: str, offset: int, raw_line: str,
+                       subcategory: str = "") -> str:
+    """Dedupe key: hash(host_id, source_path, offset, raw_line, subcategory).
+
+    Extends spec 2.5 with `subcategory`: a single source line can legitimately
+    produce more than one distinct event (e.g. a group line is both a
+    `group_membership` and a `privileged_group_member`; a sudo line is both
+    privilege escalation and timeline activity). Keying on the line alone made
+    those collide, so `INSERT OR IGNORE` silently dropped every event after the
+    first — `privileged_group_member` never survived. Including the subcategory
+    keeps genuinely distinct events while still collapsing true re-parses of the
+    same line (same path, offset, subcategory) across rotated/overlapping files.
+    """
+    material = "\x1f".join((host_id, source_path, str(offset), raw_line, subcategory))
     return hashlib.sha256(material.encode("utf-8", errors="surrogateescape")).hexdigest()
 
 
@@ -138,6 +149,7 @@ def make_event(**kwargs) -> NormalizedEvent:
         kwargs["source_artifact_path"],
         kwargs.get("raw_line_offset", 0),
         raw_line,
+        kwargs.get("subcategory", ""),
     )
     raw_truncated = _truncate_raw_line(raw_line)
     kwargs["raw_line"] = clean_surrogates(raw_truncated)

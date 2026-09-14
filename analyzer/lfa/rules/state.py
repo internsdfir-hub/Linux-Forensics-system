@@ -17,6 +17,25 @@ def _rows(conn: sqlite3.Connection, sql: str, params: tuple = ()) -> list[sqlite
     return conn.execute(sql, params).fetchall()
 
 
+def _group_by_user(rows: list[sqlite3.Row]) -> dict[str, list[sqlite3.Row]]:
+    """Bucket rows by actor_user, preserving order, so a state condition that
+    shows up in several artifacts becomes one finding per account."""
+    out: dict[str, list[sqlite3.Row]] = {}
+    for r in rows:
+        user = (r["actor_user"] or "unknown").strip("'\"")
+        out.setdefault(user, []).append(r)
+    return out
+
+
+def _group_of(row: sqlite3.Row) -> str | None:
+    """Best-effort group name out of a privileged_group_member event."""
+    desc = row["description"] or ""
+    marker = "privileged group "
+    if marker in desc:
+        return desc.split(marker, 1)[1].split()[0].rstrip(".,)")
+    return None
+
+
 class Uid0Rule(BaseRule):
     name = "uid0_account"
     version = "1.0"
@@ -28,8 +47,11 @@ class Uid0Rule(BaseRule):
             WHERE subcategory = 'uid0_account'
                OR (actor_uid = 0 AND actor_user IS NOT NULL AND actor_user != 'root')
         """
-        for row in _rows(conn, query):
-            user = row["actor_user"] or f"UID 0 ({row['raw_line']})"
+        # One account can surface as several events (etc/passwd, auth.log
+        # account_created, lastlog) - collapse them into one finding per
+        # account, citing every event, instead of one finding per row.
+        for user, rows in _group_by_user(_rows(conn, query)).items():
+            row = rows[0]
             yield Finding(
                 rule_name=self.name,
                 rule_version=self.version,
@@ -42,7 +64,7 @@ class Uid0Rule(BaseRule):
                     check_next="Verify when this account was added in /etc/passwd and remove unauthorized UID 0 accounts.",
                 ),
                 technical_detail=f"Found UID 0 account '{user}' (description: {row['description'] or row['raw_line']})",
-                event_ids=[row["event_id"]],
+                event_ids=[r["event_id"] for r in rows],
                 host_id=row["host_id"],
             )
 
@@ -57,8 +79,10 @@ class PasswordlessAccountRule(BaseRule):
             FROM events
             WHERE subcategory = 'passwordless_account'
         """
-        for row in _rows(conn, query):
-            user = row["actor_user"] or "unknown"
+        # etc/shadow and its etc/shadow- backup both carry the account, so it
+        # appears twice - one finding per account, citing both events.
+        for user, rows in _group_by_user(_rows(conn, query)).items():
+            row = rows[0]
             yield Finding(
                 rule_name=self.name,
                 rule_version=self.version,
@@ -71,7 +95,7 @@ class PasswordlessAccountRule(BaseRule):
                     check_next="Inspect account login activity and lock or set a strong password for the account.",
                 ),
                 technical_detail=f"Account '{user}' has empty password hash in shadow file (raw: {row['raw_line']})",
-                event_ids=[row["event_id"]],
+                event_ids=[r["event_id"] for r in rows],
                 host_id=row["host_id"],
             )
 
@@ -86,22 +110,27 @@ class PrivilegedGroupRule(BaseRule):
             FROM events
             WHERE subcategory = 'privileged_group_member'
         """
-        for row in _rows(conn, query):
-            user = row["actor_user"] or "unknown"
+        # A user in several privileged groups (e.g. both sudo and adm) yields
+        # one event per group - collapse to one finding per user that names
+        # every group, rather than one finding per (user, group).
+        for user, rows in _group_by_user(_rows(conn, query)).items():
+            groups = sorted({g for r in rows if (g := _group_of(r))})
+            groups_txt = ", ".join(groups) if groups else "a privileged group"
             yield Finding(
                 rule_name=self.name,
                 rule_version=self.version,
                 severity="medium",
                 title=f"User {user} in privileged administrative group",
                 plain=PlainSummary(
-                    what_happened=f"User '{user}' belongs to privileged administrative group",
+                    what_happened=f"User '{user}' belongs to privileged administrative group(s): {groups_txt}",
                     why_it_matters="Membership in privileged groups such as docker, sudo, or wheel grants near or total root access on the host system.",
                     confidence="High",
                     check_next="Verify whether this user account requires administrative group permissions.",
                 ),
-                technical_detail=f"Privileged group membership: {row['description'] or row['raw_line']}",
-                event_ids=[row["event_id"]],
-                host_id=row["host_id"],
+                technical_detail=f"Privileged group membership ({groups_txt}): "
+                                 + "; ".join(r["description"] or r["raw_line"] for r in rows),
+                event_ids=[r["event_id"] for r in rows],
+                host_id=rows[0]["host_id"],
             )
 
 

