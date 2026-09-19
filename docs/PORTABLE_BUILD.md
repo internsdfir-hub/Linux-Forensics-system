@@ -139,6 +139,47 @@ Exit codes alone are not enough: the config-less build above passed a naive
 
 ---
 
+## Command mapping: dev checkout → portable bundle
+
+Nothing about the CLI changes. `lfa.cmd` **is** `python -m lfa` with the
+bundled interpreter wired in. Same subcommands, same flags, same output.
+
+| Dev checkout | Portable bundle |
+|---|---|
+| `python -m lfa serve --port 8443 --token "s3cret"` | `lfa-server.cmd s3cret 8443` |
+| `python -m lfa analyse bundle.tar.gz --case-dir cases/INCIDENT-42 --examiner "Bob"` | `lfa.cmd analyse bundle.tar.gz --case-dir cases\INCIDENT-42 --examiner "Bob"` |
+| `python -m lfa verify cases/INCIDENT-42` | `lfa.cmd verify cases\INCIDENT-42` |
+| `python -m lfa report cases/INCIDENT-42` | `lfa.cmd report cases\INCIDENT-42` |
+
+`lfa.cmd serve ...` also works verbatim if you want full control over
+`--host`, `--cert` and `--key`. The two `.cmd` wrappers only exist to supply
+sensible defaults:
+
+- `lfa-dashboard.cmd` → `serve --host 127.0.0.1` (loopback; local case review)
+- `lfa-server.cmd <token> [port]` → `serve --host 0.0.0.0 --token <token>`
+  (network ingestion; token mandatory)
+
+**Nothing on the Linux side changes.** `collector/collect.sh` is unaffected.
+
+## Transport: HTTP vs HTTPS
+
+`serve` speaks **plain HTTP unless you pass both `--cert` and `--key`**
+(`server.py:1087`). No certificate is generated for you, and no certificate
+tooling ships in the bundle — a stock Windows box has no `openssl`.
+
+The collector appends `/api/v1/ingest` to whatever `-s` URL you give it, so
+`-s http://examiner:8443` becomes `http://examiner:8443/api/v1/ingest`, with
+the token sent as `Authorization: Bearer <token>`.
+
+Practical options, in order of preference:
+
+1. **USB tarball** — no network at all. The natural fit for an air-gapped
+   examiner box, and the reason this bundle exists.
+2. **Plain HTTP on an isolated segment** — acceptable on a dedicated
+   incident-response VLAN. The token authenticates; it does not encrypt.
+3. **Supply your own cert** — `lfa.cmd serve --host 0.0.0.0 --token <tok>
+   --cert cert.pem --key key.pem`, then use `-s https://...` on the collector.
+
 ## Verifying a build
 
 Determinism is the real acceptance test. The portable build (Python 3.13.7)

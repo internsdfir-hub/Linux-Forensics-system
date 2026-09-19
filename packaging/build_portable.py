@@ -234,17 +234,59 @@ def _write_launchers() -> None:
         encoding="ascii",
     )
 
+    # Local review only: binds loopback, so nothing is exposed to the network.
+    # Safe to double-click.
     (OUT / "lfa-dashboard.cmd").write_text(
         "@echo off\r\n"
         "setlocal\r\n"
         'set "LFA_HOME=%~dp0"\r\n'
         "set LFA_PORT=8443\r\n"
-        "echo Starting LFA dashboard on https://127.0.0.1:%LFA_PORT%\r\n"
+        "echo Starting LFA dashboard (local review, loopback only)\r\n"
+        "echo   http://127.0.0.1:%LFA_PORT%\r\n"
         "echo Press Ctrl+C to stop.\r\n"
         "echo.\r\n"
         '"%LFA_HOME%runtime\\python.exe" -m lfa serve '
         '--host 127.0.0.1 --port %LFA_PORT% '
         '--cases-dir "%LFA_HOME%cases" %*\r\n'
+        "exit /b %ERRORLEVEL%\r\n",
+        encoding="ascii",
+    )
+
+    # Network ingestion: binds all interfaces so a Linux target running
+    # `collect.sh -s https://<this-box>:8443/ingest -T <token>` can reach it.
+    # A token is mandatory here -- an unauthenticated listener on 0.0.0.0
+    # would accept evidence from anyone on the network.
+    (OUT / "lfa-server.cmd").write_text(
+        "@echo off\r\n"
+        "setlocal\r\n"
+        'set "LFA_HOME=%~dp0"\r\n'
+        'if "%~1"=="" (\r\n'
+        "  echo Usage: lfa-server.cmd ^<token^> [port]\r\n"
+        "  echo.\r\n"
+        "  echo   Starts the ingestion server on ALL interfaces so a Linux\r\n"
+        "  echo   target can stream evidence to it:\r\n"
+        "  echo.\r\n"
+        "  echo     sudo sh collect.sh -c CASE-01 -p Bob -M ^\\\r\n"
+        "  echo          -s http://THIS-HOST:8443 -T ^<token^>\r\n"
+        "  echo.\r\n"
+        # NOTE: inside an if(...) block every literal paren must be ^-escaped
+        # or cmd terminates the block early ("( was unexpected at this time").
+        "  echo   The collector appends /api/v1/ingest to the URL itself.\r\n"
+        "  echo   This is plain HTTP. For TLS, run lfa.cmd serve directly\r\n"
+        "  echo   with --cert and --key ^(no certificate is generated for you^).\r\n"
+        "  exit /b 2\r\n"
+        ")\r\n"
+        'set "LFA_TOKEN=%~1"\r\n'
+        'set "LFA_PORT=%~2"\r\n'
+        'if "%LFA_PORT%"=="" set "LFA_PORT=8443"\r\n'
+        "echo Listening for streamed evidence on 0.0.0.0:%LFA_PORT% (plain HTTP)\r\n"
+        "echo Ingest endpoint: http://^<this-host^>:%LFA_PORT%/api/v1/ingest\r\n"
+        "echo Dashboard:       http://127.0.0.1:%LFA_PORT%\r\n"
+        "echo Press Ctrl+C to stop.\r\n"
+        "echo.\r\n"
+        '"%LFA_HOME%runtime\\python.exe" -m lfa serve '
+        '--host 0.0.0.0 --port %LFA_PORT% --token "%LFA_TOKEN%" '
+        '--cases-dir "%LFA_HOME%cases"\r\n'
         "exit /b %ERRORLEVEL%\r\n",
         encoding="ascii",
     )
@@ -285,11 +327,25 @@ def _write_launchers() -> None:
             "    lfa.cmd report  cases\\CASE-001",
             "  The report is written to cases\\CASE-001\\report.html (opens in any browser).",
             "",
-            "WEB DASHBOARD",
+            "WEB DASHBOARD (reviewing cases on this machine)",
             "  Double-click lfa-dashboard.cmd, then browse to:",
-            "    https://127.0.0.1:8443",
-            "  It binds to localhost only. A self-signed certificate warning is",
-            "  expected; accept it to continue.",
+            "    http://127.0.0.1:8443",
+            "  Binds to loopback only - nothing is exposed to the network.",
+            "",
+            "RECEIVING EVIDENCE STREAMED FROM A LINUX TARGET",
+            "  lfa-server.cmd <token> [port]",
+            "  Binds 0.0.0.0 so the target can reach it. On the Linux host:",
+            "    sudo sh collect.sh -c CASE-01 -p Bob -M \\",
+            "         -s http://<this-windows-host>:8443 -T <token>",
+            "  The collector appends /api/v1/ingest itself.",
+            "",
+            "  NOTE: this is PLAIN HTTP. The server only speaks TLS if you pass",
+            "  both --cert and --key; no certificate is generated for you, and",
+            "  no certificate tooling ships in this bundle. Either keep this on",
+            "  an isolated/trusted segment, supply your own cert:",
+            "    lfa.cmd serve --host 0.0.0.0 --port 8443 --token <tok> \\",
+            "                  --cert C:\\path\\cert.pem --key C:\\path\\key.pem",
+            "  or avoid the network entirely and use the USB tarball workflow.",
             "",
             "WHAT IS IN THIS FOLDER",
             f"  runtime\\   Embeddable CPython {PY_VERSION} (signed by the Python",
