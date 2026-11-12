@@ -8,7 +8,7 @@
 
 **Tech Stack:** POSIX sh + coreutils (collector, tested under `dash` and WSL). Python 3.11+ stdlib (`struct`, `sqlite3`, `re`, `zoneinfo`), PyYAML, Jinja2 as only third-party analyzer deps (+`tzdata` on Windows examiners). pytest. Hand-rolled deterministic SVG for charts (no matplotlib — see Decision D3).
 
-**Spec:** `docs/spec/forensic_tool_plan_v3.txt` (text extraction of `forensic_tool_plan_v3 (1).pdf`, 13 pages). The spec's §-references below point into that document.
+**Spec:** `docs/spec/forensic_tool_plan_v3.txt` (text extraction of `docs/spec/forensic_tool_plan_v3.pdf`, 13 pages). The spec's §-references below point into that document.
 
 ## Global Constraints
 

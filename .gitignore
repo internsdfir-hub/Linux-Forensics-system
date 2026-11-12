@@ -7,3 +7,4 @@ dist/
 cases/
 *.db
 tests/fixtures/**/generated_tmp/
+~$*.docx

@@ -180,6 +180,20 @@ Practical options, in order of preference:
 3. **Supply your own cert** — `lfa.cmd serve --host 0.0.0.0 --token <tok>
    --cert cert.pem --key key.pem`, then use `-s https://...` on the collector.
 
+### Security defaults
+
+- **A non-loopback bind requires a token.** `serve` refuses to start on any
+  interface other than `127.0.0.1`/`::1` unless `--token` is set, so a bare
+  `lfa serve` can never expose cases unauthenticated on the network. The
+  loopback dashboard (`lfa-dashboard.cmd`) needs no token; `lfa-server.cmd`
+  always supplies one.
+- **Streamed bundles are size-capped** at 8 GiB by default; a larger upload is
+  rejected with HTTP 413 before it touches disk. Raise it for a genuinely
+  large journald bundle with `lfa.cmd serve … --max-ingest-gb <N>`.
+- **File serving is confined to the cases directory.** Report/artifact requests
+  are resolved and containment-checked, so neither a `..` path nor an absolute
+  path (`C:\…`, `/etc/…`) can read outside the case tree.
+
 ## Verifying a build
 
 Determinism is the real acceptance test. The portable build (Python 3.13.7)

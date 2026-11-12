@@ -102,8 +102,8 @@ def cmd_synth(args) -> int:
 
 
 def cmd_serve(args) -> int:
-    from .server import run_server
-    run_server(
+    from . import server as server_mod
+    server_mod.run_server(
         host=args.host,
         port=args.port,
         cases_dir=args.cases_dir,
@@ -113,6 +113,7 @@ def cmd_serve(args) -> int:
         key_file=args.key,
         business_hours=args.business_hours,
         examiner=args.examiner or "Remote Investigator",
+        max_ingest_bytes=int(args.max_ingest_gb * 1024 * 1024 * 1024),
     )
     return 0
 
@@ -187,15 +188,18 @@ def main(argv=None) -> int:
 
     # serve (Central Ingestion & Dashboard Server)
     p_serve = subparsers.add_parser("serve", help="Start Central Forensic Streaming Ingestion & Investigation Server")
-    p_serve.add_argument("--host", default="0.0.0.0", help="Listen host address (default: 0.0.0.0)")
+    p_serve.add_argument("--host", default="0.0.0.0",
+                         help="Listen host (default: 0.0.0.0; a non-loopback host requires --token)")
     p_serve.add_argument("--port", type=int, default=8443, help="Listen port (default: 8443)")
     p_serve.add_argument("--cases-dir", default="cases", help="Directory where ingested cases are stored")
-    p_serve.add_argument("--token", help="Bearer authentication token for secure ingestion")
+    p_serve.add_argument("--token", help="Bearer authentication token (mandatory when binding a non-loopback host)")
     p_serve.add_argument("--no-auto-analyse", action="store_true", help="Disable automatic analysis pipeline trigger")
     p_serve.add_argument("--cert", help="Path to TLS certificate file")
     p_serve.add_argument("--key", help="Path to TLS private key file")
     p_serve.add_argument("--examiner", default="Remote Investigator", help="Examiner name for ingested cases")
     p_serve.add_argument("--business-hours", default="08-18", help="Expected business hours")
+    p_serve.add_argument("--max-ingest-gb", type=float, default=8.0,
+                         help="Reject streamed bundles larger than this many GiB (default: 8)")
 
     # remote (Agentless SSH Pull Streaming)
     p_remote = subparsers.add_parser("remote", help="Acquire evidence remotely over SSH stream and analyze in memory")

@@ -400,3 +400,28 @@ fail:
 - **Timeline correctness** — a known-time injected event lands at the right
   absolute time, with `timestamp_confidence = year_inferred` (honest, given
   syslog).
+
+---
+
+## 7. Modern Enterprise Intrusion Simulation (`mega_chain.sh`)
+
+While the scenarios above target legacy hosts like Metasploitable 2, modern Linux enterprise environments (Ubuntu 22.04/24.04, Kali Linux, Debian 12, RHEL 9) run systemd journals, complex multi-user setups, and sophisticated multi-vector attacks.
+
+`testlab/scenarios/mega_chain.sh` is an all-in-one standalone simulation script designed for modern targets:
+1. **Background Corporate Noise:** Generates legitimate user accounts (`dev_sarah`, `admin_mike`), clean shell histories, benign cron tasks, systemd daemon noise, and internet scanner traffic.
+2. **10-Stage Kill Chain:** Simulates SSH credential stuffing, breach foothold, hidden root UID 0 (`sysmon`), rogue service accounts (`svc_backup`), `/etc/sudoers.d` hijacking, SSH key injection, C2 cron beacons, dynamic linker hooks (`/etc/ld.so.preload`), profile execution traps, data staging, USB removable media theft simulation, and anti-forensic history wiping and log zeroing.
+3. **Execution & Verification:**
+   ```bash
+   # 1. Run simulation on disposable lab VM / WSL:
+   sudo sh testlab/scenarios/mega_chain.sh
+
+   # 2. Collect evidence bundle:
+   sudo sh collector/collect.sh -r / -o cases/wsl_enterprise -c CASE-ENTERPRISE-SIM -p "Examiner" -V -z
+
+   # 3. Ingest and correlate offline:
+   python -m lfa analyse cases/wsl_enterprise/*.tar.gz --case-dir cases/CASE-ENTERPRISE-SIM --examiner "Examiner"
+
+   # 4. Score detections against ground truth:
+   python tools/score_detection.py --case-dir cases/CASE-ENTERPRISE-SIM --ground-truth testlab/scenarios/mega_chain.ground_truth.json
+   ```
+For a comprehensive walkthrough of this scenario with annotated forensic screenshots, refer to [docs/INTERNSHIP_WALKTHROUGH_REPORT.md](../../docs/INTERNSHIP_WALKTHROUGH_REPORT.md).

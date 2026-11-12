@@ -28,6 +28,27 @@ from . import __version__
 from .explorer import render_explorer_html
 from .pipeline import run_analysis_pipeline
 
+# Generous by default (real journald evidence can be gigabytes, per D10) but
+# bounded, so an unbounded or malicious stream cannot fill the examiner's disk.
+DEFAULT_MAX_INGEST_BYTES = 8 * 1024 * 1024 * 1024  # 8 GiB
+
+
+def _is_within(base: Path, target: Path) -> bool:
+    """True only if `target` resolves to `base` or something inside it.
+
+    The `".." in parts` string check does not stop an *absolute* path: pathlib
+    discards the left operand when an absolute path is joined onto it
+    (`Path("cases") / "C:/x"` -> `C:/x`, `Path("cases") / "/etc/x"` -> `/etc/x`),
+    so a request for an absolute path escaped the cases directory entirely.
+    Resolve both and check containment instead of trusting the join.
+    """
+    try:
+        base_r = base.resolve()
+        target_r = target.resolve()
+    except (OSError, ValueError, RuntimeError):
+        return False
+    return target_r == base_r or base_r in target_r.parents
+
 
 def sanitise_examiner(value: str | None) -> str:
     """Clean the X-Examiner header before it is stored or rendered.
@@ -83,6 +104,10 @@ class LFAServerHandler(http.server.BaseHTTPRequestHandler):
     @property
     def business_hours(self) -> str:
         return getattr(self.server, "business_hours", "08-18")
+
+    @property
+    def max_ingest_bytes(self) -> int:
+        return getattr(self.server, "max_ingest_bytes", DEFAULT_MAX_INGEST_BYTES)
 
     def _check_auth(self) -> bool:
         """Verify token authentication if configured on server.
@@ -246,6 +271,9 @@ class LFAServerHandler(http.server.BaseHTTPRequestHandler):
                 return
 
             target_file = self.cases_dir / rel_path
+            if not _is_within(self.cases_dir, target_file):
+                self._send_json(400, {"error": "Invalid path navigation"})
+                return
             if target_file.is_file() and target_file.exists():
                 try:
                     content_type = "text/html; charset=utf-8" if target_file.suffix == ".html" else "application/octet-stream"
@@ -442,14 +470,14 @@ class LFAServerHandler(http.server.BaseHTTPRequestHandler):
             cand1 = host_dir / "collected" / "files" / norm_path
             cand2 = host_dir / "collected" / norm_path
             cand3 = host_dir / norm_path
-            if cand1.is_file():
-                target_file = cand1
-                break
-            elif cand2.is_file():
-                target_file = cand2
-                break
-            elif cand3.is_file():
-                target_file = cand3
+            # _is_within guards the absolute-path escape: a drive-letter path
+            # (C:/...) survives lstrip('/') and would otherwise discard the base
+            # on join and read anywhere on disk.
+            for cand in (cand1, cand2, cand3):
+                if cand.is_file() and _is_within(host_dir, cand):
+                    target_file = cand
+                    break
+            if target_file:
                 break
 
         if not target_file or not target_file.exists():
@@ -549,6 +577,17 @@ class LFAServerHandler(http.server.BaseHTTPRequestHandler):
 
         if content_length <= 0:
             self._send_json(400, {"error": "Missing or empty Content-Length header for streaming ingest"})
+            return
+
+        # Cap the stream before a byte touches disk. Without this an unbounded
+        # (or malicious) upload fills the examiner's disk, and with the open
+        # default that is remotely triggerable.
+        if content_length > self.max_ingest_bytes:
+            self._send_json(413, {
+                "error": "Bundle exceeds maximum ingest size",
+                "max_ingest_bytes": self.max_ingest_bytes,
+                "declared_bytes": content_length,
+            })
             return
 
         # Case Identification
@@ -1068,8 +1107,21 @@ def run_server(
     key_file: str | None = None,
     business_hours: str = "08-18",
     examiner: str = "Remote Investigator",
+    max_ingest_bytes: int = DEFAULT_MAX_INGEST_BYTES,
 ) -> None:
     """Start the central LFA streaming ingestion and investigation server."""
+    # Refuse to expose an unauthenticated server on the network. Without this,
+    # a bare `lfa serve` (default --host 0.0.0.0, no token) would serve every
+    # case and accept evidence from anyone who can reach the port.
+    _LOOPBACK = {"127.0.0.1", "::1", "localhost"}
+    if host not in _LOOPBACK and not token:
+        raise SystemExit(
+            f"[!] Refusing to bind {host!r} without a token: an unauthenticated\n"
+            f"    server on a non-loopback interface exposes every case and\n"
+            f"    accepts evidence from anyone on the network.\n"
+            f"    Fix: pass --token <secret>, or use --host 127.0.0.1 for local review."
+        )
+
     cases_path = Path(cases_dir)
     cases_path.mkdir(parents=True, exist_ok=True)
 
@@ -1082,6 +1134,7 @@ def run_server(
     server.auto_analyse = auto_analyse  # type: ignore[attr-defined]
     server.business_hours = business_hours  # type: ignore[attr-defined]
     server.examiner = examiner  # type: ignore[attr-defined]
+    server.max_ingest_bytes = max_ingest_bytes  # type: ignore[attr-defined]
 
     protocol = "http"
     if cert_file and key_file:

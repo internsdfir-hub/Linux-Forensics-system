@@ -16,4 +16,6 @@ This workspace contains **LFA (Linux Forensic Analyzer)**, a high-fidelity, dete
 - Run test suite: `python -m pytest`
 - Run analysis CLI: `python -m lfa analyse <bundles...> --case-dir <dir> --examiner <name>`
 - Verify raw evidence integrity: `python -m lfa verify <case-dir>`
-- Score detections against attack ground truth: `python tools/score_detection.py --case-dir <case-dir> --ground-truth testlab/ground_truth.json`
+- Score detections against attack ground truth: `python tools/score_detection.py --case-dir <case-dir> --ground-truth testlab/scenarios/mega_chain.ground_truth.json`
+- Enterprise simulation: `sudo sh testlab/scenarios/mega_chain.sh`
+- Walkthrough documentation: Refer to [docs/INTERNSHIP_WALKTHROUGH_REPORT.md](file:///d:/C/Git/Linux-Forensics-system/docs/INTERNSHIP_WALKTHROUGH_REPORT.md) and [docs/VIVA_PREP.md](file:///d:/C/Git/Linux-Forensics-system/docs/VIVA_PREP.md).

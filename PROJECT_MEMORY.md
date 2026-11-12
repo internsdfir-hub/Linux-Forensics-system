@@ -55,12 +55,20 @@ Linux-Forensics-system/
 │       └── report/                   # Reporting engine (data, chart, narrative, render, templates)
 ├── testlab/
 │   ├── scenario.sh                   # WSL Kali attack simulation script
+│   ├── scenarios/                    # Attack scenarios (01-07, chain.sh, mega_chain.sh)
 │   └── ground_truth.json             # Ground truth indicators injected by scenario.sh
+├── packaging/
+│   ├── build_portable.py             # Offline Windows portable package builder
+│   └── vendor/                       # Vendored embedded Python and wheels for air-gapped builds
+├── docs/
+│   ├── INTERNSHIP_WALKTHROUGH_REPORT.md # Comprehensive final walkthrough report
+│   ├── PORTABLE_BUILD.md             # Offline Windows packaging guide
+│   └── VIVA_PREP.md                  # Comprehensive defense and viva prep guide
 ├── tools/
 │   ├── gen_artifact_table.py         # Syncs artifacts.yaml into collect.sh embedded table
 │   ├── make_synthetic_case.py        # Seeded deterministic synthetic case generator
 │   └── score_detection.py            # Automated scorecard comparing detections vs ground truth
-├── tests/                            # Comprehensive pytest test suite (240+ unit/integration tests)
+├── tests/                            # Comprehensive pytest test suite (250+ unit/integration tests)
 ├── PROJECT_MEMORY.md                 # Persistent project context and directions
 └── AGENTS.md                         # Agent instructions and rules
 ```
@@ -76,6 +84,9 @@ Linux-Forensics-system/
 - **D8 (Windows Timezone):** Platform-aware timezone handling with fallback to UTC; never crash on invalid timezone names.
 - **D9 (CLI Naming):** Package is `lfa`; invoked via `python -m lfa <subcommand>`.
 - **D10 (Streaming Log Parsing):** Always stream lines lazily (never `.readlines()` large files) to handle gigabyte logs cleanly.
+- **D11 (Zero-Install Portable Distribution):** `packaging/build_portable.py` bundles Python embed runtime + wheels into a zero-install portable Windows distribution (`LFA-Portable`).
+- **D12 (Server Security Hardening):** Non-loopback host bindings (`0.0.0.0`) strictly mandate `--token`; path traversal guards protect against absolute escapes; streamed ingestion is bounded (`--max-ingest-gb`, default 8 GiB).
+- **D13 (Multi-Stage Enterprise Simulation):** `testlab/scenarios/mega_chain.sh` generates background corporate noise (`dev_sarah`, `admin_mike`) alongside 10 kill-chain attack stages and cryptographic ground truth (`mega_chain.ground_truth.json`).
 
 ---
 

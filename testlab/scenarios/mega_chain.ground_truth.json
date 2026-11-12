@@ -1,0 +1,128 @@
+{
+  "scenario_name": "enterprise_realistic_intrusion_simulation",
+  "executed_at": "2026-11-10T17:15:06Z",
+  "host": "Fahad",
+  "attacker_ip": "203.0.113.9",
+  "attacker_ip_2": "198.51.100.7",
+  "injected_threats": [
+    {
+      "threat_id": "T1110_brute_force",
+      "name": "External SSH Brute Force Campaign",
+      "expected_rule": "brute_force",
+      "detection_layer": "finding",
+      "details": "10 rapid failed password attempts from external IP 203.0.113.9"
+    },
+    {
+      "threat_id": "T1110_success_after_burst",
+      "name": "Accepted Login Following Brute Force",
+      "expected_rule": "brute_force_success",
+      "detection_layer": "finding",
+      "details": "Accepted login for kali from 203.0.113.9 immediately following failure burst"
+    },
+    {
+      "threat_id": "T1021_offhours_breach",
+      "name": "Off-Hours Privileged Execution",
+      "expected_rule": "off_hours_privileged",
+      "detection_layer": "finding",
+      "details": "Sudo execution of /usr/bin/cat /etc/shadow at 03:14:07"
+    },
+    {
+      "threat_id": "T1136_uid0_hidden_root",
+      "name": "Second UID-0 Superuser Account",
+      "expected_rule": "uid0_account",
+      "detection_layer": "finding",
+      "details": "sysmon created with UID=0 and GID=0"
+    },
+    {
+      "threat_id": "T1078_passwordless_account",
+      "name": "Passwordless Service Account",
+      "expected_rule": "passwordless_account",
+      "detection_layer": "finding",
+      "details": "svc_backup has empty password hash in /etc/shadow"
+    },
+    {
+      "threat_id": "T1098_priv_group_elevation",
+      "name": "Administrative Group Membership Grant",
+      "expected_rule": "privileged_group_member",
+      "detection_layer": "finding",
+      "details": "helpdesk added to sudo, wheel, adm, docker groups"
+    },
+    {
+      "threat_id": "T1136_new_account_grant",
+      "name": "New Account Created and Elevated",
+      "expected_rule": "new_account_privilege_grant",
+      "detection_layer": "finding",
+      "details": "User creation followed immediately by group elevation in auth.log"
+    },
+    {
+      "threat_id": "T1098_persistence_after_login",
+      "name": "Post-Breach Persistence Mechanism",
+      "expected_rule": "persistence_after_login",
+      "detection_layer": "finding",
+      "details": "SSH key and cron beacon planted within 120 min of login from 203.0.113.9"
+    },
+    {
+      "threat_id": "T1053_standalone_cron_beacon",
+      "name": "Malicious C2 Cron Beacon",
+      "expected_rule": "suspicious_cron",
+      "detection_layer": "finding",
+      "details": "Periodic curl | sh beacon in /etc/cron.d/lfa_beacon"
+    },
+    {
+      "threat_id": "T1059_suspicious_process",
+      "name": "Malicious Command & Reverse Shell Payloads",
+      "expected_rule": "suspicious_process",
+      "detection_layer": "finding",
+      "details": "curl, nc -e /bin/sh, and bash /dev/tcp payloads executed and recorded in shell history"
+    },
+    {
+      "threat_id": "T1574_ld_preload_rootkit",
+      "name": "Dynamic Linker Rootkit Preload Hook",
+      "expected_rule": "ld_preload_rootkit",
+      "detection_layer": "finding",
+      "details": "Preload configuration present in /etc/ld.so.preload"
+    },
+    {
+      "threat_id": "T1070_wiped_shell_history",
+      "name": "Shell History Truncation After Active Sessions",
+      "expected_rule": "wiped_history",
+      "detection_layer": "finding",
+      "details": "Zero-byte .bash_history for insider after 5 recorded login sessions"
+    },
+    {
+      "threat_id": "T1070_zero_length_log",
+      "name": "Tampered Zero-Length Login Log",
+      "expected_rule": "zero_length_login_log",
+      "detection_layer": "finding",
+      "details": "/var/log/btmp truncated to 0 bytes"
+    },
+    {
+      "threat_id": "T1070_backwards_timestamps",
+      "name": "Chronologically Inverted Log Timestamps",
+      "expected_rule": "backwards_timestamps",
+      "detection_layer": "finding",
+      "details": "Injected log entry with backwards timestamp in auth.log"
+    },
+    {
+      "threat_id": "T1098_ssh_authorized_key_evidence",
+      "name": "Attacker SSH Key Staged in Authorized Keys",
+      "expected_rule": null,
+      "detection_layer": "evidence",
+      "details": "authorized_key event in /root/.ssh/authorized_keys"
+    },
+    {
+      "threat_id": "T1052_usb_storage_evidence",
+      "name": "Removable USB Mass Storage Connect & Disconnect",
+      "expected_rule": null,
+      "detection_layer": "evidence",
+      "details": "SanDisk Cruzer Blade attach, SCSI mount, and disconnect events in kern.log"
+    },
+    {
+      "threat_id": "T1021_known_hosts_evidence",
+      "name": "Attacker Host Staged in Known Hosts",
+      "expected_rule": null,
+      "detection_layer": "evidence",
+      "details": "known_host event for 203.0.113.9 in /root/.ssh/known_hosts"
+    }
+  ]
+}
