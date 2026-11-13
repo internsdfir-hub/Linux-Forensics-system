@@ -46,7 +46,114 @@ Upon case intake, three competing hypotheses were formulated to govern the analy
 
 ---
 
-## 2. Controlled Lab Recreation & Multi-Stage Attack Simulation
+## 2. Tool Setup & Deployment Guide
+
+LFA supports two deployment methods. Choose whichever fits your environment.
+
+### Method A: Conventional Installation (Online / Developer Setup)
+
+This method requires **Python 3.11+** installed on the examiner workstation and a network connection (or pre-downloaded packages).
+
+**Step 1 — Clone the repository:**
+```bash
+git clone https://github.com/internsdfir-hub/Linux-Forensics-system.git
+cd Linux-Forensics-system
+```
+
+**Step 2 — Install dependencies:**
+```bash
+pip install -r requirements.txt
+```
+
+**Step 3 — Verify the installation:**
+```bash
+python -m lfa --help
+```
+This should display the LFA command menu with all available subcommands.
+
+> **📸 Screenshot Required:** *Terminal output of `python -m lfa --help` showing the subcommand list.*
+
+**Available Operation Modes (CLI):**
+
+| Mode | Command | Use Case |
+| :--- | :--- | :--- |
+| **Local Analysis** | `python -m lfa analyse <bundle.tar.gz> --case-dir cases/<ID> --examiner "<Name>"` | Offline triage of a collected evidence bundle |
+| **Central Server** | `python -m lfa serve --port 8443 --token "<TOKEN>"` | SOC dashboard + live streaming ingestion from targets |
+| **Remote Acquisition** | `python -m lfa remote --host <IP> --user root --case-dir cases/<ID>` | Agentless live acquisition over SSH |
+| **Integrity Verification** | `python -m lfa verify cases/<ID>` | Re-verify SHA-256 hashes of raw evidence |
+| **Re-render Report** | `python -m lfa report cases/<ID>` | Regenerate HTML report from existing case DB |
+| **Export Datasets** | `python -m lfa export cases/<ID> --out-dir exports/` | Export JSON/CSV for external SIEM analysis |
+
+> **📸 Screenshot Required:** *Terminal output of running a sample `python -m lfa analyse` command (even a short example showing ingestion progress).*
+
+### Method B: LFA-Portable (Zero-Install / Air-Gapped / Field Deployment)
+
+For environments where Python is not installed, admin privileges are unavailable, or the workstation is air-gapped, LFA ships as a **self-contained portable kit** that requires no installation.
+
+**Location:** `Linux-Forensics-system\dist\LFA-Portable\`
+
+The portable build bundles an embedded Python 3.13 runtime, all dependencies (PyYAML, Jinja2, MarkupSafe, tzdata), and the full analyzer — ready to run from any folder, USB drive, or network share.
+
+**Portable kit structure:**
+```
+dist\LFA-Portable\
+├── lfa.cmd                 # Main CLI entry point
+├── lfa-server.cmd          # Start streaming ingestion server
+├── lfa-dashboard.cmd       # Start local-only SOC dashboard
+├── verify-install.cmd      # One-click integrity self-check
+├── SHA256SUMS              # Hash of every shipped file
+├── README-OFFLINE.txt      # Offline quick-start reference
+├── app\lfa\                # The analyzer engine
+├── config\                 # Artifact definitions & grammars
+├── runtime\                # Embedded CPython 3.13.7 (no registry, no system impact)
+└── cases\                  # Default output directory for case data
+```
+
+> If you only need to transfer the analyzer to another machine, copy or move the compressed archive `dist\LFA-Portable.zip` to the target system and extract it. No installation steps required.
+
+**Step 1 — Navigate to the portable directory:**
+```cmd
+cd dist\LFA-Portable
+```
+
+**Step 2 — Verify the portable installation:**
+```cmd
+verify-install.cmd
+```
+This checks the embedded Python, all bundled libraries, and prints `OK - portable LFA is functional.`
+
+> **📸 Screenshot Required:** *Output of `verify-install.cmd` showing the version checks and `OK` status.*
+
+**Step 3 — Run an analysis:**
+```cmd
+lfa.cmd analyse <path_to_bundle.tar.gz> --case-dir cases\<CASE_ID> --examiner "<Name>"
+```
+
+**Step 4 — Verify evidence integrity:**
+```cmd
+lfa.cmd verify cases\<CASE_ID>
+```
+
+**Step 5 — View the HTML report:**
+```cmd
+start cases\<CASE_ID>\report.html
+```
+
+**Step 6 (Optional) — Launch the interactive SOC dashboard:**
+```cmd
+lfa-dashboard.cmd
+```
+Then open `http://127.0.0.1:8443` in any browser. The dashboard binds to loopback only — nothing is exposed to the network.
+
+> **📸 Screenshot Required:** *The SOC dashboard in the browser at `http://127.0.0.1:8443` showing a loaded case.*
+
+### Continuing This Investigation: LFA-Portable Method
+
+For the remainder of this report, we proceed using the **LFA-Portable** deployment method to demonstrate that the full forensic pipeline — from evidence ingestion through correlation and reporting — operates identically in a zero-install, portable environment. All commands shown in subsequent sections use the `lfa.cmd` wrapper from `dist\LFA-Portable\`.
+
+---
+
+## 3. Controlled Lab Recreation & Multi-Stage Attack Simulation
 
 To evaluate LFA against ground truth in a controlled, repeatable environment, the multi-stage attack scenario [`testlab/scenarios/mega_chain.sh`](file:///testlab/scenarios/mega_chain.sh) was deployed on a snapshotted Linux enterprise instance.
 
@@ -88,7 +195,7 @@ The simulation executed an authentic 10-stage kill chain covering all required i
 
 ---
 
-## 3. Live Forensic Acquisition & Chain of Custody
+## 4. Live Forensic Acquisition & Chain of Custody
 
 Following **RFC 3227 (Order of Volatility)**, evidence was collected from the live target using [`collector/collect.sh`](file:///collector/collect.sh) without writing temporary files to the analyzed disks.
 
@@ -118,7 +225,7 @@ sudo sh collector/collect.sh \
 
 ---
 
-## 4. Portable Deployment Architecture (`LFA-Portable`)
+## 5. Portable Deployment Architecture (`LFA-Portable`)
 
 To ensure evidence can be ingested and analyzed on air-gapped forensic workstations without internet access, third-party package managers, or local Python installations, the standalone **LFA-Portable** distribution was deployed.
 
@@ -133,7 +240,7 @@ To ensure evidence can be ingested and analyzed on air-gapped forensic workstati
 
 ---
 
-## 5. Pipeline Ingestion, Event Normalization & Threat Correlation
+## 6. Pipeline Ingestion, Event Normalization & Threat Correlation
 
 With evidence securely archived, the analyzer pipeline was executed on the forensic workstation:
 
@@ -154,7 +261,7 @@ lfa.cmd analyse cases\wsl_enterprise\bundle.tar.gz --case-dir cases\CASE-ENTERPR
 
 ---
 
-## 6. Detailed Forensic Examination & Dual-Layer Detections
+## 7. Detailed Forensic Examination & Dual-Layer Detections
 
 Opening `cases/CASE-ENTERPRISE-SIM/report.html` renders the offline, self-contained executive forensic report.
 
@@ -228,7 +335,7 @@ The analysis engine synthesizes intelligence across accounts, sessions, network 
 
 ---
 
-## 7. Central SOC Console & Deep Evidence Explorer
+## 8. Central SOC Console & Deep Evidence Explorer
 
 The web-based SOC Ingestion Server provides real-time investigation capabilities on port 8443 (`lfa-dashboard.cmd` or `python -m lfa serve`):
 
@@ -273,7 +380,7 @@ The explorer integrates a visual file tree of all 152 collected artifacts alongs
 
 ---
 
-## 8. Comparative Tool Evaluation (Task 3 Requirement)
+## 9. Comparative Tool Evaluation (Task 3 Requirement)
 
 In accordance with **Task 3: Cyber Crime Investigation**, the performance of LFA was benchmarked against traditional industry-standard forensic tools:
 
@@ -288,7 +395,7 @@ In accordance with **Task 3: Cyber Crime Investigation**, the performance of LFA
 
 ---
 
-## 9. Root Cause Analysis (RCA) & Investigative Determination
+## 10. Root Cause Analysis (RCA) & Investigative Determination
 
 The digital forensic investigation established three primary root causes:
 1. **Unprotected Public SSH Ingress:** The host exposed SSH to external networks without connection rate-limiting (`fail2ban`) or mandatory Multi-Factor Authentication (MFA), allowing IP `203.0.113.9` to conduct credential stuffing.
@@ -297,7 +404,7 @@ The digital forensic investigation established three primary root causes:
 
 ---
 
-## 10. Engineering Challenges, Troubleshooting & Applied Solutions
+## 11. Engineering Challenges, Troubleshooting & Applied Solutions
 
 During the investigation, several non-trivial engineering challenges arose. Documenting these challenges and their resolutions demonstrates technical problem-solving and guides future analysts:
 
@@ -338,7 +445,7 @@ During the investigation, several non-trivial engineering challenges arose. Docu
 
 ---
 
-## 11. Automated Detection Scorecard & Benchmark Results
+## 12. Automated Detection Scorecard & Benchmark Results
 
 The analysis output from `CASE-ENTERPRISE-SIM` was evaluated against ground truth using `tools/score_detection.py`:
 
@@ -364,7 +471,7 @@ python tools/score_detection.py --case-dir cases/CASE-ENTERPRISE-SIM --ground-tr
 
 ---
 
-## 12. Standard Operating Procedure (SOP) Quick Reference
+## 13. Standard Operating Procedure (SOP) Quick Reference
 
 For incoming forensic analysts, follow this standardized 5-step operational SOP:
 
@@ -403,7 +510,7 @@ For incoming forensic analysts, follow this standardized 5-step operational SOP:
 
 ---
 
-## 13. Conclusion & Investigator Attestation
+## 14. Conclusion & Investigator Attestation
 
 The forensic investigation into Case `CASE-ENTERPRISE-SIM` successfully confirmed unauthorized external access, administrative privilege escalation, multi-vector persistence, physical USB data exfiltration, and deliberate anti-forensic tampering. By leveraging the **Linux Forensic Analyzer (LFA)**, all 62,117 events were ingested, normalized, and correlated deterministically without altering original evidence, providing defensible and reproducible findings.
 
