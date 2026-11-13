@@ -424,4 +424,4 @@ While the scenarios above target legacy hosts like Metasploitable 2, modern Linu
    # 4. Score detections against ground truth:
    python tools/score_detection.py --case-dir cases/CASE-ENTERPRISE-SIM --ground-truth testlab/scenarios/mega_chain.ground_truth.json
    ```
-For a comprehensive walkthrough of this scenario with annotated forensic screenshots, refer to [docs/INTERNSHIP_WALKTHROUGH_REPORT.md](../../docs/INTERNSHIP_WALKTHROUGH_REPORT.md).
+For a comprehensive walkthrough of this scenario with annotated forensic screenshots, refer to [docs/FORENSIC_INVESTIGATION_AND_WALKTHROUGH_REPORT.md](../../docs/FORENSIC_INVESTIGATION_AND_WALKTHROUGH_REPORT.md).

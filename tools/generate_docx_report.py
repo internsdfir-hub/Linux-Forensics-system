@@ -452,17 +452,12 @@ def create_report():
         "Lead Forensic Investigator | Case Reference: CASE-ENTERPRISE-SIM"
     )
 
-    out_paths = [
-        r"docs\FORENSIC_INVESTIGATION_AND_WALKTHROUGH_REPORT.docx",
-        r"docs\CYBER_CRIME_INVESTIGATION_REPORT.docx",
-        r"docs\INTERNSHIP_WALKTHROUGH_REPORT.docx"
-    ]
-    for op in out_paths:
-        try:
-            doc.save(op)
-            print(f"Successfully generated Word document: {op}")
-        except PermissionError:
-            print(f"Notice: Could not overwrite {op} (file is currently open in Word). Generated main report as FORENSIC_INVESTIGATION_AND_WALKTHROUGH_REPORT.docx.")
+    out_path = r"docs\FORENSIC_INVESTIGATION_AND_WALKTHROUGH_REPORT.docx"
+    try:
+        doc.save(out_path)
+        print(f"Successfully generated Word document: {out_path}")
+    except PermissionError:
+        print(f"Notice: Could not overwrite {out_path} (file is currently open in Word).")
 
 
 if __name__ == '__main__':

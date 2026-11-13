@@ -1,4 +1,0 @@
-<device DEVNO="0x0801" TIME="1272488789" UUID="4c5dc285-9561-4f53-9954-29474b9b902a" TYPE="ext3" SEC_TYPE="ext2">/dev/sda1</device>
-<device DEVNO="0x0805" TIME="1268781168" UUID="bV4nCp-pOl3-JNIj-YiSv-7ZB4-ZRCt-K2Dze7" TYPE="lvm2pv">/dev/sda5</device>
-<device DEVNO="0xfe00" TIME="1272488789" UUID="59bd36ce-2d78-44fe-843f-a4ca5fcafad1" TYPE="ext3">/dev/mapper/metasploitable-root</device>
-<device DEVNO="0xfe01" TIME="1272488789" TYPE="swap" UUID="6872d281-d16c-4648-8374-d3cd23346092">/dev/mapper/metasploitable-swap_1</device>

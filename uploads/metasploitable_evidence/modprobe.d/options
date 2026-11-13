@@ -1,6 +1,0 @@
-# Enable double-buffering so gstreamer et. al. work
-options quickcam compatible=2
-
-# Default hostap to managed mode
-options hostap_pci iw_mode=2
-options hostap_cs iw_mode=2

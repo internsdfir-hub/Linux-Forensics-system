@@ -1,9 +1,0 @@
-# /etc/fstab: static file system information.
-#
-# <file system> <mount point>   <type>  <options>       <dump>  <pass>
-proc            /proc           proc    defaults        0       0
-# /dev/mapper/metasploitabale-root
-UUID=59bd36ce-2d78-44fe-843f-a4ca5fcafad1 /               ext3    relatime,errors=remount-ro 0       1
-/dev/sda1 /boot           ext3    relatime        0       2
-/dev/scd0       /media/cdrom0   udf,iso9660 user,noauto,exec,utf8 0       0
-/dev/fd0        /media/floppy0  auto    rw,user,noauto,exec,utf8 0       0

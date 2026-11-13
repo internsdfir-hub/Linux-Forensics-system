@@ -1,4 +1,0 @@
-# vim:syntax=apparmor
-# likewise-open permissions
-
-  /tmp/.lwidentity/pipe       rw,

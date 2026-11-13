@@ -61,7 +61,7 @@ Linux-Forensics-system/
 │   ├── build_portable.py             # Offline Windows portable package builder
 │   └── vendor/                       # Vendored embedded Python and wheels for air-gapped builds
 ├── docs/
-│   ├── INTERNSHIP_WALKTHROUGH_REPORT.md # Comprehensive final walkthrough report
+│   ├── FORENSIC_INVESTIGATION_AND_WALKTHROUGH_REPORT.md # Comprehensive master investigation report
 │   ├── PORTABLE_BUILD.md             # Offline Windows packaging guide
 │   └── VIVA_PREP.md                  # Comprehensive defense and viva prep guide
 ├── tools/

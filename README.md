@@ -31,6 +31,14 @@ The architecture is strictly separated into two sides:
 
 ---
 
+## Visual Showcase
+
+| Central SOC Ingestion Console (`http://127.0.0.1:8443`) | Offline Forensic Examination Report (`report.html`) |
+| :---: | :---: |
+| ![SOC Ingestion Console](docs/report_images/image24.png) | ![Forensic Examination Report](docs/report_images/image12.png) |
+
+---
+
 ## Prerequisites & Installation
 
 ### 1. Collector (Target Side)
@@ -42,17 +50,17 @@ The architecture is strictly separated into two sides:
 - Python 3.11+
 - Install dependencies:
 ```bash
-# In the repository root:
+# Install required packages directly:
+pip install -r requirements.txt
+# Or install in editable mode:
 pip install -e ./analyzer
-# Or install required packages directly:
-pip install PyYAML Jinja2
 ```
 
 ---
 
 ## 1. Running the Collector (Target Host)
 
-The collector script is located at [`collector/collect.sh`](file:///collector/collect.sh).
+The collector script is located at [`collector/collect.sh`](collector/collect.sh).
 
 ### Basic Collection (Standard Archive)
 Collect artifacts from the live system and save a compressed bundle:
@@ -165,7 +173,7 @@ python -m lfa export cases/CASE-001 --out-dir exports/CASE-001
 ### Example 1: Offline Manual Triage
 1. **On Target Linux Host:**
    ```bash
-   sudo sh collect.sh -o /mnt/usb -c INCIDENT-42 -p "Alice" -z
+   sudo sh collector/collect.sh -o /mnt/usb -c INCIDENT-42 -p "Alice" -z
    ```
 2. **Transfer the bundle to Examiner Workstation.**
 3. **On Examiner Workstation:**
@@ -182,7 +190,7 @@ python -m lfa export cases/CASE-001 --out-dir exports/CASE-001
    ```
 2. **Trigger Remote Push on Target:**
    ```bash
-   sudo sh collect.sh -M -s "http://192.168.1.100:8443/api/v1/ingest" -T "supersecret123" -c INCIDENT-99
+   sudo sh collector/collect.sh -M -s "http://192.168.1.100:8443/api/v1/ingest" -T "supersecret123" -c INCIDENT-99
    ```
 3. **View Results:**
    - Navigate to `http://192.168.1.100:8443` to explore timeline events, threat detections, and forensic artifacts in real time.

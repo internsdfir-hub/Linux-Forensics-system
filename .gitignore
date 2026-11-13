@@ -8,3 +8,5 @@ cases/
 *.db
 tests/fixtures/**/generated_tmp/
 ~$*.docx
+uploads/
+docs/CYBER_CRIME_INVESTIGATION_REPORT.docx
