@@ -48,53 +48,59 @@ Upon case intake, three competing hypotheses were formulated to govern the analy
 
 ## 2. Tool Setup & Deployment Guide
 
-LFA supports two deployment methods. Choose whichever fits your environment.
+LFA supports two deployment methods depending on operational constraints and the sensitivity of the investigation environment.
 
 ### Method A: Conventional Installation (Online / Developer Setup)
 
-This method requires **Python 3.11+** installed on the examiner workstation and a network connection (or pre-downloaded packages).
+This method is intended for developer environments or connected triage systems equipped with **Python 3.11+** and internet access.
 
-**Step 1 — Clone the repository:**
+**Step 1 — Clone the Repository:**
 ```bash
 git clone https://github.com/internsdfir-hub/Linux-Forensics-system.git
 cd Linux-Forensics-system
 ```
 
-**Step 2 — Install dependencies:**
+**Step 2 — Install Core Dependencies:**
 ```bash
 pip install -r requirements.txt
 ```
+*Installs essential parsing, templating, and report libraries: `PyYAML` (rule syntax), `Jinja2` (HTML templating), `python-docx` (Word report engine), and `tzdata` (timezone resolution).*
 
-**Step 3 — Verify the installation:**
+**Step 3 — Verify CLI Entry Point:**
 ```bash
 python -m lfa --help
 ```
-This should display the LFA command menu with all available subcommands.
 
-> **📸 Screenshot Required:** *Terminal output of `python -m lfa --help` showing the subcommand list.*
+![Figure 2.1: Terminal output of python -m lfa --help displaying available CLI modes and positional arguments.](report_images/setup_lfa_help.png)  
+*Figure 2.1: Terminal output of `python -m lfa --help` showing core subcommands and positional arguments.*
 
-**Available Operation Modes (CLI):**
+**Available Operating Modes (CLI Reference):**
 
-| Mode | Command | Use Case |
+| Mode | Command Syntax | Description & Forensic Purpose |
 | :--- | :--- | :--- |
-| **Local Analysis** | `python -m lfa analyse <bundle.tar.gz> --case-dir cases/<ID> --examiner "<Name>"` | Offline triage of a collected evidence bundle |
-| **Central Server** | `python -m lfa serve --port 8443 --token "<TOKEN>"` | SOC dashboard + live streaming ingestion from targets |
-| **Remote Acquisition** | `python -m lfa remote --host <IP> --user root --case-dir cases/<ID>` | Agentless live acquisition over SSH |
-| **Integrity Verification** | `python -m lfa verify cases/<ID>` | Re-verify SHA-256 hashes of raw evidence |
-| **Re-render Report** | `python -m lfa report cases/<ID>` | Regenerate HTML report from existing case DB |
-| **Export Datasets** | `python -m lfa export cases/<ID> --out-dir exports/` | Export JSON/CSV for external SIEM analysis |
+| **Local Analysis** | `python -m lfa analyse <bundle.tar.gz> --case-dir cases/<ID> --examiner "<Name>"` | Standard offline triage: unzips evidence, parses logs, executes 12 MITRE correlation rules, and builds offline HTML report. |
+| **Central Server** | `python -m lfa serve --host 0.0.0.0 --port 8443 --token "<TOKEN>"` | Starts streaming HTTP ingestion endpoint and serves the interactive SOC investigation web console. |
+| **Remote Acquisition** | `python -m lfa remote --host <IP> --user root --case-dir cases/<ID>` | Agentless acquisition: streams volatile state and disk artifacts over SSH in-memory without saving collector scripts to the target disk. |
+| **Integrity Verification**| `python -m lfa verify cases/<ID>` | Recalculates cryptographic SHA-256 hashes of all ingested files against `manifest.txt` to verify chain of custody. |
+| **Report Re-generation** | `python -m lfa report cases/<ID> --out <report.html>` | Re-renders HTML report directly from the normalized SQLite database (`case.db`). |
+| **Dataset Export** | `python -m lfa export cases/<ID> --out-dir exports/<ID>` | Serializes timeline events to canonical JSON and per-category CSVs for SIEM ingestion. |
 
-> **📸 Screenshot Required:** *Terminal output of running a sample `python -m lfa analyse` command (even a short example showing ingestion progress).*
+---
 
 ### Method B: LFA-Portable (Zero-Install / Air-Gapped / Field Deployment)
 
-For environments where Python is not installed, admin privileges are unavailable, or the workstation is air-gapped, LFA ships as a **self-contained portable kit** that requires no installation.
+In enterprise incident response, production evidence must frequently be examined on **air-gapped forensic workstations** with zero network access to eliminate malware lateral movement, C2 callbacks, or accidental data leakage.
 
-**Location:** `Linux-Forensics-system\dist\LFA-Portable\`
+> [!IMPORTANT]
+> **Air-Gapped Demonstration Environment:**  
+> To simulate an authentic forensic investigation workflow, all subsequent analysis in this case was executed on a **Windows 10 Virtual Machine completely isolated from the internet**. The VM was configured with zero network adapter connectivity (no internet access past or present). The standalone `LFA-Portable.zip` package and raw evidence bundle (`bundle.tar.gz`) were transferred offline into the VM via local host-to-guest shared media. The portable archive was extracted to `C:\Users\me\Downloads\LFA-Portable\LFA-Portable\`, and the entire analysis, integrity verification, report generation, and SOC console review were executed exclusively within this isolated environment.
 
-The portable build bundles an embedded Python 3.13 runtime, all dependencies (PyYAML, Jinja2, MarkupSafe, tzdata), and the full analyzer — ready to run from any folder, USB drive, or network share.
+**Location in Repository:** `Linux-Forensics-system\dist\LFA-Portable\`  
+**Standalone Archive:** `Linux-Forensics-system\dist\LFA-Portable.zip`
 
-**Portable kit structure:**
+The portable distribution contains an embedded, zero-footprint CPython 3.13.7 runtime and pre-bundled dependencies. It does not touch the Windows Registry, requires no administrator privileges, and leaves zero system footprint.
+
+**Portable Kit Structure:**
 ```
 dist\LFA-Portable\
 ├── lfa.cmd                 # Main CLI entry point
@@ -109,47 +115,62 @@ dist\LFA-Portable\
 └── cases\                  # Default output directory for case data
 ```
 
-> If you only need to transfer the analyzer to another machine, copy or move the compressed archive `dist\LFA-Portable.zip` to the target system and extract it. No installation steps required.
+![Figure 2.2: Isolated Windows 10 VM showing network disconnection (ipconfig) alongside the extracted LFA-Portable directory in File Explorer.](report_images/setup_portable_folder.png)  
+*Figure 2.2: Isolated Windows 10 VM showing disconnected network status alongside extracted `LFA-Portable` directory structure.*
 
-**Step 1 — Navigate to the portable directory:**
-```cmd
-cd dist\LFA-Portable
-```
-
-**Step 2 — Verify the portable installation:**
+**Step 1 — Verify Environment & Runtime Integrity:**  
+Before ingesting evidence, execute the built-in integrity check:
 ```cmd
 verify-install.cmd
 ```
-This checks the embedded Python, all bundled libraries, and prints `OK - portable LFA is functional.`
+*What this does:* Tests the embedded Python interpreter, imports critical cryptographic (`ssl`, `hashlib`), database (`sqlite3`), and parsing modules (`yaml`, `jinja2`, `zoneinfo`), and confirms the presence of 598 worldwide timezones without connecting to any external repository.
 
-> **📸 Screenshot Required:** *Output of `verify-install.cmd` showing the version checks and `OK` status.*
+![Figure 2.3: Successful execution of verify-install.cmd confirming embedded Python 3.13.7, SQLite, SSL, and parsing libraries.](report_images/setup_verify_install.png)  
+*Figure 2.3: Successful execution of `verify-install.cmd` verifying embedded runtime functionality.*
 
-**Step 3 — Run an analysis:**
+**Step 2 — Execute Ingestion & Threat Correlation Pipeline:**  
+To ingest and process an evidence bundle, execute:
 ```cmd
-lfa.cmd analyse <path_to_bundle.tar.gz> --case-dir cases\<CASE_ID> --examiner "<Name>"
+lfa.cmd analyse cases\wsl_enterprise\bundle.tar.gz --case-dir cases\CASE-ENTERPRISE-SIM --examiner "Fahad"
 ```
 
-**Step 4 — Verify evidence integrity:**
-```cmd
-lfa.cmd verify cases\<CASE_ID>
-```
+**Command Syntax & Parameter Breakdown:**
+- **`lfa.cmd`**: The Windows Command launcher script that directs execution to the isolated `runtime\python.exe` binary without modifying system environment variables or PATH.
+- **`analyse`**: The master ingestion command that triggers the deterministic multi-phase processing pipeline:
+  1. *Unpacks & verifies:* Extracts the `.tar.gz` bundle and validates SHA-256 checksums against `manifest.txt`.
+  2. *Parses:* Ingests 22+ Linux log formats (auditd, auth.log, syslog, bash history, cron, sudoers, utmp/wtmp, systemd).
+  3. *Correlates:* Evaluates normalized events against 12 built-in MITRE ATT&CK correlation rules.
+  4. *Stores & Reports:* Persists all normalized data to `cases\<ID>\case.db` and renders the static offline HTML report.
+- **`cases\wsl_enterprise\bundle.tar.gz`**: Relative or absolute path to the collected raw evidence archive.
+- **`--case-dir cases\CASE-ENTERPRISE-SIM`**: Destination directory where the SQLite database, HTML report, and canonical JSON/CSV exports are stored.
+- **`--examiner "Fahad"`**: Sets investigator attribution in the forensic metadata and report header.
 
-**Step 5 — View the HTML report:**
-```cmd
-start cases\<CASE_ID>\report.html
-```
+![Figure 2.4: Execution of lfa.cmd analyse showing 154 files verified, 47 threat findings recorded, and canonical exports saved.](report_images/setup_portable_analyse.png)  
+*Figure 2.4: Terminal execution of `lfa.cmd analyse` showing evidence verification, rule evaluation (47 findings), and report generation.*
 
-**Step 6 (Optional) — Launch the interactive SOC dashboard:**
+**Step 3 — Launch the Local SOC Investigation Console:**  
+For interactive, multi-dimensional timeline analysis, start the local SOC server:
 ```cmd
 lfa-dashboard.cmd
 ```
-Then open `http://127.0.0.1:8443` in any browser. The dashboard binds to loopback only — nothing is exposed to the network.
 
-> **📸 Screenshot Required:** *The SOC dashboard in the browser at `http://127.0.0.1:8443` showing a loaded case.*
+**Command Syntax & Operational Breakdown:**
+- **`lfa-dashboard.cmd`**: Batch launcher that runs `python -m lfa serve` bound strictly to loopback (`127.0.0.1:8443`).
+- **Security & Network Boundary:** Because it binds exclusively to `127.0.0.1`, the server never exposes ports or listens on external network interfaces. No network traffic leaves the machine.
+- **Auto-Discovery:** Automatically indexes all case databases residing in the `cases\` folder.
+
+![Figure 2.5: Command prompt showing local SOC dashboard server running on loopback port 8443 in open review mode.](report_images/setup_dashboard_server.png)  
+*Figure 2.5: Local dashboard server console running on `http://127.0.0.1:8443`.*
+
+**Step 4 — Interactive Browser Review:**  
+Navigate to `http://127.0.0.1:8443` in any standard web browser.
+
+![Figure 2.6: Central Ingestion Console in browser showing Case CASE-ENTERPRISE-SIM loaded with 62,117 events and 47 threat findings.](report_images/setup_soc_dashboard.png)  
+*Figure 2.6: Web console displaying global forensic statistics and `CASE-ENTERPRISE-SIM` loaded with 62,117 events and 27 High-severity alerts.*
 
 ### Continuing This Investigation: LFA-Portable Method
 
-For the remainder of this report, we proceed using the **LFA-Portable** deployment method to demonstrate that the full forensic pipeline — from evidence ingestion through correlation and reporting — operates identically in a zero-install, portable environment. All commands shown in subsequent sections use the `lfa.cmd` wrapper from `dist\LFA-Portable\`.
+All subsequent analysis, evidence extraction, timeline correlation, and threat verification documented in Sections 3 through 14 were executed using this portable, air-gapped setup.
 
 ---
 

