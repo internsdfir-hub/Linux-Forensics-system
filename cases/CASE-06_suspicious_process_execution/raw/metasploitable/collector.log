@@ -1,0 +1,9 @@
+2026-09-13T18:54:25Z collector v1.0.0 starting; ROOT=/ CASE=CASE-06_suspicious_process_execution
+2026-09-13T18:54:25Z P1 fingerprint
+2026-09-13T18:54:25Z P1b contamination: user=root login_user=msfadmin tty=/dev/pts/1 pid=5487 src=
+2026-09-13T18:54:25Z P3 static collection
+2026-09-13T18:54:26Z P3 done: 89 files collected
+2026-09-13T18:54:26Z P4 journald export
+2026-09-13T18:54:26Z journalctl unavailable - continuing (never abort)
+2026-09-13T18:54:26Z CAVEAT: journal is not persistent (no /var/log/journal); wiped on reboot
+2026-09-13T18:54:26Z P5 package and seal

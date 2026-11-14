@@ -1,0 +1,9 @@
+2026-09-13T21:28:55Z collector v1.0.0 starting; ROOT=/ CASE=CASE-CHAINED_ATTACKS-2
+2026-09-13T21:28:55Z P1 fingerprint
+2026-09-13T21:28:55Z P1b contamination: user=root login_user=msfadmin tty=/dev/pts/1 pid=7701 src=
+2026-09-13T21:28:55Z P3 static collection
+2026-09-13T21:28:57Z P3 done: 97 files collected
+2026-09-13T21:28:57Z P4 journald export
+2026-09-13T21:28:57Z journalctl unavailable - continuing (never abort)
+2026-09-13T21:28:57Z CAVEAT: journal is not persistent (no /var/log/journal); wiped on reboot
+2026-09-13T21:28:57Z P5 package and seal

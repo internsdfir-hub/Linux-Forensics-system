@@ -1,0 +1,5 @@
+2026-09-13T21:28:47Z P3 done: 97 files collected
+2026-09-13T21:28:47Z P4 journald export
+2026-09-13T21:28:48Z journalctl unavailable - continuing (never abort)
+2026-09-13T21:28:48Z CAVEAT: journal is not persistent (no /var/log/journal); wiped on reboot
+2026-09-13T21:28:48Z P5 package and seal

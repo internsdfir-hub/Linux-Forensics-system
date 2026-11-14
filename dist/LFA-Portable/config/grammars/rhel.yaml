@@ -1,0 +1,8 @@
+# RHEL-family (rhel, centos, fedora, rocky, alma) grammar additions.
+
+sshd_auth_rhel_unix_fail:
+  pattern: 'unix_chkpwd\[(?P<pid>\d+)\]: password check failed for user \((?P<user>[^)]+)\)'
+  category: login_activity
+  subcategory: failed_login
+  severity: low
+  process: unix_chkpwd

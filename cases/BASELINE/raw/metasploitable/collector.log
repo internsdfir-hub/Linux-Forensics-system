@@ -1,0 +1,9 @@
+2026-09-13T19:45:03Z collector v1.0.0 starting; ROOT=/ CASE=BASELINE
+2026-09-13T19:45:03Z P1 fingerprint
+2026-09-13T19:45:03Z P1b contamination: user=root login_user=msfadmin tty=/dev/pts/1 pid=5476 src=
+2026-09-13T19:45:03Z P3 static collection
+2026-09-13T19:45:04Z P3 done: 88 files collected
+2026-09-13T19:45:04Z P4 journald export
+2026-09-13T19:45:04Z journalctl unavailable - continuing (never abort)
+2026-09-13T19:45:04Z CAVEAT: journal is not persistent (no /var/log/journal); wiped on reboot
+2026-09-13T19:45:04Z P5 package and seal

@@ -1,0 +1,5 @@
+# captured_utc: 2026-11-10T17:15:12Z
+# command: w
+ 22:15:12 up 0 min,  1 user,  load average: 0.55, 0.15, 0.05
+USER     TTY      FROM             LOGIN@   IDLE   JCPU   PCPU  WHAT
+kali     pts/1    -                22:14   23.00s  0.06s  0.06s -bash

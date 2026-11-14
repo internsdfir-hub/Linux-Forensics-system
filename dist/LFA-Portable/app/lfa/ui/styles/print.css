@@ -1,0 +1,75 @@
+/* Print. This report gets printed, converted to PDF and attached to case
+   files, so print is a first-class output rather than an afterthought. */
+
+@page {
+  size: A4;
+  margin: 18mm 16mm 20mm;
+}
+
+@media print {
+  /* Force the light document palette regardless of screen preference. */
+  :root {
+    --surface-page: #ffffff;
+    --surface-raised: #ffffff;
+    --surface-sunken: #f4f5f7;
+    --text-primary: #000000;
+    --text-secondary: #1f2429;
+    --text-muted: #454d57;
+    --border-subtle: #c8ced6;
+    --border-strong: #6b7480;
+  }
+
+  body.report {
+    max-width: none;
+    padding: 0;
+    font-size: 10.5pt;
+    line-height: 1.45;
+  }
+
+  /* Interactive-only affordances have no meaning on paper. */
+  .skip-link,
+  .table-tools,
+  .report-toc { display: none !important; }
+
+  /* ... and notes that only make sense on paper appear. */
+  .print-only { display: block !important; }
+
+  /* Everything collapsed on screen must be open on paper - a printed report
+     that hides half its evidence behind a disclosure triangle is useless. */
+  details { display: block; }
+  details > summary { list-style: none; font-weight: 600; }
+  details:not([open]) > *:not(summary) { display: revert; }
+
+  /* Keep units of meaning whole across page breaks. */
+  .finding,
+  .chart,
+  .stat,
+  .observation-list li,
+  .glossary dt,
+  .glossary dd { break-inside: avoid; }
+
+  section { break-inside: auto; }
+  section > h2 { break-after: avoid; }
+  h3 { break-after: avoid; }
+  thead { display: table-header-group; }
+  tr { break-inside: avoid; }
+
+  /* Start each appendix on a fresh page. */
+  #app-methodology,
+  #app-undetermined,
+  #app-glossary { break-before: page; }
+
+  /* Expand link targets, since a printed link is otherwise dead. */
+  a[href^="http"]::after {
+    content: " (" attr(href) ")";
+    font-size: 9pt;
+    color: var(--text-muted);
+    word-break: break-all;
+  }
+
+  .table-scroll { overflow: visible; border: none; }
+
+  /* Long tables are the main source of unreadable printed reports. Cap the
+     event sample; the complete set lives in the canonical exports. */
+  #events-table tbody tr:nth-child(n + 61) { display: none; }
+}

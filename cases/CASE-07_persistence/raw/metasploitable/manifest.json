@@ -1,0 +1,29 @@
+{
+  "collector_version": "1.0.0",
+  "case_id": "CASE-07_persistence",
+  "operator": "unknown",
+  "collection_start_utc": "2026-09-13T19:48:10Z",
+  "collection_end_utc": "2026-09-13T19:48:11Z",
+  "root": "/",
+  "redact_mode": false,
+  "host": {
+    "distro_id": "debian",
+    "version_id": "lenny/sid",
+    "pretty_name": "",
+    "kernel": "2.6.24-16-server",
+    "hostname": "metasploitable",
+    "machine_id": "",
+    "timezone": "US/Eastern",
+    "timezone_source": "etc_timezone",
+    "init_system": "other"
+  },
+  "privilege": {"euid": "0", "is_root": true, "warnings": ""},
+  "contamination": {"operator_user": "root", "operator_login_user": "msfadmin", "source_ip": "", "tty": "/dev/pts/1", "pid": "7484", "start_utc": "2026-09-13T19:48:10Z", "end_utc": "2026-09-13T19:48:11Z"},
+  "journald": {"available": false, "persistent": false, "exported_boots": 0},
+  "volatile_captured": false,
+  "collected_files": 89,
+  "hasher": "sha256sum",
+  "stat_mode": "gnu",
+  "missing": [{"id":"os_release","path":"/etc/os-release","reason":"REQUIRED artifact not present"},{"id":"os_release","path":"/etc/redhat-release","reason":"REQUIRED artifact not present"},{"id":"machine_id","path":"/etc/machine-id","reason":"not present"},{"id":"auth_log","path":"/var/log/secure","reason":"not present"},{"id":"faillog","path":"/var/log/faillog","reason":"not present"},{"id":"faillog","path":"/var/run/faillock/*","reason":"not present"},{"id":"sudoers","path":"/etc/sudoers.d/*","reason":"REQUIRED artifact not present"},{"id":"cron","path":"/var/spool/cron/crontabs/*","reason":"REQUIRED artifact not present"},{"id":"cron","path":"/var/spool/cron/*","reason":"REQUIRED artifact not present"},{"id":"cron","path":"/etc/cron.hourly/*","reason":"REQUIRED artifact not present"},{"id":"cron_log","path":"/var/log/cron","reason":"not present"},{"id":"systemd_units","path":"/etc/systemd/system","reason":"directory not present"},{"id":"systemd_user_units","path":"/home/*/.config/systemd/user","reason":"directory not present"},{"id":"systemd_user_units","path":"/root/.config/systemd/user","reason":"directory not present"},{"id":"authorized_keys","path":"/home/*/.ssh/authorized_keys2","reason":"not present"},{"id":"authorized_keys","path":"/root/.ssh/authorized_keys2","reason":"not present"},{"id":"sshd_config","path":"/etc/ssh/sshd_config.d/*","reason":"not present"},{"id":"shell_startup","path":"/etc/profile.d/*","reason":"not present"},{"id":"shell_startup","path":"/etc/ld.so.preload","reason":"not present"},{"id":"shell_startup","path":"/home/*/.bash_profile","reason":"not present"},{"id":"apt_history","path":"/var/log/apt/history.log","reason":"not present"},{"id":"dnf_log","path":"/var/log/dnf.log","reason":"not present"},{"id":"dnf_log","path":"/var/log/dnf.rpm.log","reason":"not present"},{"id":"dnf_log","path":"/var/log/yum.log","reason":"not present"},{"id":"sys_usb","path":"/sys/bus/usb/devices","reason":"directory present but empty"},{"id":"net_ifaces","path":"/etc/netplan/*.yaml","reason":"not present"},{"id":"ufw_log","path":"/var/log/ufw.log","reason":"not present"},{"id":"shell_history","path":"/home/*/.zsh_history","reason":"not present"},{"id":"shell_history","path":"/root/.zsh_history","reason":"not present"},{"id":"known_hosts","path":"/home/*/.ssh/known_hosts","reason":"not present"},{"id":"browser_firefox","path":"/home/*/.mozilla/firefox/*/places.sqlite","reason":"not present"},{"id":"browser_chrome","path":"/home/*/.config/google-chrome/*/History","reason":"not present"},{"id":"browser_chrome","path":"/home/*/.config/chromium/*/History","reason":"not present"},{"id":"web_access_log","path":"/var/log/nginx/access.log","reason":"not present"},{"id":"web_access_log","path":"/var/log/nginx/error.log","reason":"not present"},{"id":"web_access_log","path":"/var/log/httpd/access_log","reason":"not present"},{"id":"web_access_log","path":"/var/log/httpd/error_log","reason":"not present"},{"id":"ftp_log","path":"/var/log/xferlog","reason":"not present"},{"id":"audit_log","path":"/var/log/audit/audit.log","reason":"not present"},{"id":"journald","path":"journalctl","reason":"journalctl not available for this root; continuing without journal"}],
+  "degradations": []
+}

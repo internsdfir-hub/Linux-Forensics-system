@@ -1,0 +1,2 @@
+# Benign cron job: Daily system activity accounting cleanup
+59 23 * * * root [ -x /usr/lib/sysstat/sa2 ] && exec /usr/lib/sysstat/sa2 -A

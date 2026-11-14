@@ -1,0 +1,8 @@
+# Debian/Ubuntu-specific grammar additions.
+
+ufw_block:
+  pattern: 'kernel:.*\[UFW BLOCK\].*SRC=(?P<ip>\S+) DST=(?P<dst>\S+).*(?:DPT=(?P<port>\d+))?'
+  category: network_config
+  subcategory: firewall_block
+  severity: info
+  process: kernel

@@ -1,0 +1,13 @@
+# captured_utc: 2026-11-10T17:15:12Z
+# command: systemctl list-timers --all --no-pager
+NEXT                            LEFT LAST                         PASSED UNIT                         ACTIVATES
+Tue 2026-11-10 22:15:39 PKT      27s Mon 2026-11-09 12:47:32 PKT       - apt-daily-upgrade.timer      apt-daily-upgrade.service
+Tue 2026-11-10 22:53:55 PKT    38min Mon 2026-11-09 12:47:22 PKT       - plocate-updatedb.timer       plocate-updatedb.service
+Tue 2026-11-10 23:01:33 PKT    46min Mon 2026-11-09 12:47:24 PKT       - logrotate.timer              logrotate.service
+Wed 2026-11-11 00:00:00 PKT 1h 44min Tue 2026-11-10 22:14:48 PKT 24s ago dpkg-db-backup.timer         dpkg-db-backup.service
+Wed 2026-11-11 07:46:37 PKT       9h Mon 2026-09-14 08:42:26 PKT       - apt-daily.timer              apt-daily.service
+Sun 2026-11-15 03:10:19 PKT   4 days Mon 2026-11-09 12:37:01 PKT       - e2scrub_all.timer            e2scrub_all.service
+-                                  - -                                 - fstrim.timer                 fstrim.service
+-                                  - -                                 - systemd-tmpfiles-clean.timer -
+
+8 timers listed.

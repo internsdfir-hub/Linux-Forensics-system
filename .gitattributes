@@ -7,3 +7,4 @@
 *.md text eol=lf
 tests/fixtures/** -text
 *.pdf -text
+*.zip filter=lfs diff=lfs merge=lfs -text

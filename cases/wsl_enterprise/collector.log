@@ -1,0 +1,9 @@
+2026-11-10T17:15:11Z collector v1.0.0 starting; ROOT=/ CASE=CASE-ENTERPRISE-SIM
+2026-11-10T17:15:11Z P2 volatile snapshot (runs first)
+2026-11-10T17:15:12Z P1 fingerprint
+2026-11-10T17:15:12Z P1b contamination: user=root login_user=kali tty=none pid=621 src=
+2026-11-10T17:15:12Z P3 static collection
+2026-11-10T17:15:29Z P3 done: 109 files collected
+2026-11-10T17:15:29Z P4 journald export
+2026-11-10T17:15:59Z P5 package and seal
+2026-11-10T17:16:10Z done: bundle=/mnt/d/C/Git/Linux-Forensics-system/cases/wsl_enterprise/bundle.tar sha256=2a79bb107f0b2929f6ddfa4af2646fcae106dcb0667e62594c7b13f281bc4bdb files=109

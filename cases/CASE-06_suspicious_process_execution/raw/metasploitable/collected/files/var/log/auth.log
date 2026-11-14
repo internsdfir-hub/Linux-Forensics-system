@@ -1,0 +1,17 @@
+Sep  2 16:27:55 metasploitable sshd[4881]: Server listening on :: port 22.
+Sep  2 16:27:55 metasploitable sshd[4881]: error: Bind to port 22 on 0.0.0.0 failed: Address already in use.
+Sep  2 16:33:33 metasploitable login[5408]: pam_unix(login:session): session opened for user msfadmin by LOGIN(uid=0)
+Sep 13 14:46:38 metasploitable sshd[4807]: Server listening on :: port 22.
+Sep 13 14:46:39 metasploitable sshd[4807]: error: Bind to port 22 on 0.0.0.0 failed: Address already in use.
+Sep 13 14:48:53 metasploitable sshd[5440]: Accepted password for msfadmin from 192.168.197.1 port 56138 ssh2
+Sep 13 14:48:53 metasploitable sshd[5442]: pam_unix(sshd:session): session opened for user msfadmin by (uid=0)
+Sep 13 14:49:48 metasploitable sshd[5445]: Accepted password for msfadmin from 192.168.197.1 port 53609 ssh2
+Sep 13 14:49:48 metasploitable sshd[5447]: pam_unix(sshd:session): session opened for user msfadmin by (uid=0)
+Sep 13 14:49:56 metasploitable sshd[5447]: Received disconnect from 192.168.197.1: 11: disconnected by user
+Sep 13 14:49:56 metasploitable sshd[5447]: pam_unix(sshd:session): session closed for user msfadmin
+Sep 13 14:51:45 metasploitable sudo: msfadmin : TTY=pts/1 ; PWD=/home/msfadmin/Linux-Forensics-system/testlab/scenarios ; USER=root ; COMMAND=/bin/bash 06_suspicious_process_execution.sh
+Sep 13 14:51:45 metasploitable sudo: pam_unix(sudo:session): session opened for user root by msfadmin(uid=0)
+Sep 13 14:51:45 metasploitable sudo: pam_unix(sudo:session): session closed for user root
+Sep 13 14:54:25 metasploitable sudo: msfadmin : TTY=pts/1 ; PWD=/home/msfadmin/Linux-Forensics-system/testlab/scenarios ; USER=root ; COMMAND=/bin/bash ../../collector/collect.sh -M -s http://192.168.18.18:8443/api/v1/ingest -T SECRET_SOC_TOKEN -c CASE-06_suspicious_process_execution
+Sep 13 14:54:25 metasploitable sudo: pam_unix(sudo:session): session opened for user root by msfadmin(uid=0)
+Sep 13 14:54:25 metasploitable sudo: pam_unix(sudo:session): session closed for user root

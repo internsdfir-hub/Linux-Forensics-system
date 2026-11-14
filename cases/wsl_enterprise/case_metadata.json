@@ -1,0 +1,259 @@
+{
+  "analyzer_version": "0.1.0",
+  "examiner": "Fahad",
+  "hosts": {
+    "5e91118635724e4ba187e0e1e063b8f2": {
+      "bundle": "bundle.tar.gz",
+      "collector_manifest": {
+        "case_id": "CASE-ENTERPRISE-SIM",
+        "collected_files": 109,
+        "collection_end_utc": "2026-11-10T17:15:59Z",
+        "collection_start_utc": "2026-11-10T17:15:11Z",
+        "collector_version": "1.0.0",
+        "contamination": {
+          "end_utc": "2026-11-10T17:15:59Z",
+          "operator_login_user": "kali",
+          "operator_user": "root",
+          "pid": "621",
+          "source_ip": "",
+          "start_utc": "2026-11-10T17:15:11Z",
+          "tty": "none"
+        },
+        "degradations": [],
+        "hasher": "sha256sum",
+        "host": {
+          "distro_id": "kali",
+          "hostname": "Fahad",
+          "init_system": "systemd",
+          "kernel": "6.6.87.2-microsoft-standard-WSL2",
+          "machine_id": "5e91118635724e4ba187e0e1e063b8f2",
+          "pretty_name": "Kali GNU/Linux Rolling",
+          "timezone": "Asia/Karachi",
+          "timezone_source": "etc_localtime",
+          "version_id": "2026.1"
+        },
+        "journald": {
+          "available": true,
+          "exported_boots": 35,
+          "persistent": true
+        },
+        "missing": [
+          {
+            "id": "volatile_last",
+            "path": "last",
+            "reason": "command not present"
+          },
+          {
+            "id": "os_release",
+            "path": "/etc/redhat-release",
+            "reason": "REQUIRED artifact not present"
+          },
+          {
+            "id": "auth_log",
+            "path": "/var/log/secure",
+            "reason": "not present"
+          },
+          {
+            "id": "faillog",
+            "path": "/var/log/faillog",
+            "reason": "not present"
+          },
+          {
+            "id": "faillog",
+            "path": "/var/run/faillock/*",
+            "reason": "not present"
+          },
+          {
+            "id": "cron",
+            "path": "/var/spool/cron/*",
+            "reason": "REQUIRED artifact not present"
+          },
+          {
+            "id": "cron",
+            "path": "/etc/cron.hourly/*",
+            "reason": "REQUIRED artifact not present"
+          },
+          {
+            "id": "cron",
+            "path": "/etc/cron.weekly/*",
+            "reason": "REQUIRED artifact not present"
+          },
+          {
+            "id": "cron",
+            "path": "/etc/cron.monthly/*",
+            "reason": "REQUIRED artifact not present"
+          },
+          {
+            "id": "cron_log",
+            "path": "/var/log/cron",
+            "reason": "not present"
+          },
+          {
+            "id": "systemd_units",
+            "path": "/etc/systemd/system",
+            "reason": "directory present but empty"
+          },
+          {
+            "id": "systemd_user_units",
+            "path": "/home/*/.config/systemd/user",
+            "reason": "directory not present"
+          },
+          {
+            "id": "systemd_user_units",
+            "path": "/root/.config/systemd/user",
+            "reason": "directory not present"
+          },
+          {
+            "id": "authorized_keys",
+            "path": "/home/*/.ssh/authorized_keys2",
+            "reason": "not present"
+          },
+          {
+            "id": "authorized_keys",
+            "path": "/root/.ssh/authorized_keys2",
+            "reason": "not present"
+          },
+          {
+            "id": "shell_startup",
+            "path": "/etc/rc.local",
+            "reason": "not present"
+          },
+          {
+            "id": "shell_startup",
+            "path": "/home/*/.bash_profile",
+            "reason": "not present"
+          },
+          {
+            "id": "dnf_log",
+            "path": "/var/log/dnf.log",
+            "reason": "not present"
+          },
+          {
+            "id": "dnf_log",
+            "path": "/var/log/dnf.rpm.log",
+            "reason": "not present"
+          },
+          {
+            "id": "dnf_log",
+            "path": "/var/log/yum.log",
+            "reason": "not present"
+          },
+          {
+            "id": "kern_syslog",
+            "path": "/var/log/kern.log",
+            "reason": "not present"
+          },
+          {
+            "id": "kern_syslog",
+            "path": "/var/log/syslog",
+            "reason": "not present"
+          },
+          {
+            "id": "kern_syslog",
+            "path": "/var/log/messages",
+            "reason": "not present"
+          },
+          {
+            "id": "sys_usb",
+            "path": "/sys/bus/usb/devices",
+            "reason": "directory not present"
+          },
+          {
+            "id": "net_ifaces",
+            "path": "/etc/netplan/*.yaml",
+            "reason": "not present"
+          },
+          {
+            "id": "ufw_log",
+            "path": "/var/log/ufw.log",
+            "reason": "not present"
+          },
+          {
+            "id": "shell_history",
+            "path": "/home/*/.zsh_history",
+            "reason": "not present"
+          },
+          {
+            "id": "shell_history",
+            "path": "/root/.zsh_history",
+            "reason": "not present"
+          },
+          {
+            "id": "browser_firefox",
+            "path": "/home/*/.mozilla/firefox/*/places.sqlite",
+            "reason": "not present"
+          },
+          {
+            "id": "browser_chrome",
+            "path": "/home/*/.config/google-chrome/*/History",
+            "reason": "not present"
+          },
+          {
+            "id": "browser_chrome",
+            "path": "/home/*/.config/chromium/*/History",
+            "reason": "not present"
+          },
+          {
+            "id": "web_access_log",
+            "path": "/var/log/apache2/access.log",
+            "reason": "not present"
+          },
+          {
+            "id": "web_access_log",
+            "path": "/var/log/apache2/error.log",
+            "reason": "not present"
+          },
+          {
+            "id": "web_access_log",
+            "path": "/var/log/nginx/access.log",
+            "reason": "not present"
+          },
+          {
+            "id": "web_access_log",
+            "path": "/var/log/nginx/error.log",
+            "reason": "not present"
+          },
+          {
+            "id": "web_access_log",
+            "path": "/var/log/httpd/access_log",
+            "reason": "not present"
+          },
+          {
+            "id": "web_access_log",
+            "path": "/var/log/httpd/error_log",
+            "reason": "not present"
+          },
+          {
+            "id": "ftp_log",
+            "path": "/var/log/vsftpd.log",
+            "reason": "not present"
+          },
+          {
+            "id": "ftp_log",
+            "path": "/var/log/xferlog",
+            "reason": "not present"
+          },
+          {
+            "id": "audit_log",
+            "path": "/var/log/audit/audit.log",
+            "reason": "not present"
+          }
+        ],
+        "operator": "Fahad",
+        "privilege": {
+          "euid": "0",
+          "is_root": true,
+          "warnings": ""
+        },
+        "redact_mode": false,
+        "root": "/",
+        "stat_mode": "gnu",
+        "volatile_captured": true
+      },
+      "ingest_time_utc": "2026-11-09T19:54:46.775233+00:00",
+      "integrity_failed": [],
+      "skipped_no_content": [],
+      "verified": 154
+    }
+  }
+}

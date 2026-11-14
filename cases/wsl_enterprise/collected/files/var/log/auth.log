@@ -1,0 +1,3 @@
+Nov 10 03:14:07 Fahad sudo:   kali : TTY=pts/1 ; PWD=/root ; USER=root ; COMMAND=/usr/bin/cat /etc/shadow
+Nov 10 02:41:55 Fahad sudo:   insider : TTY=pts/3 ; PWD=/home/insider ; USER=root ; COMMAND=/usr/bin/tar czf /tmp/hr_salaries.tgz /srv/hr
+Nov 10 01:10:00 Fahad sshd[4999]: pam_unix(sshd:auth): authentication failure; logname= uid=0 euid=0 tty=ssh ruser= rhost=203.0.113.9

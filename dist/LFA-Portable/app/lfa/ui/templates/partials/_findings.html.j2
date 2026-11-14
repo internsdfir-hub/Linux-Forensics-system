@@ -1,0 +1,40 @@
+<section id="sec-findings" aria-labelledby="h-findings">
+  <h2 id="h-findings">Findings <span class="count">{{ findings | length }}</span></h2>
+
+  {% if not findings %}
+  <p class="empty">No correlation rule produced a finding for this case. That is
+     not the same as "nothing happened" &mdash; see Appendix B for what the
+     evidence could not determine.</p>
+  {% endif %}
+
+  {% for f in findings %}
+  <article class="finding finding--{{ f.severity }}">
+    <header class="finding__head">
+      <span class="badge badge--{{ f.severity }}">{{ f.severity | upper }}</span>
+      <h3>{{ f.title }}</h3>
+    </header>
+
+    <dl class="finding__plain">
+      <dt>What happened</dt>
+      <dd>{{ f.what_happened }}</dd>
+      <dt>Why it matters</dt>
+      <dd>{{ f.why_it_matters }}</dd>
+      <dt>Confidence</dt>
+      <dd>{{ f.confidence }}</dd>
+      <dt>What to check next</dt>
+      <dd>{{ f.check_next }}</dd>
+    </dl>
+
+    <details class="finding__technical">
+      <summary>Technical detail</summary>
+      <p class="mono">{{ f.technical_detail }}</p>
+      <p class="muted">
+        Finding {{ f.finding_id }} &middot; Rule {{ f.rule_name }} v{{ f.rule_version }}
+        {%- if f.first_ts_utc %} &middot; {{ f.first_ts_utc }}{% endif %}
+        {%- if f.host_id %} &middot; host {{ f.host_id }}{% endif %}
+        &middot; {{ f.event_ids | length }} supporting event(s)
+      </p>
+    </details>
+  </article>
+  {% endfor %}
+</section>

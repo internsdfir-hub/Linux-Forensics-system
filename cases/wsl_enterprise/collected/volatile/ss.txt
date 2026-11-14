@@ -1,0 +1,12 @@
+# captured_utc: 2026-11-10T17:15:11Z
+# command: ss -tunap
+Netid State     Recv-Q Send-Q  Local Address:Port   Peer Address:PortProcess                       
+udp   UNCONN    0      0           127.0.0.1:323         0.0.0.0:*                                 
+udp   UNCONN    0      0      10.255.255.254:53          0.0.0.0:*                                 
+udp   UNCONN    0      0               [::1]:323            [::]:*                                 
+tcp   LISTEN    0      1000   10.255.255.254:53          0.0.0.0:*                                 
+tcp   SYN-SENT  0      1       172.21.76.149:36128   203.0.113.9:80   users:(("curl",pid=537,fd=4))
+tcp   TIME-WAIT 0      0       172.21.76.149:43296 101.50.113.56:80                                
+tcp   SYN-SENT  0      1       172.21.76.149:36136   203.0.113.9:80   users:(("curl",pid=540,fd=4))
+tcp   SYN-SENT  0      1       172.21.76.149:36138   203.0.113.9:80   users:(("curl",pid=541,fd=4))
+tcp   SYN-SENT  0      1       172.21.76.149:36142   203.0.113.9:80   users:(("curl",pid=543,fd=4))

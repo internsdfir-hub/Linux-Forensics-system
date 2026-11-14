@@ -1,0 +1,7 @@
+python313.zip
+.
+..\app
+..\app\site-packages
+
+# enable site so the vendored packages above are importable
+import site

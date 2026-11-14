@@ -1,0 +1,49 @@
+Sep  2 16:27:55 metasploitable sshd[4881]: Server listening on :: port 22.
+Sep  2 16:27:55 metasploitable sshd[4881]: error: Bind to port 22 on 0.0.0.0 failed: Address already in use.
+Sep  2 16:33:33 metasploitable login[5408]: pam_unix(login:session): session opened for user msfadmin by LOGIN(uid=0)
+Sep 13 17:20:27 metasploitable sshd[4812]: Server listening on :: port 22.
+Sep 13 17:20:27 metasploitable sshd[4812]: error: Bind to port 22 on 0.0.0.0 failed: Address already in use.
+Sep 13 17:26:01 metasploitable sshd[5448]: Accepted password for msfadmin from 192.168.197.1 port 56060 ssh2
+Sep 13 17:26:01 metasploitable sshd[5450]: pam_unix(sshd:session): session opened for user msfadmin by (uid=0)
+Sep 13 17:26:21 metasploitable sshd[5452]: Accepted password for msfadmin from 192.168.197.1 port 58447 ssh2
+Sep 13 17:26:21 metasploitable sshd[5454]: pam_unix(sshd:session): session opened for user msfadmin by (uid=0)
+Sep 13 17:26:40 metasploitable sshd[5454]: Received disconnect from 192.168.197.1: 11: disconnected by user
+Sep 13 17:26:40 metasploitable sshd[5454]: pam_unix(sshd:session): session closed for user msfadmin
+Sep 13 17:27:36 metasploitable sudo: msfadmin : TTY=pts/1 ; PWD=/home/msfadmin ; USER=root ; COMMAND=/bin/bash Linux-Forensics-system/testlab/scenarios/chain.sh
+Sep 13 17:27:36 metasploitable sudo: pam_unix(sudo:session): session opened for user root by msfadmin(uid=0)
+Sep 13 17:27:36 metasploitable sudo: pam_unix(sudo:session): session closed for user root
+Sep 13 17:27:39 metasploitable sshd: Failed password for root from 203.0.113.9 port 49152 ssh2
+Sep 13 17:27:39 metasploitable sshd: Failed password for admin from 203.0.113.9 port 49152 ssh2
+Sep 13 17:27:39 metasploitable sshd: Failed password for test from 203.0.113.9 port 49152 ssh2
+Sep 13 17:27:39 metasploitable sshd: Failed password for support from 203.0.113.9 port 49152 ssh2
+Sep 13 17:27:40 metasploitable sshd: Failed password for oracle from 203.0.113.9 port 49152 ssh2
+Sep 13 17:27:40 metasploitable sshd: Failed password for msfadmin from 203.0.113.9 port 49152 ssh2
+Sep 13 17:27:40 metasploitable sshd: Failed password for invalid user postgres from 203.0.113.9 port 49152 ssh2
+Sep 13 17:27:40 metasploitable sshd: Accepted password for msfadmin from 203.0.113.9 port 49158 ssh2
+Sep 13 17:27:40 metasploitable sshd: pam_unix(sshd:session): session opened for user msfadmin by (uid=0)
+Sep 13 17:27:40 metasploitable sshd: Accepted password for msfadmin from 203.0.113.9 port 51022 ssh2
+Sep 13 17:27:40 metasploitable sshd: pam_unix(sshd:session): session opened for user msfadmin by (uid=0)
+Sep 13 03:14:07 metasploitable sudo:   msfadmin : TTY=pts/1 ; PWD=/root ; USER=root ; COMMAND=/usr/bin/cat /etc/shadow
+Sep 13 17:27:40 metasploitable useradd[5518]: new user: name=sysmon, UID=0, GID=0, home=/home/sysmon, shell=/bin/bash
+Sep 13 17:27:40 metasploitable useradd[5520]: new group: name=svc_backup, GID=1003
+Sep 13 17:27:40 metasploitable useradd[5520]: new user: name=svc_backup, UID=1003, GID=1003, home=/home/svc_backup, shell=/bin/bash
+Sep 13 17:27:40 metasploitable passwd[5521]: password for `svc_backup' changed by `root'
+Sep 13 17:27:40 metasploitable useradd[5523]: new group: name=helpdesk, GID=1004
+Sep 13 17:27:40 metasploitable useradd[5523]: new user: name=helpdesk, UID=1004, GID=1004, home=/home/helpdesk, shell=/bin/bash
+Sep 13 17:27:40 metasploitable usermod[5525]: add `helpdesk' to group `sudo'
+Sep 13 17:27:40 metasploitable usermod[5525]: add `helpdesk' to shadow group `sudo'
+Sep 13 17:27:40 metasploitable usermod[5528]: add `helpdesk' to group `adm'
+Sep 13 17:27:40 metasploitable usermod[5528]: add `helpdesk' to shadow group `adm'
+Sep 13 17:27:47 metasploitable useradd[5587]: new group: name=insider, GID=1005
+Sep 13 17:27:47 metasploitable useradd[5587]: new user: name=insider, UID=1005, GID=1005, home=/home/insider, shell=/bin/bash
+Sep 13 17:27:47 metasploitable sshd: pam_unix(sshd:session): session opened for user insider by (uid=0)
+Sep 13 02:41:55 metasploitable sudo:   insider : TTY=pts/3 ; PWD=/home/insider ; USER=root ; COMMAND=/usr/bin/tar czf /tmp/hr_salaries.tgz /srv/hr
+Sep 13 17:27:47 metasploitable last message repeated 3 times
+Sep 13 17:28:01 metasploitable CRON[5614]: pam_unix(cron:session): session opened for user root by (uid=0)
+Sep 13 17:28:22 metasploitable CRON[5614]: pam_unix(cron:session): session closed for user root
+Sep 13 17:28:45 metasploitable sudo: msfadmin : TTY=pts/1 ; PWD=/home/msfadmin ; USER=root ; COMMAND=/bin/bash Linux-Forensics-system/collector/collect.sh -M -s http://192.168.18.18:8443/api/v1/ingest -T SECRET_SOC_TOKEN -c CASE-CHAINED_ATTACKS
+Sep 13 17:28:45 metasploitable sudo: pam_unix(sudo:session): session opened for user root by msfadmin(uid=0)
+Sep 13 17:28:45 metasploitable sudo: pam_unix(sudo:session): session closed for user root
+Sep 13 17:28:55 metasploitable sudo: msfadmin : TTY=pts/1 ; PWD=/home/msfadmin ; USER=root ; COMMAND=/bin/bash Linux-Forensics-system/collector/collect.sh -M -s http://192.168.18.18:8443/api/v1/ingest -T SECRET_SOC_TOKEN -c CASE-CHAINED_ATTACKS-2
+Sep 13 17:28:55 metasploitable sudo: pam_unix(sudo:session): session opened for user root by msfadmin(uid=0)
+Sep 13 17:28:55 metasploitable sudo: pam_unix(sudo:session): session closed for user root

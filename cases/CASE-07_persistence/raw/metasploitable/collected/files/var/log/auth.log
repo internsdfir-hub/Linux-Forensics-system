@@ -1,0 +1,33 @@
+Sep  2 16:27:55 metasploitable sshd[4881]: Server listening on :: port 22.
+Sep  2 16:27:55 metasploitable sshd[4881]: error: Bind to port 22 on 0.0.0.0 failed: Address already in use.
+Sep  2 16:33:33 metasploitable login[5408]: pam_unix(login:session): session opened for user msfadmin by LOGIN(uid=0)
+Sep 13 14:55:32 metasploitable sshd[4732]: Server listening on :: port 22.
+Sep 13 14:55:32 metasploitable sshd[4732]: error: Bind to port 22 on 0.0.0.0 failed: Address already in use.
+Sep 13 15:09:01 metasploitable CRON[5375]: pam_unix(cron:session): session opened for user root by (uid=0)
+Sep 13 15:09:01 metasploitable CRON[5375]: pam_unix(cron:session): session closed for user root
+Sep 13 15:17:01 metasploitable CRON[5405]: pam_unix(cron:session): session opened for user root by (uid=0)
+Sep 13 15:17:01 metasploitable CRON[5405]: pam_unix(cron:session): session closed for user root
+Sep 13 15:39:01 metasploitable CRON[5447]: pam_unix(cron:session): session opened for user root by (uid=0)
+Sep 13 15:39:01 metasploitable CRON[5447]: pam_unix(cron:session): session closed for user root
+Sep 13 15:42:33 metasploitable sshd[5462]: Accepted password for msfadmin from 192.168.197.1 port 56138 ssh2
+Sep 13 15:42:33 metasploitable sshd[5464]: pam_unix(sshd:session): session opened for user msfadmin by (uid=0)
+Sep 13 15:42:47 metasploitable sshd[5468]: Accepted password for msfadmin from 192.168.197.1 port 53102 ssh2
+Sep 13 15:42:47 metasploitable sshd[5470]: pam_unix(sshd:session): session opened for user msfadmin by (uid=0)
+Sep 13 15:42:57 metasploitable sshd[5470]: Received disconnect from 192.168.197.1: 11: disconnected by user
+Sep 13 15:42:57 metasploitable sshd[5470]: pam_unix(sshd:session): session closed for user msfadmin
+Sep 13 15:44:36 metasploitable sudo: msfadmin : TTY=pts/1 ; PWD=/home/msfadmin ; USER=root ; COMMAND=/bin/bash ../../collector/collect.sh -M -s http://192.168.18.18:8443/api/v1/ingest -T SECRET_SOC_TOKEN -c BASELINE
+Sep 13 15:44:36 metasploitable sudo: pam_unix(sudo:session): session opened for user root by msfadmin(uid=0)
+Sep 13 15:44:36 metasploitable sudo: pam_unix(sudo:session): session closed for user root
+Sep 13 15:45:03 metasploitable sudo: msfadmin : TTY=pts/1 ; PWD=/home/msfadmin ; USER=root ; COMMAND=/bin/bash Linux-Forensics-system/collector/collect.sh -M -s http://192.168.18.18:8443/api/v1/ingest -T SECRET_SOC_TOKEN -c BASELINE
+Sep 13 15:45:03 metasploitable sudo: pam_unix(sudo:session): session opened for user root by msfadmin(uid=0)
+Sep 13 15:45:03 metasploitable sudo: pam_unix(sudo:session): session closed for user root
+Sep 13 15:47:31 metasploitable sudo: msfadmin : TTY=pts/1 ; PWD=/home/msfadmin ; USER=root ; COMMAND=/bin/bash Linux-Forensics-system/testlab/scenarios/07_persistence.sh
+Sep 13 15:47:31 metasploitable sudo: pam_unix(sudo:session): session opened for user root by msfadmin(uid=0)
+Sep 13 15:47:31 metasploitable sudo: pam_unix(sudo:session): session closed for user root
+Sep 13 15:47:53 metasploitable sudo: msfadmin : TTY=pts/1 ; PWD=/home/msfadmin ; USER=root ; COMMAND=/bin/bash ../../collector/collect.sh -M -s http://192.168.18.18:8443/api/v1/ingest -T SECRET_SOC_TOKEN -c CASE-07_persistence
+Sep 13 15:47:53 metasploitable sudo: pam_unix(sudo:session): session opened for user root by msfadmin(uid=0)
+Sep 13 15:47:53 metasploitable sudo: pam_unix(sudo:session): session closed for user root
+Sep 13 15:48:01 metasploitable CRON[7480]: pam_unix(cron:session): session opened for user root by (uid=0)
+Sep 13 15:48:10 metasploitable sudo: msfadmin : TTY=pts/1 ; PWD=/home/msfadmin ; USER=root ; COMMAND=/bin/bash /home/msfadmin/Linux-Forensics-system/collector/collect.sh -M -s http://192.168.18.18:8443/api/v1/ingest -T SECRET_SOC_TOKEN -c CASE-07_persistence
+Sep 13 15:48:10 metasploitable sudo: pam_unix(sudo:session): session opened for user root by msfadmin(uid=0)
+Sep 13 15:48:10 metasploitable sudo: pam_unix(sudo:session): session closed for user root

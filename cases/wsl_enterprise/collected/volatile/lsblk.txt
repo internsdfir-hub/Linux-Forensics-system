@@ -1,0 +1,9 @@
+# captured_utc: 2026-11-10T17:15:11Z
+# command: lsblk -f
+NAME FSTYPE FSVER LABEL UUID                                 FSAVAIL FSUSE% MOUNTPOINTS
+sda  ext4   1.0                                                             
+sdb  ext4   1.0                                                             
+sdc  swap   1           afa7ea2c-0862-46ca-b1de-8ae6a2943dcc                [SWAP]
+sdd  ext4   1.0         9125c220-9fa5-4d79-8a4b-c00ed0cb821b                
+sde  ext4   1.0         73a371e1-610f-4299-b770-332afdf5e0fc    948G     1% /mnt/wslg/distro
+                                                                            /

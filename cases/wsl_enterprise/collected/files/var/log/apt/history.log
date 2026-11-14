@@ -1,0 +1,31 @@
+
+Start-Date: 2026-09-03  19:14:29
+Commandline: apt install nmap
+Requested-By: kali (1000)
+Install: nmap-common:amd64 (7.99+dfsg-1kali1, automatic), libblas3:amd64 (3.12.1-7+b2, automatic), liblua5.4-0:amd64 (5.4.8-1+b2, automatic), nmap:amd64 (7.99+dfsg-1kali1), liblinear4:amd64 (2.3.0+dfsg-5+b3, automatic)
+End-Date: 2026-09-03  19:14:33
+
+Start-Date: 2026-09-05  22:10:51
+Commandline: apt install file
+Requested-By: kali (1000)
+Install: libmagic-mgc:amd64 (1:5.47-4, automatic), file:amd64 (1:5.47-4), libmagic1t64:amd64 (1:5.47-4, automatic)
+End-Date: 2026-09-05  22:10:52
+
+Start-Date: 2026-09-05  22:36:34
+Commandline: apt-get install -y liburing-dev
+Requested-By: kali (1000)
+Install: liburing-dev:amd64 (2.14-1)
+End-Date: 2026-09-05  22:36:34
+
+Start-Date: 2026-09-05  22:52:24
+Commandline: apt install unzip
+Requested-By: kali (1000)
+Install: unzip:amd64 (6.0-29)
+End-Date: 2026-09-05  22:52:24
+
+Start-Date: 2026-11-09  12:44:11
+Commandline: apt install metasploit-framework
+Requested-By: kali (1000)
+Install: libgpg-error-l10n:amd64 (1.61-5, automatic), ruby-ruby2-keywords:amd64 (0.0.5-1, automatic), ruby-csv:amd64 (3.3.6-1, automatic), ruby-sdbm:amd64 (1.0.0-5+b8, automatic), gcc-mingw-w64-i686-win32:amd64 (16.2.0-1+29, automatic), john:amd64 (1.9.0-Jumbo-1+git20211102-0kali11, automatic), ruby-bundler:amd64 (4.0.18-1, automatic), ssl-cert:amd64 (1.2.0, automatic), libsensors-config:amd64 (1:3.6.2-2, automatic), postgresql-18:amd64 (18.6-3, automatic), mingw-w64-i686-dev:amd64 (14.0.0-1, automatic), bundler:amd64 (4.0.18-1, automatic), gcc-mingw-w64-x86-64-win32:amd64 (16.2.0-1+29, automatic), zip:amd64 (3.0-16, automatic), fonts-lato:amd64 (2.015-1, automatic), sysstat:amd64 (12.7.5-2, automatic), libruby:amd64 (1:3.3+b1, automatic), mingw-w64-common:amd64 (14.0.0-1, automatic), libllvm21:amd64 (1:21.1.8-10, automatic), binutils-mingw-w64-base:amd64 (2.45.90.20260125-1+13.3, automatic), libnuma1:amd64 (2.0.19-1+b2, automatic), libjson-perl:amd64 (4.10000-1, automatic), ruby-net-telnet:amd64 (0.2.0-1, automatic), binutils-mingw-w64-i686:amd64 (2.45.90.20260125-1+13.3, automatic), gcc-mingw-w64-x86-64-win32-runtime:amd64 (16.2.0-1+29, automatic), mingw-w64-x86-64-dev:amd64 (14.0.0-1, automatic), libgpg-error0:amd64 (1.61-5, automatic), rubygems-integration:amd64 (1.20.1, automatic), libz3-4:amd64 (4.13.3-1.1, automatic), libyaml-0-2:amd64 (0.2.5-2+b1, automatic), libruby3.3:amd64 (3.3.8-2.2, automatic), ruby-json:amd64 (2.21.2+dfsg-1, automatic), oracle-instantclient-basic:amd64 (19.6.0.0.0-0kali5, automatic), rake:amd64 (13.4.2-1, automatic), postgresql-client-18:amd64 (18.6-3, automatic), libaio1t64:amd64 (0.3.113-9+kali2, automatic), gcc-mingw-w64-i686-win32-runtime:amd64 (16.2.0-1+29, automatic), libgcrypt20:amd64 (1.12.2-1, automatic), ruby:amd64 (1:3.3+b1, automatic), binutils-mingw-w64-x86-64:amd64 (2.45.90.20260125-1+13.3, automatic), libxslt1.1:amd64 (1.1.45-0.1, automatic), postgresql-common:amd64 (290, automatic), john-data:amd64 (1.9.0-Jumbo-1+git20211102-0kali11, automatic), ruby3.3:amd64 (3.3.8-2.2, automatic), postgresql-client-common:amd64 (290, automatic), nasm:amd64 (3.01-1, automatic), libsensors5:amd64 (1:3.6.2-2+b2, automatic), postgresql:amd64 (18+290, automatic), postgresql-18-jit:amd64 (18.6-3, automatic), ruby-did-you-mean:amd64 (2.0.0-1, automatic), libjs-jquery:amd64 (3.7.1+dfsg+~3.5.33-1, automatic), ruby-rubygems:amd64 (4.0.18-1, automatic), metasploit-framework:amd64 (6.5.3-0kali1), gcc-mingw-w64-base:amd64 (16.2.0-1+29, automatic), javascript-common:amd64 (12+nmu1, automatic), libpq5:amd64 (18.6-3, automatic), libicu78:amd64 (78.3-2, automatic), ruby-xmlrpc:amd64 (0.3.3-2, automatic), ruby-webrick:amd64 (1.9.2-2, automatic)
+Upgrade: locales-all:amd64 (2.42-13, 2.43-4), libc-gconv-modules-extra:amd64 (2.42-13, 2.43-4), libc6:amd64 (2.42-13, 2.43-4), libc-dev-bin:amd64 (2.42-13, 2.43-4), libc-l10n:amd64 (2.42-13, 2.43-4), libc-bin:amd64 (2.42-13, 2.43-4), libc6-dev:amd64 (2.42-13, 2.43-4)
+End-Date: 2026-11-09  12:47:33

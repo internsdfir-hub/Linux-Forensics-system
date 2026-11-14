@@ -1,0 +1,2 @@
+# Benign cron job: Certbot SSL certificate renewal
+0 0 1 * * root test -x /usr/bin/certbot && /usr/bin/certbot renew --quiet

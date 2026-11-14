@@ -1,0 +1,243 @@
+"""Parser plugin framework (spec 2.6.1).
+
+Every parser translates one artifact format into NormalizedEvents. Parsers
+are auto-discovered from this package, each runs inside its own try/except
+boundary, failures write a full traceback to parser_errors.log and the
+engine continues. The run's success/fail/skip counts feed the report's
+methodology section - analysts need to know what WASN'T processed.
+"""
+from __future__ import annotations
+
+import fnmatch
+import importlib
+import pkgutil
+import traceback
+from dataclasses import dataclass, field
+from datetime import datetime, timedelta, timezone
+from pathlib import Path
+from typing import Iterator
+
+from ..schema import NormalizedEvent, make_event
+from ..timeeng import TimeContext
+
+
+@dataclass
+class ParseContext:
+    """Everything a parser needs beyond the file itself. build_event() fills
+    all provenance fields so parsers only supply what they actually parsed."""
+
+    case_id: str
+    host_id: str
+    raw_host_dir: Path
+    time_ctx: TimeContext
+    distro_profile: dict
+    artifact_rel: str = ""
+    artifact_sha256: str = ""
+    artifact_mtime: float | None = None
+    tool_generated_flag: bool = False
+    parser_name: str = ""
+    parser_version: str = ""
+    had_decode_errors: bool = False
+    contamination: dict = field(default_factory=dict)
+
+    def is_tool_generated(self, source_ip: str | None,
+                          ts_utc_iso: str | None,
+                          actor_user: str | None = None) -> bool:
+        """Auto-tag our own collection session (P1b contamination record):
+        events from the operator's source IP inside the collection window
+        must never show up as findings (spec: 'without this the tool reports
+        its own operator as a suspicious 3am login').
+
+        Two paths. Remote collection is identified by source IP. Local
+        collection has no source IP at all, so it is identified by the
+        operator's username INSIDE the collection window - normally seconds
+        to minutes, which keeps the false-positive risk bounded."""
+        if not self.contamination:
+            return False
+
+        start = self.contamination.get("start_utc")
+        end = self.contamination.get("end_utc")
+        op_ip = self.contamination.get("source_ip")
+
+        if source_ip:
+            if not op_ip or source_ip != op_ip:
+                return False
+            if not (start and end and ts_utc_iso):
+                # same IP but no window to check: still safer to tag
+                return True
+            return self._within_collection_window(ts_utc_iso, start, end, default=True)
+
+        # local collection: no source IP to match on
+        if not actor_user:
+            return False
+        # Residual risk (accepted, not fixed here): collection normally runs
+        # under sudo, so operator_user is "root" here. Any no-IP root-actor
+        # event inside the window is excluded from rules by this set - e.g.
+        # an attacker's sudo-to-root session during a live-incident
+        # collection. The event still appears in the timeline/explorer, it
+        # is only excluded from correlation rules. Tightening this predicate
+        # is a spec change for the repo owner to approve.
+        operators = {
+            self.contamination.get("operator_user"),
+            self.contamination.get("operator_login_user"),
+        }
+        operators.discard(None)
+        operators.discard("")
+        if actor_user not in operators:
+            return False
+        if not (start and end and ts_utc_iso):
+            # a local username with no window is far too broad to tag
+            return False
+        return self._within_collection_window(ts_utc_iso, start, end, default=False)
+
+    @staticmethod
+    def _within_collection_window(ts_utc_iso: str, start: str, end: str,
+                                  *, default: bool) -> bool:
+        """True when ts falls inside [start-5min, end+5min]. `default` is
+        returned when a timestamp cannot be parsed at all."""
+        norm = lambda s: s.replace("Z", "+00:00")
+        try:
+            ts = datetime.fromisoformat(norm(ts_utc_iso))
+            lo = datetime.fromisoformat(norm(start)) - timedelta(minutes=5)
+            hi = datetime.fromisoformat(norm(end)) + timedelta(minutes=5)
+        except ValueError:
+            return default
+        return lo <= ts <= hi
+
+    def build_event(self, **kwargs) -> NormalizedEvent:
+        kwargs.setdefault("case_id", self.case_id)
+        kwargs.setdefault("host_id", self.host_id)
+        kwargs.setdefault("timestamp_tz", self.time_ctx.tz_name)
+        kwargs.setdefault("tz_source", self.time_ctx.tz_source)
+        kwargs.setdefault("source_artifact_path", self.artifact_rel)
+        kwargs.setdefault("source_artifact_sha256", self.artifact_sha256)
+        kwargs.setdefault("parser_name", self.parser_name)
+        kwargs.setdefault("parser_version", self.parser_version)
+        kwargs.setdefault("tool_generated_flag", self.tool_generated_flag)
+        kwargs.setdefault("actor_user", None)
+        kwargs.setdefault("actor_uid", None)
+        kwargs.setdefault("actor_process", None)
+        kwargs.setdefault("source_ip", None)
+        kwargs.setdefault("source_host", None)
+        kwargs.setdefault("subcategory", "unspecified")
+        kwargs.setdefault("notes", None)
+        return make_event(**kwargs)
+
+
+class BaseParser:
+    name: str = ""
+    version: str = ""
+    artifact_category: str = ""
+    applies_to: list[str] = []  # glob patterns over bundle-relative paths
+
+    def can_parse(self, rel_path: str, distro_profile: dict) -> bool:
+        rel = rel_path.replace("\\", "/")
+        return any(fnmatch.fnmatch(rel, pat) for pat in self.applies_to)
+
+    def parse(self, path: Path, context: ParseContext) -> Iterator[NormalizedEvent]:
+        raise NotImplementedError
+
+    # helper shared by text parsers: stream lines with byte offsets and the
+    # mandatory surrogateescape handling (spec: naive open() loses data).
+    # Rotated logs were collected still-compressed; decompress transparently
+    # (offsets are then within the DECOMPRESSED stream, noted per artifact).
+    @staticmethod
+    def iter_lines(path: Path, context: ParseContext):
+        import gzip
+
+        opener = gzip.open if str(path).endswith(".gz") else open
+        offset = 0
+        with opener(path, "rb") as fh:
+            for raw in fh:
+                try:
+                    line = raw.decode("utf-8")
+                except UnicodeDecodeError:
+                    line = raw.decode("utf-8", errors="surrogateescape")
+                    context.had_decode_errors = True
+                yield offset, line.rstrip("\r\n")
+                offset += len(raw)
+
+
+def discover_parsers() -> list[BaseParser]:
+    """Instantiate every BaseParser subclass found in this package."""
+    pkg_name = __package__ or "lfa.parsers"
+    pkg = importlib.import_module(pkg_name)
+
+    parsers: list[BaseParser] = []
+    for modinfo in pkgutil.iter_modules(pkg.__path__):
+        if modinfo.name in {"base"}:
+            continue
+        module = importlib.import_module(f"{pkg_name}.{modinfo.name}")
+        for obj in vars(module).values():
+            if (
+                isinstance(obj, type)
+                and issubclass(obj, BaseParser)
+                and obj is not BaseParser
+                and obj.__module__ == module.__name__
+                and obj.name
+            ):
+                parsers.append(obj())
+    parsers.sort(key=lambda p: p.name)
+    return parsers
+
+
+class ParserRun:
+    """Drives parsers over artifacts with error isolation and stats."""
+
+    def __init__(self, parsers: list[BaseParser], errors_log: Path):
+        self.parsers = parsers
+        self.errors_log = Path(errors_log)
+        self.stats: dict[str, dict[str, int]] = {
+            p.name: {"success": 0, "fail": 0, "events": 0} for p in parsers
+        }
+        self.skipped: list[str] = []
+        self.failures: list[str] = []
+        self.artifact_results: list[dict] = []
+
+    def _log_error(self, parser: BaseParser, rel_path: str, exc: BaseException) -> None:
+        self.errors_log.parent.mkdir(parents=True, exist_ok=True)
+        with open(self.errors_log, "a", encoding="utf-8") as fh:
+            fh.write(
+                f"=== {datetime.now(timezone.utc).isoformat()} "
+                f"parser={parser.name} artifact={rel_path}\n"
+            )
+            fh.write("".join(traceback.format_exception(exc)))
+            fh.write("\n")
+
+    def parse_artifact(self, path: Path, rel_path: str,
+                       context: ParseContext) -> list[NormalizedEvent]:
+        claimed = [p for p in self.parsers
+                   if p.can_parse(rel_path, context.distro_profile)]
+        if not claimed:
+            self.skipped.append(rel_path)
+            self.artifact_results.append(
+                {"artifact": rel_path, "parser": None, "status": "skip", "events": 0}
+            )
+            return []
+
+        events: list[NormalizedEvent] = []
+        for parser in claimed:
+            context.parser_name = parser.name
+            context.parser_version = parser.version
+            context.artifact_rel = rel_path
+            context.had_decode_errors = False
+            try:
+                produced = list(parser.parse(path, context))
+            except Exception as exc:  # isolation boundary: never fail the run
+                self._log_error(parser, rel_path, exc)
+                self.stats[parser.name]["fail"] += 1
+                self.failures.append(rel_path)
+                self.artifact_results.append(
+                    {"artifact": rel_path, "parser": parser.name,
+                     "status": "fail", "events": 0, "error": repr(exc)}
+                )
+                continue
+            events.extend(produced)
+            self.stats[parser.name]["success"] += 1
+            self.stats[parser.name]["events"] += len(produced)
+            self.artifact_results.append(
+                {"artifact": rel_path, "parser": parser.name,
+                 "status": "success", "events": len(produced),
+                 "had_decode_errors": context.had_decode_errors}
+            )
+        return events

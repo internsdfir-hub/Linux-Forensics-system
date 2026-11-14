@@ -1,0 +1,38 @@
+/* Console theme: the live dashboard and explorer. Dark-primary, dense,
+   built for long sessions in front of a screen. */
+
+:root {
+  --surface-page: #0d1117;
+  --surface-raised: #161b22;
+  --surface-sunken: #010409;
+  --surface-overlay: #1c2128;
+
+  --border-subtle: #30363d;
+  --border-strong: #495057;
+  --border-focus: #6cb0ff;
+
+  --text-primary: #e8edf3;
+  --text-secondary: #b6c2cf;
+  --text-muted: #8b949e;
+  --text-inverse: #0d1117;
+
+  --severity-high: #ff8087;
+  --severity-high-bg: #3d1418;
+  --severity-medium: #f0b154;
+  --severity-medium-bg: #3a2a10;
+  --severity-low: #56d4a0;
+  --severity-low-bg: #0f2f22;
+  --severity-info: #b6c2cf;
+  --severity-info-bg: #21262d;
+
+  --state-verified: #56d4a0;
+  --state-quarantined: #ff8087;
+  --state-unknown: #8b949e;
+
+  --accent-primary: #6cb0ff;
+  --accent-primary-bg: #17253a;
+
+  --shadow-sm: 0 1px 2px rgba(1, 4, 9, 0.5);
+  --shadow-md: 0 4px 12px rgba(1, 4, 9, 0.6);
+  --shadow-lg: 0 12px 32px rgba(1, 4, 9, 0.7);
+}

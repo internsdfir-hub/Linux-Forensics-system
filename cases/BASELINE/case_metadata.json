@@ -1,0 +1,259 @@
+{
+  "analyzer_version": "0.1.0",
+  "examiner": "unknown",
+  "hosts": {
+    "metasploitable": {
+      "bundle": "bundle.tar.gz",
+      "collector_manifest": {
+        "case_id": "BASELINE",
+        "collected_files": 88,
+        "collection_end_utc": "2026-09-13T19:45:04Z",
+        "collection_start_utc": "2026-09-13T19:45:03Z",
+        "collector_version": "1.0.0",
+        "contamination": {
+          "end_utc": "2026-09-13T19:45:04Z",
+          "operator_login_user": "msfadmin",
+          "operator_user": "root",
+          "pid": "5476",
+          "source_ip": "",
+          "start_utc": "2026-09-13T19:45:03Z",
+          "tty": "/dev/pts/1"
+        },
+        "degradations": [],
+        "hasher": "sha256sum",
+        "host": {
+          "distro_id": "debian",
+          "hostname": "metasploitable",
+          "init_system": "other",
+          "kernel": "2.6.24-16-server",
+          "machine_id": "",
+          "pretty_name": "",
+          "timezone": "US/Eastern",
+          "timezone_source": "etc_timezone",
+          "version_id": "lenny/sid"
+        },
+        "journald": {
+          "available": false,
+          "exported_boots": 0,
+          "persistent": false
+        },
+        "missing": [
+          {
+            "id": "os_release",
+            "path": "/etc/os-release",
+            "reason": "REQUIRED artifact not present"
+          },
+          {
+            "id": "os_release",
+            "path": "/etc/redhat-release",
+            "reason": "REQUIRED artifact not present"
+          },
+          {
+            "id": "machine_id",
+            "path": "/etc/machine-id",
+            "reason": "not present"
+          },
+          {
+            "id": "auth_log",
+            "path": "/var/log/secure",
+            "reason": "not present"
+          },
+          {
+            "id": "faillog",
+            "path": "/var/log/faillog",
+            "reason": "not present"
+          },
+          {
+            "id": "faillog",
+            "path": "/var/run/faillock/*",
+            "reason": "not present"
+          },
+          {
+            "id": "sudoers",
+            "path": "/etc/sudoers.d/*",
+            "reason": "REQUIRED artifact not present"
+          },
+          {
+            "id": "cron",
+            "path": "/var/spool/cron/crontabs/*",
+            "reason": "REQUIRED artifact not present"
+          },
+          {
+            "id": "cron",
+            "path": "/var/spool/cron/*",
+            "reason": "REQUIRED artifact not present"
+          },
+          {
+            "id": "cron",
+            "path": "/etc/cron.hourly/*",
+            "reason": "REQUIRED artifact not present"
+          },
+          {
+            "id": "cron_log",
+            "path": "/var/log/cron",
+            "reason": "not present"
+          },
+          {
+            "id": "systemd_units",
+            "path": "/etc/systemd/system",
+            "reason": "directory not present"
+          },
+          {
+            "id": "systemd_user_units",
+            "path": "/home/*/.config/systemd/user",
+            "reason": "directory not present"
+          },
+          {
+            "id": "systemd_user_units",
+            "path": "/root/.config/systemd/user",
+            "reason": "directory not present"
+          },
+          {
+            "id": "authorized_keys",
+            "path": "/home/*/.ssh/authorized_keys2",
+            "reason": "not present"
+          },
+          {
+            "id": "authorized_keys",
+            "path": "/root/.ssh/authorized_keys2",
+            "reason": "not present"
+          },
+          {
+            "id": "sshd_config",
+            "path": "/etc/ssh/sshd_config.d/*",
+            "reason": "not present"
+          },
+          {
+            "id": "shell_startup",
+            "path": "/etc/profile.d/*",
+            "reason": "not present"
+          },
+          {
+            "id": "shell_startup",
+            "path": "/etc/ld.so.preload",
+            "reason": "not present"
+          },
+          {
+            "id": "shell_startup",
+            "path": "/home/*/.bash_profile",
+            "reason": "not present"
+          },
+          {
+            "id": "apt_history",
+            "path": "/var/log/apt/history.log",
+            "reason": "not present"
+          },
+          {
+            "id": "dnf_log",
+            "path": "/var/log/dnf.log",
+            "reason": "not present"
+          },
+          {
+            "id": "dnf_log",
+            "path": "/var/log/dnf.rpm.log",
+            "reason": "not present"
+          },
+          {
+            "id": "dnf_log",
+            "path": "/var/log/yum.log",
+            "reason": "not present"
+          },
+          {
+            "id": "sys_usb",
+            "path": "/sys/bus/usb/devices",
+            "reason": "directory present but empty"
+          },
+          {
+            "id": "net_ifaces",
+            "path": "/etc/netplan/*.yaml",
+            "reason": "not present"
+          },
+          {
+            "id": "ufw_log",
+            "path": "/var/log/ufw.log",
+            "reason": "not present"
+          },
+          {
+            "id": "shell_history",
+            "path": "/home/*/.zsh_history",
+            "reason": "not present"
+          },
+          {
+            "id": "shell_history",
+            "path": "/root/.zsh_history",
+            "reason": "not present"
+          },
+          {
+            "id": "known_hosts",
+            "path": "/home/*/.ssh/known_hosts",
+            "reason": "not present"
+          },
+          {
+            "id": "browser_firefox",
+            "path": "/home/*/.mozilla/firefox/*/places.sqlite",
+            "reason": "not present"
+          },
+          {
+            "id": "browser_chrome",
+            "path": "/home/*/.config/google-chrome/*/History",
+            "reason": "not present"
+          },
+          {
+            "id": "browser_chrome",
+            "path": "/home/*/.config/chromium/*/History",
+            "reason": "not present"
+          },
+          {
+            "id": "web_access_log",
+            "path": "/var/log/nginx/access.log",
+            "reason": "not present"
+          },
+          {
+            "id": "web_access_log",
+            "path": "/var/log/nginx/error.log",
+            "reason": "not present"
+          },
+          {
+            "id": "web_access_log",
+            "path": "/var/log/httpd/access_log",
+            "reason": "not present"
+          },
+          {
+            "id": "web_access_log",
+            "path": "/var/log/httpd/error_log",
+            "reason": "not present"
+          },
+          {
+            "id": "ftp_log",
+            "path": "/var/log/xferlog",
+            "reason": "not present"
+          },
+          {
+            "id": "audit_log",
+            "path": "/var/log/audit/audit.log",
+            "reason": "not present"
+          },
+          {
+            "id": "journald",
+            "path": "journalctl",
+            "reason": "journalctl not available for this root; continuing without journal"
+          }
+        ],
+        "operator": "unknown",
+        "privilege": {
+          "euid": "0",
+          "is_root": true,
+          "warnings": ""
+        },
+        "redact_mode": false,
+        "root": "/",
+        "stat_mode": "gnu",
+        "volatile_captured": false
+      },
+      "ingest_time_utc": "2026-09-13T19:44:56.450905+00:00",
+      "integrity_failed": [],
+      "skipped_no_content": [],
+      "verified": 88
+    }
+  }
+}

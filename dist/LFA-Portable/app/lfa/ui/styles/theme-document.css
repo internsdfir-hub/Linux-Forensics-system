@@ -1,0 +1,38 @@
+/* Document theme: the offline report. Light-primary, because this artifact
+   gets printed and attached to case files. */
+
+:root {
+  --surface-page: #ffffff;
+  --surface-raised: #f7f8fa;
+  --surface-sunken: #eceef2;
+  --surface-overlay: #ffffff;
+
+  --border-subtle: #dfe3e8;
+  --border-strong: #b9c0c9;
+  --border-focus: #0b5fd0;
+
+  --text-primary: #14181d;
+  --text-secondary: #454d57;
+  --text-muted: #667180;
+  --text-inverse: #ffffff;
+
+  --severity-high: #a01020;
+  --severity-high-bg: #fdeaec;
+  --severity-medium: #8a4b00;
+  --severity-medium-bg: #fdf1e3;
+  --severity-low: #0a5c3a;
+  --severity-low-bg: #e6f4ee;
+  --severity-info: #34414f;
+  --severity-info-bg: #eef1f4;
+
+  --state-verified: #0a5c3a;
+  --state-quarantined: #a01020;
+  --state-unknown: #667180;
+
+  --accent-primary: #0b5fd0;
+  --accent-primary-bg: #e8f0fd;
+
+  --shadow-sm: 0 1px 2px rgba(20, 24, 29, 0.06);
+  --shadow-md: 0 2px 8px rgba(20, 24, 29, 0.08);
+  --shadow-lg: 0 8px 24px rgba(20, 24, 29, 0.10);
+}

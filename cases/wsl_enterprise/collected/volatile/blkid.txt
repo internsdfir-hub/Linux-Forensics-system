@@ -1,0 +1,7 @@
+# captured_utc: 2026-11-10T17:15:11Z
+# command: blkid
+/dev/sdd: UUID="9125c220-9fa5-4d79-8a4b-c00ed0cb821b" BLOCK_SIZE="4096" TYPE="ext4"
+/dev/sdb: BLOCK_SIZE="4096" TYPE="ext4"
+/dev/sde: UUID="73a371e1-610f-4299-b770-332afdf5e0fc" BLOCK_SIZE="4096" TYPE="ext4"
+/dev/sdc: UUID="afa7ea2c-0862-46ca-b1de-8ae6a2943dcc" TYPE="swap"
+/dev/sda: BLOCK_SIZE="4096" TYPE="ext4"
