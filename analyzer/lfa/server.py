@@ -765,7 +765,7 @@ class LFAServerHandler(http.server.BaseHTTPRequestHandler):
               <td colspan="7" class="empty-state">
                 <div class="empty-icon">📡</div>
                 <p>No forensic streams received yet.</p>
-                <span class="subtext">Run <code>collect.sh --stream-to http://&lt;server-ip&gt;:&lt;port&gt;/api/v1/ingest</code> on the target machine.</span>
+                <span class="subtext">Run <code>collect.sh -s http://&lt;server-ip&gt;:&lt;port&gt;/api/v1/ingest</code> on the target machine.</span>
               </td>
             </tr>
             """
@@ -783,7 +783,7 @@ class LFAServerHandler(http.server.BaseHTTPRequestHandler):
                 badge_total = f'<span class="badge badge-neutral">{c["findings_count"]} Total</span>'
 
                 explore_btn = f'<a href="/cases/{case_id_safe}/explorer" class="btn btn-primary">🔬 Explore</a>' if c["has_db"] else '<span class="btn btn-disabled">No DB</span>'
-                report_btn = f'<a href="{report_url_safe}" target="_blank" class="btn btn-secondary">🔍 Report</a>' if c["has_report"] else '<span class="btn btn-disabled">Pending</span>'
+                report_btn = f'<a href="{report_url_safe}" target="_blank" class="btn btn-secondary">📄 Report</a>' if c["has_report"] else '<span class="btn btn-disabled">Pending</span>'
 
                 ingest_str = html.escape(
                     c["ingest_time"][:19].replace("T", " ") if c["ingest_time"] else "—",
@@ -791,7 +791,7 @@ class LFAServerHandler(http.server.BaseHTTPRequestHandler):
                 )
 
                 rows_html += f"""
-                <tr>
+                <tr class="case-row" data-haystack="{case_id_safe.lower()} {hosts_str.lower()} {examiner_safe.lower()}">
                   <td><strong class="case-title">{case_id_safe}</strong></td>
                   <td><span class="mono-tag">{hosts_str}</span></td>
                   <td>{examiner_safe}</td>
@@ -818,74 +818,97 @@ class LFAServerHandler(http.server.BaseHTTPRequestHandler):
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>LFA Central Ingestion & Investigation Console</title>
+  <title>LFA Forensic Ingestion Console</title>
   <style>
     :root {{
-      --bg: #0b0f19;
-      --card-bg: #131b2e;
-      --card-border: #1e293b;
-      --text: #e2e8f0;
-      --text-dim: #94a3b8;
-      --primary: #38bdf8;
-      --primary-hover: #0284c7;
-      --accent: #6366f1;
-      --high: #ef4444;
+      --bg-base: #070a0f;
+      --bg-panel: #0c1017;
+      --bg-card: #121824;
+      --bg-hover: #192233;
+      --border-subtle: rgba(255, 255, 255, 0.08);
+      --border-medium: rgba(255, 255, 255, 0.16);
+      --text-main: #f1f5f9;
+      --text-dim: #64748b;
+      --text-muted: #94a3b8;
+      --accent-cyan: #38bdf8;
+      --accent-blue: #3b82f6;
+      --high: #ff4d6d;
       --med: #f59e0b;
       --low: #10b981;
-      --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
-      --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      --font: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Roboto, sans-serif;
+      --font-mono: ui-monospace, "Cascadia Code", "JetBrains Mono", SFMono-Regular, Menlo, Monaco, Consolas, monospace;
     }}
     * {{ box-sizing: border-box; margin: 0; padding: 0; }}
     body {{
-      background-color: var(--bg);
-      color: var(--text);
+      background-color: var(--bg-base);
+      color: var(--text-main);
       font-family: var(--font);
       line-height: 1.5;
-      padding: 2rem 3rem;
+      padding: 2.25rem 3.5rem;
+      -webkit-font-smoothing: antialiased;
     }}
     header {{
       display: flex;
       justify-content: space-between;
       align-items: center;
       margin-bottom: 2rem;
-      border-bottom: 1px solid var(--card-border);
+      border-bottom: 1px solid var(--border-subtle);
       padding-bottom: 1.5rem;
     }}
     .logo-group {{
       display: flex;
       align-items: center;
-      gap: 1rem;
+      gap: 1.25rem;
     }}
     .logo-icon {{
-      font-size: 2.2rem;
-      background: linear-gradient(135deg, var(--primary), var(--accent));
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
+      font-size: 2.4rem;
+      filter: drop-shadow(0 0 14px rgba(56, 189, 248, 0.35));
     }}
     h1 {{
-      font-size: 1.75rem;
-      font-weight: 700;
-      letter-spacing: -0.025em;
+      font-size: 1.65rem;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      color: #fff;
     }}
+    h1 span {{
+      color: var(--accent-cyan);
+    }}
+    .subtext {{ color: var(--text-dim); font-size: 0.85rem; }}
+
     .status-badge {{
       display: inline-flex;
       align-items: center;
       gap: 0.5rem;
-      background: rgba(16, 185, 129, 0.1);
+      background: rgba(16, 185, 129, 0.08);
       color: #34d399;
-      border: 1px solid rgba(16, 185, 129, 0.2);
+      border: 1px solid rgba(16, 185, 129, 0.25);
       padding: 0.35rem 0.85rem;
       border-radius: 9999px;
-      font-size: 0.875rem;
-      font-weight: 600;
+      font-size: 0.8rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
     }}
     .pulse-dot {{
-      width: 8px;
-      height: 8px;
-      background: #34d399;
+      width: 7px;
+      height: 7px;
+      background: #10b981;
       border-radius: 50%;
-      box-shadow: 0 0 8px #34d399;
+      position: relative;
     }}
+    .pulse-dot::after {{
+      content: '';
+      position: absolute;
+      top: -3px; left: -3px; right: -3px; bottom: -3px;
+      border-radius: 50%;
+      border: 1.5px solid #10b981;
+      animation: pulse-ring 2s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
+    }}
+    @keyframes pulse-ring {{
+      0% {{ transform: scale(0.6); opacity: 0.9; }}
+      100% {{ transform: scale(2.4); opacity: 0; }}
+    }}
+
     .stats-grid {{
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
@@ -893,136 +916,194 @@ class LFAServerHandler(http.server.BaseHTTPRequestHandler):
       margin-bottom: 2rem;
     }}
     .stat-card {{
-      background: var(--card-bg);
-      border: 1px solid var(--card-border);
-      border-radius: 12px;
-      padding: 1.25rem;
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 10px;
+      padding: 1.25rem 1.5rem;
+      transition: all 0.15s ease;
+    }}
+    .stat-card:hover {{
+      border-color: var(--border-medium);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
     }}
     .stat-label {{
       color: var(--text-dim);
-      font-size: 0.875rem;
-      font-weight: 500;
+      font-size: 0.725rem;
+      font-weight: 700;
       text-transform: uppercase;
-      letter-spacing: 0.05em;
+      letter-spacing: 0.06em;
     }}
     .stat-value {{
-      font-size: 2rem;
-      font-weight: 700;
+      font-size: 2.1rem;
+      font-weight: 800;
       margin-top: 0.25rem;
       color: #fff;
+      font-variant-numeric: tabular-nums;
+      font-family: var(--font-mono);
     }}
     .stat-value.high {{ color: var(--high); }}
-    .stat-value.primary {{ color: var(--primary); }}
-    
+    .stat-value.primary {{ color: var(--accent-cyan); }}
+
     .panel {{
-      background: var(--card-bg);
-      border: 1px solid var(--card-border);
-      border-radius: 12px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 10px;
       overflow: hidden;
       margin-bottom: 2rem;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
     }}
     .panel-header {{
-      padding: 1.25rem 1.5rem;
-      border-bottom: 1px solid var(--card-border);
+      padding: 1rem 1.5rem;
+      border-bottom: 1px solid var(--border-subtle);
       display: flex;
       justify-content: space-between;
       align-items: center;
+      background: rgba(255, 255, 255, 0.015);
     }}
     .panel-title {{
-      font-size: 1.15rem;
-      font-weight: 600;
+      font-size: 0.95rem;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      color: #fff;
     }}
+    .search-filter {{
+      background: var(--bg-base);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-main);
+      padding: 0.35rem 0.75rem;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      outline: none;
+      width: 220px;
+      transition: all 0.15s;
+    }}
+    .search-filter:focus {{
+      border-color: var(--accent-cyan);
+    }}
+
     table {{
       width: 100%;
       border-collapse: collapse;
       text-align: left;
     }}
     th {{
-      background: #0d1424;
+      background: rgba(12, 16, 23, 0.8);
       color: var(--text-dim);
-      font-size: 0.75rem;
+      font-size: 0.7rem;
       text-transform: uppercase;
-      letter-spacing: 0.05em;
-      padding: 0.85rem 1.5rem;
-      border-bottom: 1px solid var(--card-border);
+      letter-spacing: 0.06em;
+      padding: 0.75rem 1.5rem;
+      border-bottom: 1px solid var(--border-subtle);
     }}
     td {{
-      padding: 1rem 1.5rem;
-      border-bottom: 1px solid var(--card-border);
-      font-size: 0.925rem;
+      padding: 0.85rem 1.5rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+      font-size: 0.85rem;
     }}
     tr:last-child td {{ border-bottom: none; }}
     tr:hover td {{ background: rgba(255, 255, 255, 0.02); }}
-    
-    .case-title {{ color: #fff; font-size: 1rem; }}
+
+    .case-title {{ color: #fff; font-weight: 700; font-family: var(--font-mono); }}
     .mono-tag {{
       font-family: var(--font-mono);
-      background: rgba(255, 255, 255, 0.05);
-      padding: 0.2rem 0.5rem;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--border-subtle);
+      padding: 0.15rem 0.5rem;
       border-radius: 4px;
-      font-size: 0.85rem;
+      font-size: 0.75rem;
     }}
     .badge {{
       display: inline-block;
-      padding: 0.2rem 0.55rem;
+      padding: 0.15rem 0.5rem;
       border-radius: 4px;
-      font-size: 0.75rem;
-      font-weight: 600;
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.03em;
     }}
-    .badge-high {{ background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.3); }}
-    .badge-neutral {{ background: rgba(148, 163, 184, 0.15); color: #cbd5e1; }}
-    .subtext {{ color: var(--text-dim); font-size: 0.85rem; }}
-    .num {{ font-family: var(--font-mono); }}
+    .badge-high {{ background: rgba(255, 77, 109, 0.15); color: var(--high); border: 1px solid rgba(255, 77, 109, 0.35); }}
+    .badge-neutral {{ background: rgba(148, 163, 184, 0.12); color: #cbd5e1; }}
+    .num {{ font-family: var(--font-mono); font-variant-numeric: tabular-nums; }}
 
     .btn {{
-      display: inline-block;
-      padding: 0.45rem 0.95rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      padding: 0.4rem 0.85rem;
       border-radius: 6px;
-      font-size: 0.85rem;
+      font-size: 0.8rem;
       font-weight: 600;
       text-decoration: none;
       transition: all 0.15s ease;
       cursor: pointer;
+      border: 1px solid transparent;
     }}
     .btn-primary {{
-      background: var(--primary);
-      color: #0b0f19;
-    }}
-    .btn-primary:hover {{
-      background: var(--primary-hover);
+      background: var(--accent-blue);
       color: #fff;
     }}
+    .btn-primary:hover {{
+      background: #2563eb;
+      box-shadow: 0 0 12px rgba(59, 130, 246, 0.45);
+    }}
     .btn-secondary {{
-      background: rgba(255, 255, 255, 0.08);
-      color: var(--text);
-      border: 1px solid var(--card-border);
+      background: rgba(255, 255, 255, 0.04);
+      color: var(--text-main);
+      border-color: var(--border-subtle);
     }}
     .btn-secondary:hover {{
-      background: rgba(255, 255, 255, 0.15);
+      background: rgba(255, 255, 255, 0.09);
+      border-color: var(--border-medium);
       color: #fff;
     }}
     .btn-disabled {{
-      background: rgba(255, 255, 255, 0.05);
+      background: rgba(255, 255, 255, 0.03);
       color: var(--text-dim);
       cursor: not-allowed;
     }}
 
     .command-box {{
-      background: #080c14;
-      border: 1px solid var(--card-border);
-      border-radius: 8px;
-      padding: 1.25rem;
+      background: #05080d;
+      border: 1px solid var(--border-subtle);
+      border-radius: 6px;
+      padding: 1rem 1.25rem;
       font-family: var(--font-mono);
-      font-size: 0.875rem;
-      color: #38bdf8;
+      font-size: 0.825rem;
+      color: var(--accent-cyan);
       overflow-x: auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
     }}
     .empty-state {{
       text-align: center;
-      padding: 4rem 2rem !important;
+      padding: 3.5rem 1.5rem !important;
       color: var(--text-dim);
     }}
-    .empty-icon {{ font-size: 2.5rem; margin-bottom: 0.5rem; }}
+    .empty-icon {{ font-size: 2.2rem; margin-bottom: 0.5rem; opacity: 0.7; }}
+
+    #toast-container {{
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      z-index: 9999;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }}
+    .toast {{
+      background: #151d2c;
+      color: #f8fafc;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      padding: 9px 16px;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      font-weight: 500;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+      animation: toast-in 0.2s ease, toast-out 0.25s ease 2.2s forwards;
+    }}
+    @keyframes toast-in {{ from {{ opacity: 0; transform: translateY(12px); }} to {{ opacity: 1; transform: translateY(0); }} }}
+    @keyframes toast-out {{ from {{ opacity: 1; transform: translateY(0); }} to {{ opacity: 0; transform: translateY(8px); }} }}
   </style>
 </head>
 <body>
@@ -1061,7 +1142,10 @@ class LFAServerHandler(http.server.BaseHTTPRequestHandler):
   <div class="panel">
     <div class="panel-header">
       <div class="panel-title">Forensic Cases & Evidence Streams</div>
-      <div><button onclick="location.reload()" class="btn btn-primary">↻ Refresh</button></div>
+      <div style="display:flex; gap:0.6rem; align-items:center;">
+        <input type="text" class="search-filter" id="case-search" placeholder="Filter cases..." oninput="filterCases()">
+        <button onclick="location.reload()" class="btn btn-secondary">↻ Refresh</button>
+      </div>
     </div>
     <table>
       <thead>
@@ -1075,7 +1159,7 @@ class LFAServerHandler(http.server.BaseHTTPRequestHandler):
           <th>Investigation Actions</th>
         </tr>
       </thead>
-      <tbody>
+      <tbody id="case-table-body">
         {rows_html}
       </tbody>
     </table>
@@ -1088,10 +1172,41 @@ class LFAServerHandler(http.server.BaseHTTPRequestHandler):
     <div style="padding: 1.5rem;">
       <p class="subtext" style="margin-bottom: 0.75rem;">Run this command on the target Linux system to collect artifacts strictly in RAM and stream directly to this server without touching target physical disk:</p>
       <div class="command-box">
-sudo sh collect.sh -s http://&lt;THIS-SERVER-IP&gt;:{server_port}/api/v1/ingest {token_arg}
+        <span id="cmd-stream">sudo sh collect.sh -s http://&lt;THIS-SERVER-IP&gt;:{server_port}/api/v1/ingest {token_arg}</span>
+        <button class="btn btn-secondary" onclick="copyStreamCmd()" style="margin-left:1rem; flex-shrink:0;">📋 Copy</button>
       </div>
     </div>
   </div>
+
+  <div id="toast-container"></div>
+
+  <script>
+    function showToast(msg) {{
+      const c = document.getElementById('toast-container');
+      const t = document.createElement('div');
+      t.className = 'toast';
+      t.innerHTML = `✔ ${{msg}}`;
+      c.appendChild(t);
+      setTimeout(() => {{ if (t.parentNode) t.parentNode.removeChild(t); }}, 2400);
+    }}
+
+    function copyStreamCmd() {{
+      const txt = document.getElementById('cmd-stream').innerText;
+      navigator.clipboard.writeText(txt).then(() => {{
+        showToast('Streaming command copied to clipboard!');
+      }}).catch(() => {{
+        showToast('Streaming command copied!');
+      }});
+    }}
+
+    function filterCases() {{
+      const q = document.getElementById('case-search').value.toLowerCase().trim();
+      document.querySelectorAll('.case-row').forEach(row => {{
+        const haystack = row.getAttribute('data-haystack') || '';
+        row.style.display = haystack.includes(q) ? '' : 'none';
+      }});
+    }}
+  </script>
 </body>
 </html>
 """
